@@ -1,0 +1,4 @@
+*.swp 
+*.pyc
+kivy_version/
+*.txt

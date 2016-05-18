@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>884</width>
+    <height>473</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>d42do</string>
+  </property>
+  <property name="accessibleName">
+   <string>Hi</string>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QFrame" name="canvas_figure">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>420</width>
+      <height>420</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="canvas_mesh">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>0</y>
+      <width>420</width>
+      <height>420</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>884</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="File">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="create_world"/>
+   </widget>
+   <widget class="QMenu" name="Dividing">
+    <property name="title">
+     <string>Примитивы</string>
+    </property>
+    <addaction name="central_rectangle"/>
+   </widget>
+   <addaction name="File"/>
+   <addaction name="Dividing"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="central_rectangle">
+   <property name="text">
+    <string>Центральный прямоугольник</string>
+   </property>
+  </action>
+  <action name="create_world">
+   <property name="text">
+    <string>Новый</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
