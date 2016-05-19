@@ -15,6 +15,7 @@ from figure import Figure
 BLANK = QColor(0, 0, 0, 0)
 OFFSET_X = 10
 OFFSET_Y = 30
+RIGHT_BUTTON = 2
 
 
 class MyWindow(QMainWindow):
@@ -79,6 +80,34 @@ class MyWindow(QMainWindow):
         self.canvas_figure_buffer.fill(BLANK)
         self.canvas_mesh_buffer.fill(BLANK)
 
+    def keyPressEvent(self, e):
+        needRefresh = False
+        if e.key() == QtCore.Qt.Key_Minus:
+            self.figure.world_width += 5
+            self.figure.world_height += 5
+            needRefresh = True
+        if e.key() == QtCore.Qt.Key_Plus:
+            self.figure.world_width -= 5
+            self.figure.world_height -= 5
+            needRefresh = True
+        if e.key() == QtCore.Qt.Key_Left:
+            self.figure.start_x -= 5
+            needRefresh = True
+        if e.key() == QtCore.Qt.Key_Right:
+            self.figure.start_x += 5
+            needRefresh = True
+        if e.key() == QtCore.Qt.Key_Up:
+            self.figure.start_y -= 5
+            needRefresh = True
+        if e.key() == QtCore.Qt.Key_Down:
+            self.figure.start_y += 5
+            needRefresh = True
+
+        if needRefresh:
+            self.figure.update_status()
+            self.clearing()
+            self.updating()
+            self.repaint()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

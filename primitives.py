@@ -13,9 +13,9 @@ class Rectangle:
         self.Nx = Nx
         self.Ny = Ny
 
-    def draw(self, canvas, kx, ky):
+    def draw(self, canvas, shift_x, shift_y, kx, ky):
         canvas.setPen(Qt.black)
-        canvas.drawRect(int(self.x*kx), int(self.y*ky),
+        canvas.drawRect(int((shift_x + self.x)*kx), int((shift_y + self.y)*ky),
                         int(self.width*kx), int(self.height*ky))
 
 
@@ -31,7 +31,7 @@ class Mesh_rectangle:
         self.nodes_x = (NAleft, Nx, NAright)
         self.nodes_y = (NAtop, Ny, NAbottom)
 
-    def draw(self, canvas, kx, ky):
+    def draw(self, canvas, shift_x, shift_y, kx, ky):
         Xs = self.nodes_x
         Ys = self.nodes_y
 
@@ -40,27 +40,26 @@ class Mesh_rectangle:
         B = QPoint()
         # Horizontal lines
         for j in range(Ys[0] + Ys[1] + Ys[2]):
-            x = int(self.x*kx)
-            y = int((self.y + j*self.dy)*ky)
+            x = int((shift_x + self.x)*kx)
+            y = int((shift_y + self.y + j*self.dy)*ky)
             B.setX(x)
             B.setY(y)
             A.setY(y)
             for i in range(Xs[0] + Xs[1] + Xs[2] - 1):
                 A.setX(B.x())
-                x = int((self.x + (i+1)*self.dx)*kx)
+                x = int((shift_x + self.x + (i+1)*self.dx)*kx)
                 B.setX(x)
                 canvas.drawLine(A, B)
 
         # Vertical lines
         for i in range(Xs[0] + Xs[1] + Xs[2]):
-            x = int((self.x + i*self.dx) * kx)
-            y = int(self.y*ky)
+            x = int((shift_x + self.x + i*self.dx) * kx)
+            y = int((shift_y + self.y)*ky)
             B.setX(x)
             B.setY(y)
             A.setX(x)
             for j in range(Ys[0] + Ys[1] + Ys[2] - 1):
                 A.setY(B.y())
-                y = int((self.y + (j+1)*self.dy)*ky)
+                y = int((shift_y + self.y + (j+1)*self.dy)*ky)
                 B.setY(y)
                 canvas.drawLine(A, B)
-

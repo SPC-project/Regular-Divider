@@ -11,6 +11,8 @@ class Figure:
         self.parent_clear = parent_clear
         self.world_width = 0
         self.world_height = 0
+        self.start_x = 0
+        self.start_y = 0
         self.message = ""
         self.shape = list()
         self.mesh = Mesh()
@@ -44,6 +46,8 @@ class Figure:
         if dialog.result() == 1:
             self.world_width = dialog.width.value()
             self.world_height = dialog.height.value()
+            self.start_x = dialog.start_x.value()
+            self.start_y = dialog.start_y.value()
             self.parent_clear.emit()
             self.sendMessage("Рабочая область создана")
 
@@ -51,6 +55,7 @@ class Figure:
         self.dialog.x.setFocus()
         self.dialog.exec_()
         if self.dialog.result() == 1:
+            self.parent_clear.emit()
             x = self.dialog.x.value()
             y = self.dialog.y.value()
             width = self.dialog.width.value()
@@ -66,20 +71,24 @@ class Figure:
                 NAbottom = NAtop
                 NAleft = NAtop
 
-            resized = False
-            if x+width > self.world_width:
-                self.world_width = x+width + 5
-                resized = True
-            if y+height > self.world_height:
-                self.world_height = y+height + 5
-                resized = True
-            r = Rectangle(x, y, width, height, Nx, Ny)
-            self.shape.append(r)
-            self.mesh.add(r, Nx, Ny, NAtop, NAright, NAbottom, NAleft)
-            if resized:
-                self.sendMessage("Рабочая область была расширена")
-            else:
-                self.parent_update.emit()
+            self.adopt_new_figure(x, y, width, height, Nx, Ny, NAtop, NAright,
+                                  NAbottom, NAleft)
+
+    def adopt_new_figure(self, x, y, width, height, Nx, Ny, Nt, Nr, Nb, Nl):
+        resized = False
+        if x+width > self.world_width:
+            self.world_width = x+width + 5
+            resized = True
+        if y+height > self.world_height:
+            self.world_height = y+height + 5
+            resized = True
+        r = Rectangle(x, y, width, height, Nx, Ny)
+        self.shape.append(r)
+        self.mesh.add(r, Nx, Ny, Nt, Nr, Nb, Nl)
+        if resized:
+            self.sendMessage("Рабочая область была расширена")
+        else:
+            self.parent_update.emit()
 
     def redraw(self, canvas, canvas_width, canvas_height, mesh_canvas):
         if self.world_width == 0 or self.world_height == 0:
@@ -87,7 +96,9 @@ class Figure:
 
         kx = canvas_width/self.world_width
         ky = canvas_height/self.world_height
+        shift_x = -self.start_x
+        shift_y = -self.start_y
         for primitive in self.shape:
-            primitive.draw(canvas, kx, ky)
+            primitive.draw(canvas, shift_x, shift_y, kx, ky)
 
-        self.mesh.redraw(mesh_canvas, kx, ky)
+        self.mesh.redraw(mesh_canvas, shift_x, shift_y, kx, ky)

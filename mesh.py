@@ -23,6 +23,6 @@ class Mesh:
                             Nx, Ny, NAtop, NAright, NAbottom, NAleft)
         self.shape.append(mr)
 
-    def redraw(self, canvas, kx, ky):
+    def redraw(self, canvas, shift_x, shift_y, kx, ky):
         for primitive in self.shape:
-            primitive.draw(canvas, kx, ky)
+            primitive.draw(canvas, shift_x, shift_y, kx, ky)
