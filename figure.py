@@ -9,8 +9,7 @@ class Figure:
         self.status = status
         self.parent_update = parent_update
         self.parent_clear = parent_clear
-        self.world_width = 0
-        self.world_height = 0
+        self.world_size = 0
         self.start_x = 0
         self.start_y = 0
         self.message = ""
@@ -31,7 +30,7 @@ class Figure:
 
     def update_status(self):
         self.status.setText("Рабочая область: <b>{:g}x{:g}<\b>".format(
-            self.world_width, self.world_height))
+            self.world_size, self.world_size))
 
     def sendMessage(self, text):
         self.message = text
@@ -41,11 +40,10 @@ class Figure:
     def create_space(self):
         dialog = QDialog()
         uic.loadUi('ui/create_space.ui', dialog)
-        dialog.width.setFocus()
+        dialog.size.setFocus()
         dialog.exec_()
         if dialog.result() == 1:
-            self.world_width = dialog.width.value()
-            self.world_height = dialog.height.value()
+            self.world_size = dialog.size.value()
             self.start_x = dialog.start_x.value()
             self.start_y = dialog.start_y.value()
             self.parent_clear.emit()
@@ -76,11 +74,11 @@ class Figure:
 
     def adopt_new_figure(self, x, y, width, height, Nx, Ny, Nt, Nr, Nb, Nl):
         resized = False
-        if x+width > self.world_width:
-            self.world_width = x+width + 5
+        if x+width > self.world_size:
+            self.world_size = x+width + 5
             resized = True
-        if y+height > self.world_height:
-            self.world_height = y+height + 5
+        if y+height > self.world_size:
+            self.world_size = y+height + 5
             resized = True
         r = Rectangle(x, y, width, height, Nx, Ny)
         self.shape.append(r)
@@ -91,11 +89,11 @@ class Figure:
             self.parent_update.emit()
 
     def redraw(self, canvas, canvas_width, canvas_height, mesh_canvas):
-        if self.world_width == 0 or self.world_height == 0:
+        if self.world_size == 0:
             return
 
-        kx = canvas_width/self.world_width
-        ky = canvas_height/self.world_height
+        kx = canvas_width/self.world_size
+        ky = canvas_height/self.world_size
         shift_x = -self.start_x
         shift_y = -self.start_y
         for primitive in self.shape:

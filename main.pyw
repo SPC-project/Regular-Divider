@@ -83,12 +83,10 @@ class MyWindow(QMainWindow):
     def keyPressEvent(self, e):
         needRefresh = False
         if e.key() == QtCore.Qt.Key_Minus:
-            self.figure.world_width += 5
-            self.figure.world_height += 5
+            self.figure.world_size += 5
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Plus:
-            self.figure.world_width -= 5
-            self.figure.world_height -= 5
+            self.figure.world_size -= 5
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Left:
             self.figure.start_x -= 5
