@@ -34,32 +34,63 @@ class Mesh_rectangle:
     def draw(self, canvas, shift_x, shift_y, kx, ky):
         Xs = self.nodes_x
         Ys = self.nodes_y
+        X_NLEN = Xs[0] + Xs[1] + Xs[2]
+        Y_NLEN = Ys[0] + Ys[1] + Ys[2]
+        X_AIR2 = Xs[0] + Xs[1] - 1  # start of right air layer
+        Y_AIR2 = Ys[0] + Ys[1] - 1  # start of bottom air layer
+        COL_AIR = Qt.blue
+        COL_FIG = Qt.green
 
-        canvas.setPen(Qt.blue)
         A = QPoint()
         B = QPoint()
         # Horizontal lines
-        for j in range(Ys[0] + Ys[1] + Ys[2]):
+        for j in range(Y_NLEN):
             x = int((shift_x + self.x)*kx)
             y = int((shift_y + self.y + j*self.dy)*ky)
             B.setX(x)
             B.setY(y)
             A.setY(y)
-            for i in range(Xs[0] + Xs[1] + Xs[2] - 1):
+            for i in range(X_NLEN - 1):
+                if i < Xs[0] or i >= X_AIR2 or j < Ys[0] or j > Y_AIR2:
+                    canvas.setPen(COL_AIR)
+                else:
+                    canvas.setPen(COL_FIG)
                 A.setX(B.x())
                 x = int((shift_x + self.x + (i+1)*self.dx)*kx)
                 B.setX(x)
                 canvas.drawLine(A, B)
 
         # Vertical lines
-        for i in range(Xs[0] + Xs[1] + Xs[2]):
+        for i in range(X_NLEN):
             x = int((shift_x + self.x + i*self.dx) * kx)
             y = int((shift_y + self.y)*ky)
             B.setX(x)
             B.setY(y)
             A.setX(x)
-            for j in range(Ys[0] + Ys[1] + Ys[2] - 1):
+            for j in range(Y_NLEN - 1):
+                if i < Xs[0] or i > X_AIR2 or j < Ys[0] or j >= Y_AIR2:
+                    canvas.setPen(COL_AIR)
+                else:
+                    canvas.setPen(COL_FIG)
                 A.setY(B.y())
                 y = int((shift_y + self.y + (j+1)*self.dy)*ky)
+                B.setY(y)
+                canvas.drawLine(A, B)
+
+        # Diagonal lines
+        for i in range(X_NLEN - 1):
+            x = int((shift_x + self.x + i*self.dx) * kx)
+            y = int((shift_y + self.y)*ky)
+            B.setY(y)
+            A.setX(x)
+            for j in range(Y_NLEN - 1):
+                if i < Xs[0] or i >= X_AIR2 or j < Ys[0] or j >= Y_AIR2:
+                    canvas.setPen(COL_AIR)
+                else:
+                    canvas.setPen(COL_FIG)
+                A.setY(B.y())
+                x = int((shift_x + self.x + (i+1)*self.dx)*kx)
+                y = int((shift_y + self.y + (j+1)*self.dy)*ky)
+                B.setX(x)
                 B.setY(y)
                 canvas.drawLine(A, B)
