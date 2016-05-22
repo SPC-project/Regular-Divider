@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
+from figure_managing import PrimitivesListDialog
 
 BLANK = QColor(0, 0, 0, 0)
 OFFSET_X = 10
@@ -29,15 +30,19 @@ class MyWindow(QMainWindow):
         super(MyWindow, self).__init__()
         uic.loadUi('ui/main.ui', self)
 
-        # In resizeEvent will initialize a 2 QPixmap buffer
+        # First call of resizeEvent (call when window create)
+        # will initialize a 2 QPixmap buffer
 
         size_tip = QLabel()
         self.statusbar.addPermanentWidget(size_tip)
 
         self.figure = Figure(size_tip, self.update, self.clear)
+        self.prims_dialog = PrimitivesListDialog()
 
+        self.save_world.triggered.connect(self.figure.save_mesh)
         self.create_world.triggered.connect(self.figure.create_space)
-        self.central_rectangle.triggered.connect(self.figure.new_figure)
+        self.add_rectangle.triggered.connect(self.figure.new_figure)
+        self.edit_figure.triggered.connect(self.show_prims_dialog)
         self.update.connect(self.updating)
         self.clear.connect(self.clearing)
         self.show()
@@ -49,7 +54,7 @@ class MyWindow(QMainWindow):
 
     def paintEvent(self, event):
         p = QPainter(self)
-        # drawPixmap ignore action bar, need shift y-coordinate
+        # drawPixmap ignore action bar, need shift y-coordinate then
         p.drawPixmap(OFFSET_X, OFFSET_Y, self.canvas_figure_buffer)
         p.drawPixmap(self.canvas_mesh.x(), OFFSET_Y, self.canvas_mesh_buffer)
 
@@ -106,6 +111,10 @@ class MyWindow(QMainWindow):
             self.clearing()
             self.updating()
             self.repaint()
+
+    def show_prims_dialog(self):
+        self.prims_dialog.show(self.figure)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

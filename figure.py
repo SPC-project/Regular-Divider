@@ -1,11 +1,16 @@
 from PyQt5.QtWidgets import QDialog
-from PyQt5 import uic
+from PyQt5 import uic, QtCore
 from primitives import Rectangle
-from mesh import Mesh
+
+SPACING = 5
 
 
-class Figure:
+class Figure(QtCore.QObject):
+    primitive_deletion = QtCore.pyqtSignal(int)
+    primitive_modification = QtCore.pyqtSignal(int)
+
     def __init__(self, status, parent_update, parent_clear):
+        super(Figure, self).__init__()
         self.status = status
         self.parent_update = parent_update
         self.parent_clear = parent_clear
@@ -14,25 +19,19 @@ class Figure:
         self.start_y = 0
         self.message = ""
         self.shape = list()
-        self.mesh = Mesh()
 
-        self.dialog = QDialog()
-        uic.loadUi('ui/new_figure.ui', self.dialog)
-        self.dialog.manual_air.stateChanged.connect(self.precise_air)
+        self.primitive_deletion.connect(self.del_prim)
+        self.primitive_modification.connect(self.mod_prim)
+
+        self.nf_dialog = NewFigureDialog()
 
         self.update_status()
-
-    def precise_air(self, value):
-        p = value == 2
-        self.dialog.air_left.setEnabled(p)
-        self.dialog.air_right.setEnabled(p)
-        self.dialog.air_bottom.setEnabled(p)
 
     def update_status(self):
         self.status.setText("Рабочая область: <b>{:g}x{:g}<\b>".format(
             self.world_size, self.world_size))
 
-    def sendMessage(self, text):
+    def send_message(self, text):
         self.message = text
         self.parent_update.emit()
         self.update_status()
@@ -41,50 +40,39 @@ class Figure:
         dialog = QDialog()
         uic.loadUi('ui/create_space.ui', dialog)
         dialog.size.setFocus()
+        dialog.start_x.setValue(self.start_x)
+        dialog.start_y.setValue(self.start_y)
+        dialog.size.setValue(self.world_size)
         dialog.exec_()
         if dialog.result() == 1:
             self.world_size = dialog.size.value()
             self.start_x = dialog.start_x.value()
             self.start_y = dialog.start_y.value()
             self.parent_clear.emit()
-            self.sendMessage("Рабочая область создана")
+            self.send_message("Рабочая область создана")
 
     def new_figure(self):
-        self.dialog.x.setFocus()
-        self.dialog.exec_()
-        if self.dialog.result() == 1:
+        self.nf_dialog.x.setFocus()
+        self.nf_dialog.exec_()
+        if self.nf_dialog.result() == 1:
             self.parent_clear.emit()
-            x = self.dialog.x.value()
-            y = self.dialog.y.value()
-            width = self.dialog.width.value()
-            height = self.dialog.height.value()
-            Nx = self.dialog.Nx.value()
-            Ny = self.dialog.Ny.value()
-            NAtop = self.dialog.air_top.value()
-            NAright = self.dialog.air_right.value()
-            NAbottom = self.dialog.air_bottom.value()
-            NAleft = self.dialog.air_left.value()
-            if not self.dialog.manual_air.isChecked():
-                NAright = NAtop
-                NAbottom = NAtop
-                NAleft = NAtop
+            fig, nx, ny = self.nf_dialog.get_data()
+            self.adopt_new_figure(fig, nx, ny)
 
-            self.adopt_new_figure(x, y, width, height, Nx, Ny, NAtop, NAright,
-                                  NAbottom, NAleft)
-
-    def adopt_new_figure(self, x, y, width, height, Nx, Ny, Nt, Nr, Nb, Nl):
+    def adopt_new_figure(self, fig, nodes_x, nodes_y):
         resized = False
-        if x+width > self.world_size:
-            self.world_size = x+width + 5
+        x, y, w, h = fig
+        if x+w > self.world_size:
+            self.world_size = x+w + SPACING
             resized = True
-        if y+height > self.world_size:
-            self.world_size = y+height + 5
+        if y+h > self.world_size:
+            self.world_size = y+h + SPACING
             resized = True
-        r = Rectangle(x, y, width, height, Nx, Ny)
+        r = Rectangle(fig, nodes_x, nodes_y)
         self.shape.append(r)
-        self.mesh.add(r, Nx, Ny, Nt, Nr, Nb, Nl)
+
         if resized:
-            self.sendMessage("Рабочая область была расширена")
+            self.send_message("Рабочая область была расширена")
         else:
             self.parent_update.emit()
 
@@ -97,6 +85,47 @@ class Figure:
         shift_x = -self.start_x
         shift_y = -self.start_y
         for primitive in self.shape:
-            primitive.draw(canvas, shift_x, shift_y, kx, ky)
+            primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
 
-        self.mesh.redraw(mesh_canvas, shift_x, shift_y, kx, ky)
+    def mod_prim(self, id):
+        print(id)
+
+    def del_prim(self, id):
+        del self.shape[id]
+        self.parent_clear.emit()
+        self.parent_update.emit()
+
+    def save_mesh(self):
+        self.shape[0].save()
+        self.send_message("Фигура сохранена")
+
+
+class NewFigureDialog(QDialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        uic.loadUi('ui/new_figure.ui', self)
+        self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
+
+    def upd_air_spinboxes(self, value):
+        isEnabled = value == 2
+        self.air_left.setEnabled(isEnabled)
+        self.air_right.setEnabled(isEnabled)
+        self.air_bottom.setEnabled(isEnabled)
+
+    def get_data(self):
+        x = self.x.value()
+        y = self.y.value()
+        width = self.width.value()
+        height = self.height.value()
+        Nx = self.Nx.value()
+        Ny = self.Ny.value()
+        Ntop = self.air_top.value()
+        Nright = self.air_right.value()
+        Nbottom = self.air_bottom.value()
+        Nleft = self.air_left.value()
+        if not self.manual_air.isChecked():
+            Nright = Ntop
+            Nbottom = Ntop
+            Nleft = Ntop
+
+        return (x, y, width, height), (Nleft, Nx, Nright), (Ntop, Ny, Nbottom)

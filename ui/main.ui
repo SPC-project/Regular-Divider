@@ -66,26 +66,55 @@
     <property name="title">
      <string>Файл</string>
     </property>
+    <addaction name="save_world"/>
+   </widget>
+   <widget class="QMenu" name="Figure">
+    <property name="title">
+     <string>Фигура</string>
+    </property>
+    <addaction name="add_rectangle"/>
+    <addaction name="edit_figure"/>
+    <addaction name="separator"/>
     <addaction name="create_world"/>
    </widget>
-   <widget class="QMenu" name="Dividing">
-    <property name="title">
-     <string>Примитивы</string>
-    </property>
-    <addaction name="central_rectangle"/>
-   </widget>
    <addaction name="File"/>
-   <addaction name="Dividing"/>
+   <addaction name="Figure"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="central_rectangle">
+  <action name="add_rectangle">
    <property name="text">
-    <string>Центральный прямоугольник</string>
+    <string>Добавить прямоугольник</string>
    </property>
   </action>
   <action name="create_world">
    <property name="text">
-    <string>Новый</string>
+    <string>Задать рабочее пространство</string>
+   </property>
+  </action>
+  <action name="save_world">
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>                     Примитивы:</string>
+   </property>
+  </action>
+  <action name="empty">
+   <property name="text">
+    <string>Фигура пуста</string>
+   </property>
+  </action>
+  <action name="edit_figure">
+   <property name="text">
+    <string>Редактировать</string>
    </property>
   </action>
  </widget>
