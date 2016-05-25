@@ -34,7 +34,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>281</width>
+     <width>309</width>
      <height>171</height>
     </rect>
    </property>
@@ -89,8 +89,8 @@
       <item>
        <widget class="QLabel" name="label_Ny">
         <property name="text">
-         <string>Узлов по
-Y</string>
+         <string>Элементов
+ поY</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -103,7 +103,10 @@ Y</string>
          <set>Qt::AlignCenter</set>
         </property>
         <property name="minimum">
-         <number>2</number>
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
         </property>
        </widget>
       </item>
@@ -135,8 +138,8 @@ Y</string>
       <item>
        <widget class="QLabel" name="label_Nx">
         <property name="text">
-         <string>Узлов по
-X</string>
+         <string>Элементов
+по X</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -149,7 +152,10 @@ X</string>
          <set>Qt::AlignCenter</set>
         </property>
         <property name="minimum">
-         <number>2</number>
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
         </property>
        </widget>
       </item>
@@ -183,13 +189,17 @@ X</string>
     <rect>
      <x>362</x>
      <y>60</y>
-     <width>61</width>
+     <width>69</width>
      <height>111</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QSpinBox" name="air_top"/>
+     <widget class="QSpinBox" name="air_top">
+      <property name="maximum">
+       <number>1000</number>
+      </property>
+     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">
@@ -209,6 +219,9 @@ X</string>
       <property name="enabled">
        <bool>false</bool>
       </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
      </widget>
     </item>
    </layout>
@@ -224,12 +237,15 @@ X</string>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <property name="rightMargin">
-     <number>10</number>
+     <number>0</number>
     </property>
     <item>
      <widget class="QSpinBox" name="air_left">
       <property name="enabled">
        <bool>false</bool>
+      </property>
+      <property name="maximum">
+       <number>1000</number>
       </property>
      </widget>
     </item>
@@ -251,6 +267,9 @@ X</string>
       <property name="enabled">
        <bool>false</bool>
       </property>
+      <property name="maximum">
+       <number>1000</number>
+      </property>
      </widget>
     </item>
    </layout>
@@ -258,14 +277,14 @@ X</string>
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>340</x>
+     <x>320</x>
      <y>0</y>
-     <width>231</width>
+     <width>161</width>
      <height>51</height>
     </rect>
    </property>
    <property name="text">
-    <string>Узлов на воздух:</string>
+    <string>Воздушных элементов:</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="manual_air">

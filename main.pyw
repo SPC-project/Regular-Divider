@@ -43,9 +43,12 @@ class MyWindow(QMainWindow):
         self.figure = Figure(size_tip, self.update, self.clear)
         self.save_world.triggered.connect(self.figure.save_mesh)
         self.add_rectangle.triggered.connect(self.figure.new_figure)
-        self.new_world.triggered.connect(self.figure.clean)
+        self.new_world.triggered.connect(self.clean)
         self.show()
 
+    def clean(self):
+        self.figure.clean()
+        self.repaint()
     def getCanvasSize(self):
         dx = (self.geometry().width() - 4*OFFSET_X)/2
         dy = self.geometry().height() - OFFSET_Y - self.statusbar.height()
@@ -125,10 +128,9 @@ class MyWindow(QMainWindow):
                     remove_it = menu.addAction("Удалить")
                     eddit_it = menu.addAction("Редактировать")
                     expand_it = menu.addMenu("Добавить примитив")
-                    top = expand_it.addAction("Сверху")
-                    right = expand_it.addAction("Справа")
-                    bottom = expand_it.addAction("Снизу")
-                    left = expand_it.addAction("Слева")
+                    expand_to = ["Сверху", "Справа", "Снизу", "Слева"]
+                    for txt in expand_to:
+                        expand_it.addAction(txt)
                     pos = self.mapToGlobal(e.pos())
                     pos.setX(pos.x() + 5)
                     choice = menu.exec_(pos)
@@ -136,15 +138,9 @@ class MyWindow(QMainWindow):
                         self.figure.del_prim(ind)
                     elif choice == eddit_it:
                         self.figure.mod_prim(ind)
-                    else:
-                        if choice == top:
-                            self.figure.expand(ind, 0)
-                        elif choice == right:
-                            self.figure.expand(ind, 1)
-                        elif choice == bottom:
-                            self.figure.expand(ind, 2)
-                        elif choice == left:
-                            self.figure.expand(ind, 3)
+                    elif choice is not None:
+                        dir = expand_to.index(choice.text())
+                        self.figure.expand(ind, dir)
                 else:
                     menu = QMenu(self)
                     add = menu.addAction("Добавить примитив")

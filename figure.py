@@ -64,10 +64,9 @@ class Figure(QtCore.QObject):
         self.nf_dialog.exec_()
         if self.nf_dialog.result() == 1:
             self.parent_clear.emit()
-            fig, nx, ny = self.nf_dialog.get_data()
-            self.adopt_new_figure(fig, nx, ny)
+            self.adopt_new_figure(*self.nf_dialog.get_data())
 
-    def adopt_new_figure(self, fig, nodes_x, nodes_y, primitive_ind=-1):
+    def adopt_new_figure(self, fig, mesh, primitive_ind=-1):
         resized = False
         x, y, w, h = fig
         if x+w > self.world_size:
@@ -78,10 +77,10 @@ class Figure(QtCore.QObject):
             resized = True
 
         if primitive_ind == -1:
-            r = Rectangle(fig, nodes_x, nodes_y)
+            r = Rectangle(fig, mesh)
             self.shape.append(r)
         else:
-            self.shape[primitive_ind].modify(fig, nodes_x, nodes_y)
+            self.shape[primitive_ind].modify(fig, mesh)
 
         if resized:
             self.send_message("Рабочая область была расширена")
@@ -106,8 +105,7 @@ class Figure(QtCore.QObject):
         dialog.exec_()
         if dialog.result() == 1:
             self.parent_clear.emit()
-            fig, nx, ny = dialog.get_data()
-            self.adopt_new_figure(fig, nx, ny, ind)
+            self.adopt_new_figure(*dialog.get_data())
 
     def del_prim(self, id):
         del self.shape[id]
@@ -138,24 +136,10 @@ class Figure(QtCore.QObject):
         dialog.x.setFocus()
         dialog.exec_()
         if dialog.result() == 1:
-            fig, nx, ny = dialog.get_data()
-            self.adopt_new_figure(fig, nx, ny)
+            prim.shave_air(side_code)
+            self.adopt_new_figure(*dialog.get_data())
             new_prim = self.shape[-1]
-
-            if side_code == 0:
-                prim.shrink_top_air()
-                new_prim.shrink_bottom_air()
-            elif side_code == 1:
-                prim.shrink_right_air()
-                new_prim.shrink_left_air()
-            elif side_code == 2:
-                prim.shrink_bottom_air()
-                new_prim.shrink_top_air()
-            elif side_code == 3:
-                prim.shrink_left_air()
-                new_prim.shrink_right_air()
-
-            self.parent_clear.emit()
+            new_prim.shave_air((side_code+2) % 4)  # shave opposite side
 
 
 class NewFigureDialog(QDialog):
@@ -177,8 +161,7 @@ class NewFigureDialog(QDialog):
         self.width.setValue(rectangle.width)
         self.height.setValue(rectangle.height)
 
-        Nleft, Nx, Nright = rectangle.nodes_x
-        Ntop, Ny, Nbottom = rectangle.nodes_y
+        Nleft, Ntop, Nright, Nbottom, Nx, Ny = rectangle.mesh
         self.air_left.setValue(Nleft)
         self.Nx.setValue(Nx)
         self.air_right.setValue(Nright)
@@ -200,55 +183,54 @@ class NewFigureDialog(QDialog):
         Nbottom = self.air_bottom.value()
         Nleft = self.air_left.value()
         if not self.manual_air.isChecked():
-            Nright = Ntop
-            Nbottom = Ntop
-            Nleft = Ntop
-            if self.watched_node != -1:
-                if self.watched_node == 0:
-                    Nbottom = 0
-                    y -= height
-                elif self.watched_node == 1:
-                    Nleft = 0
-                elif self.watched_node == 2:
-                    Ntop = 0
-                elif self.watched_node == 3:
-                    Nright = 0
-                    x -= width
+            if self.watched_node == 2:
+                hold = Nleft
+            else:
+                hold = Ntop
+            Ntop = hold
+            Nright = hold
+            Nbottom = hold
+            Nleft = hold
 
-        return (x, y, width, height), (Nleft, Nx, Nright), (Ntop, Ny, Nbottom)
+        mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
+        if self.watched_node != -1:
+            mesh[(self.watched_node+2) % 4] = 0
+
+        if self.watched_node == 0:
+            y -= height
+        elif self.watched_node == 3:
+            x -= width
+
+        return (x, y, width, height), mesh,
 
     def for_expanding(self, prim, side_code):
         self.watched_node = side_code
-        if side_code == 0 or side_code == 2:
-            if side_code == 0:
-                self.y.setValue(prim.y)
-                self.air_bottom.hide()
-            else:
-                self.y.setValue(prim.y + prim.height)
-                self.air_top.hide()
-            self.y.setEnabled(False)
-            self.x.setValue(prim.x)
-            self.x.setSingleStep(prim.step_x)
-            self.width.setValue(prim.width)
-            self.width.setSingleStep(prim.step_x)
-            self.Nx.setValue(prim.nodes_x[1])
-            self.Nx.setEnabled(False)
-            self.wath_node(self.Nx, prim.step_x)
-        elif side_code == 1 or side_code == 3:
-            if side_code == 1:
-                self.x.setValue(prim.x + prim.width)
-                self.air_right.hide()
-            else:
-                self.x.setValue(prim.x)
-                self.air_left.hide()
-            self.x.setEnabled(False)
-            self.y.setValue(prim.y)
-            self.y.setSingleStep(prim.step_y)
-            self.height.setValue(prim.height)
-            self.height.setSingleStep(prim.step_y)
-            self.Ny.setValue(prim.nodes_y[1])
-            self.Ny.setEnabled(False)
-            self.wath_node(self.Ny, prim.step_y)
+
+        pos = [self.x, self.y]
+        dim = [self.width, self.height]
+        air = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+        fig = [self.Nx, self.Ny]
+        prim_pos = [prim.x, prim.y, prim.x + prim.width, prim.y + prim.height]
+        prim_dim = [prim.width, prim.height]
+        prim_stp = [prim.step_x, prim.step_y]
+
+        myPos = side_code % 2
+        opposite_side = (side_code+2) % 4
+
+        pos[not myPos].setValue(prim_pos[opposite_side])
+        pos[not myPos].setEnabled(False)
+        air[opposite_side].hide()
+        pos[myPos].setValue(prim_pos[side_code])
+        pos[myPos].setSingleStep(prim_stp[myPos])
+        dim[myPos].setValue(prim_dim[myPos])
+        dim[myPos].setSingleStep(prim_stp[myPos])
+        dim[not myPos].setValue(prim_stp[not myPos])  # helpful to keep scale
+        fig[myPos].setValue(prim.mesh[myPos + 4])  # mesh_x = mesh[4]
+        fig[myPos].setEnabled(False)
+        self.wath_node(fig[myPos], prim_stp[myPos])
+
+        if side_code == 2:  # air_top was default, but now it disabled
+            self.air_left.setEnabled(True)
 
     def wath_node(self, nodes, dk):
         self.dezired_step = dk
@@ -262,4 +244,4 @@ class NewFigureDialog(QDialog):
             Nk = self.Nx
         else:
             Nk = self.Ny
-        Nk.setValue(int(dk/self.dezired_step)+1)  # need N+1 dot for N segments
+        Nk.setValue(int(dk/self.dezired_step))
