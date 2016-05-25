@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 """
@@ -7,7 +7,7 @@ Author: Mykolaj Konovalow
 """
 
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
@@ -35,16 +35,15 @@ class MyWindow(QMainWindow):
 
         size_tip = QLabel()
         self.statusbar.addPermanentWidget(size_tip)
-
-        self.figure = Figure(size_tip, self.update, self.clear)
         self.prims_dialog = PrimitivesListDialog()
 
-        self.save_world.triggered.connect(self.figure.save_mesh)
-        self.create_world.triggered.connect(self.figure.create_space)
-        self.add_rectangle.triggered.connect(self.figure.new_figure)
         self.edit_figure.triggered.connect(self.show_prims_dialog)
         self.update.connect(self.updating)
         self.clear.connect(self.clearing)
+        self.figure = Figure(size_tip, self.update, self.clear)
+        self.save_world.triggered.connect(self.figure.save_mesh)
+        self.add_rectangle.triggered.connect(self.figure.new_figure)
+        self.new_world.triggered.connect(self.figure.clean)
         self.show()
 
     def getCanvasSize(self):
@@ -111,6 +110,49 @@ class MyWindow(QMainWindow):
             self.clearing()
             self.updating()
             self.repaint()
+
+    def mousePressEvent(self, e):
+        if e.button() == QtCore.Qt.RightButton:
+            x = e.x() - OFFSET_X
+            y = e.y() - OFFSET_Y
+            canvas = self.canvas_figure.frameGeometry()
+            min_x, min_y, max_x, max_y = canvas.getCoords()
+            if min_x < x and x < max_x and min_y < y and y < max_y:
+                dx, dy = self.getCanvasSize()
+                ind = self.figure.click(x, y, dx, dy)
+                if ind != -1:
+                    menu = QMenu(self)
+                    remove_it = menu.addAction("Удалить")
+                    eddit_it = menu.addAction("Редактировать")
+                    expand_it = menu.addMenu("Добавить примитив")
+                    top = expand_it.addAction("Сверху")
+                    right = expand_it.addAction("Справа")
+                    bottom = expand_it.addAction("Снизу")
+                    left = expand_it.addAction("Слева")
+                    pos = self.mapToGlobal(e.pos())
+                    pos.setX(pos.x() + 5)
+                    choice = menu.exec_(pos)
+                    if choice == remove_it:
+                        self.figure.del_prim(ind)
+                    elif choice == eddit_it:
+                        self.figure.mod_prim(ind)
+                    else:
+                        if choice == top:
+                            self.figure.expand(ind, 0)
+                        elif choice == right:
+                            self.figure.expand(ind, 1)
+                        elif choice == bottom:
+                            self.figure.expand(ind, 2)
+                        elif choice == left:
+                            self.figure.expand(ind, 3)
+                else:
+                    menu = QMenu(self)
+                    add = menu.addAction("Добавить примитив")
+                    pos = self.mapToGlobal(e.pos())
+                    pos.setX(pos.x() + 5)
+                    choice = menu.exec_(pos)
+                    if choice == add:
+                        self.figure.new_figure()
 
     def show_prims_dialog(self):
         self.prims_dialog.show(self.figure)

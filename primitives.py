@@ -6,16 +6,63 @@ class Rectangle:
     Primitive figure
     """
     def __init__(self, fig, nodes_x, nodes_y):
-        self.x, self.y, self.width, self.height = fig
-        self.nodes_x = nodes_x
-        self.nodes_y = nodes_y
+        self.binds = {
+            'top': False,
+            'right': False,
+            'bottom': False,
+            'left': False,
+        }
+        self.modify(fig, nodes_x, nodes_y)
 
-        NA_left, Nx, _ = nodes_x
-        NA_top, Ny, _ = nodes_y
+    def modify(self, fig, nodes_x, nodes_y):
+        self.x, self.y, self.width, self.height = fig
+
+        NA_left, Nx, NA_right = nodes_x
+        NA_top, Ny, NA_bottom = nodes_y
+        if self.binds.top:
+            NA_top = 0
+        if self.binds.bottom:
+            NA_bottom = 0
+        if self.binds.right:
+            NA_right = 0
+        if self.binds.left:
+            NA_left = 0
+
+        self.nodes_x = (NA_left, Nx, NA_right)
+        self.nodes_y = (NA_top, Ny, NA_bottom)
+
         self.step_x = self.width/(Nx-1)  # -1 because N dots cut N-1 segments
         self.step_y = self.height/(Ny-1)
         self.start_x = self.x - self.step_x*NA_left  # where air start
         self.start_y = self.y - self.step_y*NA_top
+
+    def shrink_top_air(self):
+        self.binds.top = True
+        n1, n2 = self.nodes_y[1], self.nodes_y[2]
+        Ny = (0, n1, n2)
+        fig = (self.x, self.y, self.width, self.height)
+        self.modify(fig, self.nodes_x, Ny)
+
+    def shrink_right_air(self):
+        self.binds.right = True
+        n0, n1 = self.nodes_x[0], self.nodes_x[1]
+        Nx = (n0, n1, 0)
+        fig = (self.x, self.y, self.width, self.height)
+        self.modify(fig, Nx, self.nodes_y)
+
+    def shrink_bottom_air(self):
+        self.binds.bottom = True
+        n0, n1 = self.nodes_y[0], self.nodes_y[1]
+        Ny = (n0, n1, 0)
+        fig = (self.x, self.y, self.width, self.height)
+        self.modify(fig, self.nodes_x, Ny)
+
+    def shrink_left_air(self):
+        self.binds.left = True
+        n1, n2 = self.nodes_x[1], self.nodes_x[2]
+        Nx = (0, n1, n2)
+        fig = (self.x, self.y, self.width, self.height)
+        self.modify(fig, Nx, self.nodes_y)
 
     def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
         def pixel_x(nodes):

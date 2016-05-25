@@ -8,15 +8,25 @@ class PrimitivesListDialog(QDialog):
         uic.loadUi('ui/edit_figure.ui', self)
 
     def show(self, figure):
+        self.figure = figure
         self.primitives.clear()
 
-        id = 0
         for pr in figure.shape:
-            ListItem(self.primitives, pr, id, figure.primitive_deletion,
-                     figure.primitive_modification)
-            id += 1
+            li = ListItem(self.primitives, pr)
+            li.name.clicked.connect(self.editEvent)
+            li.remove.clicked.connect(self.removeEvent)
 
         self.exec_()
+
+    def removeEvent(self):
+        pr = self.primitives
+        self.figure.primitive_deletion.emit(pr.currentRow())
+        pr.removeItemWidget(pr.currentItem())
+
+    def editEvent(self):
+        pr = self.primitives
+        self.figure.primitive_modification.emit(pr.currentRow())
+        self.close()
 
     def resizeEvent(self, event):
         x = event.size().width()
@@ -25,30 +35,16 @@ class PrimitivesListDialog(QDialog):
 
 
 class ListItem(QWidget):
-    def __init__(self, parent, primitive, id, sig_del, sig_mod):
+    def __init__(self, parent, primitive):
         super(ListItem, self).__init__(parent)
         uic.loadUi('ui/list_item.ui', self)
 
-        self.id = id
-        self.sig_del = sig_del
-        self.sig_mod = sig_mod
-        self.parent = parent
         x = primitive.x
         y = primitive.y
         w = primitive.width
         h = primitive.height
         self.name.setText("({:g};{:g}) {:g}x{:g}".format(x, y, w, h))
 
-        self.name.clicked.connect(self.modify)
-        self.remove.clicked.connect(self.delete)
-
         self.item = QListWidgetItem(parent)
         self.item.setSizeHint(self.size())
         parent.setItemWidget(self.item, self)
-
-    def modify(self):
-        self.sig_mod.emit(self.id)
-
-    def delete(self):
-        self.parent.removeItemWidget(self.item)
-        self.sig_del.emit(self.id)
