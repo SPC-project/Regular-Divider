@@ -210,22 +210,23 @@ class NewFigureDialog(QDialog):
         dim = [self.width, self.height]
         air = [self.air_top, self.air_right, self.air_bottom, self.air_left]
         fig = [self.Nx, self.Ny]
-        prim_pos = [prim.x, prim.y, prim.x + prim.width, prim.y + prim.height]
+        prim_pos = [prim.x, prim.y]
+        oppos_pos = [prim.y, prim.x + prim.width, prim.y + prim.height, prim.y]
         prim_dim = [prim.width, prim.height]
         prim_stp = [prim.step_x, prim.step_y]
 
         myPos = side_code % 2
         opposite_side = (side_code+2) % 4
 
-        pos[not myPos].setValue(prim_pos[opposite_side])
+        pos[not myPos].setValue(oppos_pos[side_code])
         pos[not myPos].setEnabled(False)
         air[opposite_side].hide()
-        pos[myPos].setValue(prim_pos[side_code])
+        pos[myPos].setValue(prim_pos[myPos])
         pos[myPos].setSingleStep(prim_stp[myPos])
         dim[myPos].setValue(prim_dim[myPos])
         dim[myPos].setSingleStep(prim_stp[myPos])
         dim[not myPos].setValue(prim_stp[not myPos])  # helpful to keep scale
-        fig[myPos].setValue(prim.mesh[myPos + 4])  # mesh_x = mesh[4]
+        fig[myPos].setValue(prim.mesh[myPos + 4])  # x - 4, y - 5
         fig[myPos].setEnabled(False)
         self.wath_node(fig[myPos], prim_stp[myPos])
 

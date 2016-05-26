@@ -142,10 +142,12 @@ class Rectangle:
         Y2 = Y1 + M[NY]  # start of bottom air layer
         X_NLEN = X2 + M[NAR]
         Y_NLEN = Y2 + M[NAB]
+        XNODES = X_NLEN + 1
+        YNODES = Y_NLEN + 1
 
         f = open('temp.pmd', 'w')
         f.write("[settings]\n")
-        f.write("n_nodes={}\n".format((X_NLEN+1)*(Y_NLEN+1)))
+        f.write("n_nodes={}\n".format(XNODES*YNODES))
         f.write("n_elements={}\n".format(X_NLEN*Y_NLEN*2))
         f.write("n_forces=0\n")
         f.write("n_contacts=0\n")
@@ -154,17 +156,17 @@ class Rectangle:
         for j in range(Y_NLEN):
             for i in range(X_NLEN):
                 # +1 because node indexing start from 1, not 0
-                first_ind = i + j*X_NLEN + 1
-                second_ind = (i+1) + j*X_NLEN + 1
-                third_ind = (i+1) + (j+1)*X_NLEN + 1
-                forth_ind = i + (j+1)*X_NLEN + 1
+                first_ind = i + j*XNODES + 1
+                second_ind = (i+1) + j*XNODES + 1
+                third_ind = (i+1) + (j+1)*XNODES + 1
+                forth_ind = i + (j+1)*XNODES + 1
                 f.write("{} {} {}\n".format(first_ind, second_ind, third_ind))
                 f.write("{} {} {}\n".format(first_ind, third_ind, forth_ind))
 
         f.write("[koor]\n")
-        for i in range(X_NLEN):
+        for i in range(XNODES):
             x = i*self.step_x
-            for j in range(Y_NLEN):
+            for j in range(YNODES):
                 y = j*self.step_y
                 f.write("{} {}\n".format(x, y))
 
@@ -172,10 +174,10 @@ class Rectangle:
         f.write("[force]\n")
 
         f.write("[material]\n")
-        for j in range(Y_NLEN):
-            in_figure_y = j >= Y1 and j < Y2
-            for i in range(X_NLEN):
-                in_figure_x = i >= X1 and i < X2
+        for j in range(YNODES):
+            in_figure_y = j >= Y1 and j <= Y2
+            for i in range(XNODES):
+                in_figure_x = i >= X1 and i <= X2
                 if in_figure_x and in_figure_y:
                     f.write("1\n")  # Figure's flag
                 else:
