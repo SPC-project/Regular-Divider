@@ -66,6 +66,10 @@ class Rectangle:
         canvas.drawRect(x, y, w, h)
 
     def draw_mesh(self, canvas, pixel_x, pixel_y):
+        """
+        Split rectangle to smaller rectangles step_x*step_y,
+        then for each draw diagonal
+        """
         M = self.mesh
         X1 = M[NAL]
         Y1 = M[NAT]
@@ -183,4 +187,15 @@ class Rectangle:
                 else:
                     f.write("0\n")  # Air
 
+        f.write("[material for elements]\n")
+        for j in range(Y_NLEN):
+            in_figure_y = j >= Y1 and j < Y2
+            for i in range(X_NLEN):
+                in_figure_x = i >= X1 and i < X2
+                if in_figure_x and in_figure_y:
+                    f.write("1\n")  # Figure's flag
+                    f.write("1\n")  # Figure's flag
+                else:
+                    f.write("0\n")  # Air
+                    f.write("0\n")  # Air
         f.close()
