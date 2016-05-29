@@ -49,6 +49,7 @@ class MyWindow(QMainWindow):
     def clean(self):
         self.figure.clean()
         self.repaint()
+
     def getCanvasSize(self):
         dx = (self.geometry().width() - 4*OFFSET_X)/2
         dy = self.geometry().height() - OFFSET_Y - self.statusbar.height()
@@ -139,8 +140,8 @@ class MyWindow(QMainWindow):
                     elif choice == eddit_it:
                         self.figure.mod_prim(ind)
                     elif choice is not None:
-                        dir = expand_to.index(choice.text())
-                        self.figure.expand(ind, dir)
+                        direction = expand_to.index(choice.text())
+                        self.figure.expand(ind, direction)
                 else:
                     menu = QMenu(self)
                     add = menu.addAction("Добавить примитив")
