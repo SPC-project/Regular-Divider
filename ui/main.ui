@@ -66,7 +66,7 @@
     <property name="title">
      <string>Файл</string>
     </property>
-    <addaction name="new_world"/>
+    <addaction name="wipe_world"/>
     <addaction name="save_world"/>
    </widget>
    <widget class="QMenu" name="Figure">
@@ -118,9 +118,9 @@
     <string>Редактировать</string>
    </property>
   </action>
-  <action name="new_world">
+  <action name="wipe_world">
    <property name="text">
-    <string>Новый</string>
+    <string>Очистить</string>
    </property>
   </action>
  </widget>

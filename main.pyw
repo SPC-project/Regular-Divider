@@ -43,7 +43,7 @@ class MyWindow(QMainWindow):
         self.figure = Figure(size_tip, self.update, self.clear)
         self.save_world.triggered.connect(self.figure.save_mesh)
         self.add_rectangle.triggered.connect(self.figure.new_figure)
-        self.new_world.triggered.connect(self.clean)
+        self.wipe_world.triggered.connect(self.clean)
         self.show()
 
     def clean(self):
