@@ -23,8 +23,8 @@ class MyWindow(QMainWindow):
     """
     Interface
     """
-    update = QtCore.pyqtSignal()
-    clear = QtCore.pyqtSignal()
+    sig_update = QtCore.pyqtSignal()
+    sig_clear = QtCore.pyqtSignal()
 
     def __init__(self):
         super(MyWindow, self).__init__()
@@ -38,9 +38,9 @@ class MyWindow(QMainWindow):
         self.prims_dialog = PrimitivesListDialog()
 
         self.edit_figure.triggered.connect(self.show_prims_dialog)
-        self.update.connect(self.updating)
-        self.clear.connect(self.clearing)
-        self.figure = Figure(size_tip, self.update, self.clear)
+        self.sig_update.connect(self.updating)
+        self.sig_clear.connect(self.clearing)
+        self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
         self.save_world.triggered.connect(self.figure.save_mesh)
         self.add_rectangle.triggered.connect(self.figure.new_figure)
         self.wipe_world.triggered.connect(self.clean)
@@ -83,6 +83,8 @@ class MyWindow(QMainWindow):
         mesh_canvas = QPainter(self.canvas_mesh_buffer)
         dx, dy = self.getCanvasSize()
         self.figure.redraw(canvas, dx, dy, mesh_canvas)
+        self.update()
+
 
     def clearing(self):
         self.canvas_figure_buffer.fill(BLANK)
@@ -141,7 +143,15 @@ class MyWindow(QMainWindow):
                         self.figure.mod_prim(ind)
                     elif choice is not None:
                         direction = expand_to.index(choice.text())
-                        self.figure.expand(ind, direction)
+                        alreadyExpand = self.figure.shape[ind].binds[direction]
+                        if alreadyExpand:
+                            msg = QMessageBox()
+                            msg.setIcon(QMessageBox.Critical)
+                            msg.setText("Пока нельзя надстраивать"
+                                        " два примитива с одной стороны")
+                            msg.exec_()
+                        else:
+                            self.figure.expand(ind, direction)
                 else:
                     menu = QMenu(self)
                     add = menu.addAction("Добавить примитив")
