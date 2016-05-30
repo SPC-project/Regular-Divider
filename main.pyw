@@ -8,6 +8,7 @@ Author: Mykolaj Konovalow
 
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
+from PyQt5.QtWidgets import QFileDialog
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
@@ -41,7 +42,8 @@ class MyWindow(QMainWindow):
         self.sig_update.connect(self.updating)
         self.sig_clear.connect(self.clearing)
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
-        self.save_world.triggered.connect(self.figure.save_mesh)
+        self.save_world.triggered.connect(self.save)
+        self.save_world_as.triggered.connect(self.save_as)
         self.add_rectangle.triggered.connect(self.figure.new_figure)
         self.wipe_world.triggered.connect(self.clean)
         self.show()
@@ -127,43 +129,22 @@ class MyWindow(QMainWindow):
         if not (min_x < x and x < max_x and min_y < y and y < max_y):
             return
 
-        dx, dy = self.getCanvasSize()
-        ind = self.figure.click(x, y, dx, dy)
         menu = QMenu(self)
         pos = self.mapToGlobal(e.pos())
         pos.setX(pos.x() + 5)
-        if ind != -1:
-            remove_it = menu.addAction("Удалить")
-            eddit_it = menu.addAction("Редактировать")
-            expand_it = menu.addMenu("Добавить примитив")
-            expand_to = ["Сверху", "Справа", "Снизу", "Слева"]
-            for txt in expand_to:
-                expand_it.addAction(txt)
-            wipe = menu.addAction("Очистить поле")
-
-            choice = menu.exec_(pos)
-            if choice == remove_it:
-                self.figure.del_prim(ind)
-            elif choice == eddit_it:
-                self.figure.mod_prim(ind)
-            elif choice == wipe:
-                self.figure.clean()
-            elif choice is not None:
-                direction = expand_to.index(choice.text())
-                self.figure.expand(ind, direction)
-        else:
-            add = menu.addAction("Добавить примитив")
-            wipe = menu.addAction("Очистить поле")
-
-            choice = menu.exec_(pos)
-            if choice == add:
-                self.figure.new_figure()
-            elif choice == wipe:
-                self.figure.clean()
+        dx, dy = self.getCanvasSize()
+        self.figure.click(x, y, dx, dy, menu, pos)
 
     def show_prims_dialog(self):
         self.prims_dialog.show(self.figure)
 
+    def save(self):
+        self.figure.save_mesh()
+
+    def save_as(self):
+        fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
+                                            '', "Text files (*.pmd)")[0]
+        self.figure.save_mesh(fname)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

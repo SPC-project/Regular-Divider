@@ -68,6 +68,7 @@
     </property>
     <addaction name="wipe_world"/>
     <addaction name="save_world"/>
+    <addaction name="save_world_as"/>
    </widget>
    <widget class="QMenu" name="Figure">
     <property name="title">
@@ -121,6 +122,11 @@
   <action name="wipe_world">
    <property name="text">
     <string>Очистить</string>
+   </property>
+  </action>
+  <action name="save_world_as">
+   <property name="text">
+    <string>Сохранить как</string>
    </property>
   </action>
  </widget>

@@ -1,5 +1,5 @@
 from PyQt5 import uic, QtCore
-from PyQt5.QtWidgets import QDialog, QMessageBox
+from PyQt5.QtWidgets import QDialog, QMessageBox, QMenu
 from rectangle import Rectangle, NewRectangleDialog
 
 SPACING = 5
@@ -119,7 +119,7 @@ class Figure(QtCore.QObject):
         self.parent_clear.emit()
         self.parent_update.emit()
 
-    def save_mesh(self):
+    def save_mesh(self, filename="temp.pmd"):
         '''
         Владельцем узлов на стыке двух примитивов считают правый/нижний сосед
         '''
@@ -128,7 +128,7 @@ class Figure(QtCore.QObject):
         node_index = 0
         elements = 0
 
-        f = open('temp.pmd', 'w')
+        f = open(filename, 'w')
         f.write("[settings]\n")
         f.write("n_nodes=")
         pNumNodes = f.tell()
@@ -181,20 +181,48 @@ class Figure(QtCore.QObject):
 
         self.send_message("Фигура сохранена")
 
-    def click(self, x, y, canvas_width, canvas_height):
+    def click(self, x, y, canvas_width, canvas_height, menu, pos):
         x = self.start_x + x * self.world_size/canvas_width
         y = self.start_y + y * self.world_size/canvas_height
-        ind = -1
         for prim in self.shape:
-            ind += 1
             if prim.x < x and x < prim.x + prim.width:
                 if prim.y < y and y < prim.y + prim.height:
-                    return ind
+                    self.prim_context_menu(prim, menu, pos)
+                    return
 
-        return -1
+        self.context_menu(menu, pos)
 
-    def expand(self, ind, side_code):
-        prim = self.shape[ind]
+    def context_menu(self, menu, pos):
+        add = menu.addAction("Добавить примитив")
+        wipe = menu.addAction("Очистить поле")
+
+        choice = menu.exec_(pos)
+        if choice == add:
+            self.new_figure()
+        elif choice == wipe:
+            self.clean()
+
+    def prim_context_menu(self, prim, menu, pos):
+        remove_it = menu.addAction("Удалить")
+        eddit_it = menu.addAction("Редактировать")
+        expand_it = menu.addMenu("Добавить примитив")
+        expand_to = ["Сверху", "Справа", "Снизу", "Слева"]
+        for txt in expand_to:
+            expand_it.addAction(txt)
+        wipe = menu.addAction("Очистить поле")
+
+        choice = menu.exec_(pos)
+        if choice == remove_it:
+            self.del_prim(self.shape.index(prim))
+        elif choice == eddit_it:
+            self.mod_prim(self.shape.index(prim))
+        elif choice == wipe:
+            self.clean()
+        elif choice is not None:
+            direction = expand_to.index(choice.text())
+            self.expand(prim, direction)
+
+    def expand(self, prim, side_code):
         alreadyExpand = prim.binds[side_code]
         if alreadyExpand:
             msg = QMessageBox()
