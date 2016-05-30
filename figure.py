@@ -108,6 +108,13 @@ class Figure(QtCore.QObject):
             self.adopt_new_figure(*dialog.get_data())
 
     def del_prim(self, id):
+        to_del = self.shape[id]
+        for prim in self.shape:
+            for i in range(4):
+                if prim.binds[i] == to_del:
+                    prim.binds[i] = None
+                    continue
+
         del self.shape[id]
         self.parent_clear.emit()
         self.parent_update.emit()
