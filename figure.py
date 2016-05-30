@@ -1,5 +1,5 @@
 from PyQt5 import uic, QtCore
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QMessageBox
 from rectangle import Rectangle, NewRectangleDialog
 
 SPACING = 5
@@ -195,11 +195,20 @@ class Figure(QtCore.QObject):
 
     def expand(self, ind, side_code):
         prim = self.shape[ind]
+        alreadyExpand = prim.binds[side_code]
+        if alreadyExpand:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Пока нельзя достраивать"
+                        " два примитива с одной стороны")
+            msg.exec_()
+            return
+
         dialog = NewRectangleDialog()
         dialog.for_expanding(prim, side_code)
-
         dialog.x.setFocus()
         dialog.exec_()
+
         if dialog.result() == 1:
             self.adopt_new_figure(*dialog.get_data())
             new_prim = self.shape[-1]

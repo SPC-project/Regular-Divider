@@ -85,7 +85,6 @@ class MyWindow(QMainWindow):
         self.figure.redraw(canvas, dx, dy, mesh_canvas)
         self.update()
 
-
     def clearing(self):
         self.canvas_figure_buffer.fill(BLANK)
         self.canvas_mesh_buffer.fill(BLANK)
@@ -118,48 +117,49 @@ class MyWindow(QMainWindow):
             self.repaint()
 
     def mousePressEvent(self, e):
-        if e.button() == QtCore.Qt.RightButton:
-            x = e.x() - OFFSET_X
-            y = e.y() - OFFSET_Y
-            canvas = self.canvas_figure.frameGeometry()
-            min_x, min_y, max_x, max_y = canvas.getCoords()
-            if min_x < x and x < max_x and min_y < y and y < max_y:
-                dx, dy = self.getCanvasSize()
-                ind = self.figure.click(x, y, dx, dy)
-                if ind != -1:
-                    menu = QMenu(self)
-                    remove_it = menu.addAction("Удалить")
-                    eddit_it = menu.addAction("Редактировать")
-                    expand_it = menu.addMenu("Добавить примитив")
-                    expand_to = ["Сверху", "Справа", "Снизу", "Слева"]
-                    for txt in expand_to:
-                        expand_it.addAction(txt)
-                    pos = self.mapToGlobal(e.pos())
-                    pos.setX(pos.x() + 5)
-                    choice = menu.exec_(pos)
-                    if choice == remove_it:
-                        self.figure.del_prim(ind)
-                    elif choice == eddit_it:
-                        self.figure.mod_prim(ind)
-                    elif choice is not None:
-                        direction = expand_to.index(choice.text())
-                        alreadyExpand = self.figure.shape[ind].binds[direction]
-                        if alreadyExpand:
-                            msg = QMessageBox()
-                            msg.setIcon(QMessageBox.Critical)
-                            msg.setText("Пока нельзя надстраивать"
-                                        " два примитива с одной стороны")
-                            msg.exec_()
-                        else:
-                            self.figure.expand(ind, direction)
-                else:
-                    menu = QMenu(self)
-                    add = menu.addAction("Добавить примитив")
-                    pos = self.mapToGlobal(e.pos())
-                    pos.setX(pos.x() + 5)
-                    choice = menu.exec_(pos)
-                    if choice == add:
-                        self.figure.new_figure()
+        if e.button() != QtCore.Qt.RightButton:
+            return
+
+        x = e.x() - OFFSET_X
+        y = e.y() - OFFSET_Y
+        canvas = self.canvas_figure.frameGeometry()
+        min_x, min_y, max_x, max_y = canvas.getCoords()
+        if not (min_x < x and x < max_x and min_y < y and y < max_y):
+            return
+
+        dx, dy = self.getCanvasSize()
+        ind = self.figure.click(x, y, dx, dy)
+        menu = QMenu(self)
+        pos = self.mapToGlobal(e.pos())
+        pos.setX(pos.x() + 5)
+        if ind != -1:
+            remove_it = menu.addAction("Удалить")
+            eddit_it = menu.addAction("Редактировать")
+            expand_it = menu.addMenu("Добавить примитив")
+            expand_to = ["Сверху", "Справа", "Снизу", "Слева"]
+            for txt in expand_to:
+                expand_it.addAction(txt)
+            wipe = menu.addAction("Очистить поле")
+
+            choice = menu.exec_(pos)
+            if choice == remove_it:
+                self.figure.del_prim(ind)
+            elif choice == eddit_it:
+                self.figure.mod_prim(ind)
+            elif choice == wipe:
+                self.figure.clean()
+            elif choice is not None:
+                direction = expand_to.index(choice.text())
+                self.figure.expand(ind, direction)
+        else:
+            add = menu.addAction("Добавить примитив")
+            wipe = menu.addAction("Очистить поле")
+
+            choice = menu.exec_(pos)
+            if choice == add:
+                self.figure.new_figure()
+            elif choice == wipe:
+                self.figure.clean()
 
     def show_prims_dialog(self):
         self.prims_dialog.show(self.figure)
