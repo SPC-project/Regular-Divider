@@ -105,7 +105,7 @@ class Figure(QtCore.QObject):
         dialog.exec_()
         if dialog.result() == 1:
             self.parent_clear.emit()
-            self.adopt_new_figure(*dialog.get_data())
+            self.adopt_new_figure(*dialog.get_data(), ind)
 
     def del_prim(self, id):
         to_del = self.shape[id]
