@@ -7,6 +7,8 @@ Author: Mykolaj Konovalow
 """
 
 import sys
+import logging
+from traceback import format_exception
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5 import uic, QtCore
@@ -151,7 +153,20 @@ class MyWindow(QMainWindow):
         if fname != '':
             self.figure.save_mesh(fname)
 
+
 if __name__ == '__main__':
+    log_format = '[%(asctime)s]  %(message)s'
+    logging.basicConfig(format=log_format, level=logging.ERROR,
+                        filename='errors.log')
+
     app = QApplication(sys.argv)
     window = MyWindow()
+
+    def my_excepthook(type_, value, tback):
+        logging.error(''.join(format_exception(type_, value, tback)))
+        sys.__excepthook__(type_, value, tback)
+        sys.exit()
+
+    sys.excepthook = my_excepthook
+
     sys.exit(app.exec_())
