@@ -3,3 +3,4 @@
 kivy_version/
 *.txt
 *.pmd
+*.log
