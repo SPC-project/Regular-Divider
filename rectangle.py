@@ -469,13 +469,17 @@ class NewRectangleDialog(QDialog):
         self.width.setValue(rectangle.width)
         self.height.setValue(rectangle.height)
 
-        Nleft, Ntop, Nright, Nbottom, Nx, Ny = rectangle.mesh
-        self.air_left.setValue(Nleft)
+        Ntop, Nright, Nbottom, Nleft, Nx, Ny = rectangle.mesh
+        air = (Ntop, Nright, Nbottom, Nleft)
         self.Nx.setValue(Nx)
-        self.air_right.setValue(Nright)
-        self.air_top.setValue(Ntop)
         self.Ny.setValue(Ny)
-        self.air_bottom.setValue(Nbottom)
+
+        dlg = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+        for i in range(4):
+            dlg[i].setValue(air[i])
+            if rectangle.binds[i]:
+                dlg[i].hide()
+
         if Nleft != Nright or Ntop != Nbottom or Nleft != Ntop:
             self.manual_air.setChecked(True)
 
