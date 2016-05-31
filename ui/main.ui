@@ -69,6 +69,8 @@
     <addaction name="wipe_world"/>
     <addaction name="save_world"/>
     <addaction name="save_world_as"/>
+    <addaction name="separator"/>
+    <addaction name="shut_app_down"/>
    </widget>
    <widget class="QMenu" name="Figure">
     <property name="title">
@@ -127,6 +129,11 @@
   <action name="save_world_as">
    <property name="text">
     <string>Сохранить как</string>
+   </property>
+  </action>
+  <action name="shut_app_down">
+   <property name="text">
+    <string>Выйти</string>
    </property>
   </action>
  </widget>

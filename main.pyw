@@ -37,15 +37,19 @@ class MyWindow(QMainWindow):
         size_tip = QLabel()
         self.statusbar.addPermanentWidget(size_tip)
         self.prims_dialog = PrimitivesListDialog()
-
-        self.edit_figure.triggered.connect(self.show_prims_dialog)
-        self.sig_update.connect(self.updating)
-        self.sig_clear.connect(self.clearing)
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
+
+        self.wipe_world.triggered.connect(self.clean)
         self.save_world.triggered.connect(self.save)
         self.save_world_as.triggered.connect(self.save_as)
+        self.shut_app_down.triggered.connect(self.close)
+
         self.add_rectangle.triggered.connect(self.figure.new_figure)
-        self.wipe_world.triggered.connect(self.clean)
+        self.edit_figure.triggered.connect(self.show_prims_dialog)
+        self.create_world.triggered.connect(self.figure.create_space)
+
+        self.sig_update.connect(self.updating)
+        self.sig_clear.connect(self.clearing)
         self.show()
 
     def clean(self):
@@ -144,7 +148,8 @@ class MyWindow(QMainWindow):
     def save_as(self):
         fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
                                             '', "Text files (*.pmd)")[0]
-        self.figure.save_mesh(fname)
+        if fname != '':
+            self.figure.save_mesh(fname)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
