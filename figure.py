@@ -100,6 +100,7 @@ class Figure(QtCore.QObject):
 
     def mod_prim(self, ind):
         dialog = NewRectangleDialog()
+        print(self.shape[ind].x, self.shape[ind].y)
         dialog.set_data(self.shape[ind])
         dialog.x.setFocus()
         dialog.exec_()
