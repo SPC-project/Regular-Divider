@@ -1,2 +1,2 @@
-v0.0.1
-Simply want check the program's version check mechanism
+v0.1
+Первая версия с проверкой обновлений
