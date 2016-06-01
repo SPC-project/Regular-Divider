@@ -10,7 +10,7 @@ import sys
 import logging
 from traceback import format_exception
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
@@ -153,6 +153,12 @@ class MyWindow(QMainWindow):
         if fname != '':
             self.figure.save_mesh(fname)
 
+    def shit_happens(self):
+        msg = QMessageBox(QMessageBox.Critical, "Крепитесь!", '')
+        msg.setText("Непоправимое произошло...\nПриложение будет закрыто.\n"
+                    "Данные об ошибке записаны в errors.log")
+        msg.exec_()
+        sys.exit()
 
 if __name__ == '__main__':
     log_format = '[%(asctime)s]  %(message)s'
@@ -164,8 +170,8 @@ if __name__ == '__main__':
 
     def my_excepthook(type_, value, tback):
         logging.error(''.join(format_exception(type_, value, tback)))
+        window.shit_happens()
         sys.__excepthook__(type_, value, tback)
-        sys.exit()
 
     sys.excepthook = my_excepthook
 
