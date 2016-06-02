@@ -1,5 +1,5 @@
 from PyQt5 import uic, QtCore
-from PyQt5.QtWidgets import QDialog, QMessageBox, QMenu
+from PyQt5.QtWidgets import QDialog, QMessageBox
 from rectangle import Rectangle, NewRectangleDialog
 
 SPACING = 5
@@ -105,17 +105,18 @@ class Figure(QtCore.QObject):
         dialog.exec_()
         if dialog.result() == 1:
             self.parent_clear.emit()
-            self.adopt_new_figure(*dialog.get_data(), ind)
+            fig, mesh = dialog.get_data()
+            self.adopt_new_figure(fig, mesh, ind)
 
-    def del_prim(self, id):
-        to_del = self.shape[id]
+    def del_prim(self, ind):
+        to_del = self.shape[ind]
         for prim in self.shape:
             for i in range(4):
                 if prim.binds[i] == to_del:
                     prim.binds[i] = None
                     continue
 
-        del self.shape[id]
+        del self.shape[ind]
         self.parent_clear.emit()
         self.parent_update.emit()
 
@@ -126,7 +127,6 @@ class Figure(QtCore.QObject):
         self.shape.sort(key=lambda prim: prim.start_x)
         self.shape.sort(key=lambda prim: prim.start_y)
         node_index = 0
-        elements = 0
 
         f = open(filename, 'w')
         f.write("[settings]\n")
@@ -155,7 +155,7 @@ class Figure(QtCore.QObject):
 
         unique_sewing_nodes = set(sewing_nodes)
         sewing_nodes = list(unique_sewing_nodes)
-        sewing_nodes.sort(key = lambda node: node[0] )
+        sewing_nodes.sort(key=lambda node: node[0])
         for node in sewing_nodes:
             f.write("{} {}\n".format(node[1], node[2]))
 
@@ -181,48 +181,18 @@ class Figure(QtCore.QObject):
 
         self.send_message("Фигура сохранена")
 
-    def click(self, x, y, canvas_width, canvas_height, menu, pos):
+    def click_over(self, x, y, canvas_width, canvas_height):
         x = self.start_x + x * self.world_size/canvas_width
         y = self.start_y + y * self.world_size/canvas_height
-        for prim in self.shape:
+        for i, prim in enumerate(self.shape):
             if prim.x < x and x < prim.x + prim.width:
                 if prim.y < y and y < prim.y + prim.height:
-                    self.prim_context_menu(prim, menu, pos)
-                    return
+                    return i
 
-        self.context_menu(menu, pos)
+        return -1
 
-    def context_menu(self, menu, pos):
-        add = menu.addAction("Добавить примитив")
-        wipe = menu.addAction("Очистить поле")
-
-        choice = menu.exec_(pos)
-        if choice == add:
-            self.new_figure()
-        elif choice == wipe:
-            self.clean()
-
-    def prim_context_menu(self, prim, menu, pos):
-        remove_it = menu.addAction("Удалить")
-        eddit_it = menu.addAction("Редактировать")
-        expand_it = menu.addMenu("Добавить примитив")
-        expand_to = ["Сверху", "Справа", "Снизу", "Слева"]
-        for txt in expand_to:
-            expand_it.addAction(txt)
-        wipe = menu.addAction("Очистить поле")
-
-        choice = menu.exec_(pos)
-        if choice == remove_it:
-            self.del_prim(self.shape.index(prim))
-        elif choice == eddit_it:
-            self.mod_prim(self.shape.index(prim))
-        elif choice == wipe:
-            self.clean()
-        elif choice is not None:
-            direction = expand_to.index(choice.text())
-            self.expand(prim, direction)
-
-    def expand(self, prim, side_code):
+    def expand(self, ind, side_code):
+        prim = self.shape[ind]
         alreadyExpand = prim.binds[side_code]
         if alreadyExpand:
             msg = QMessageBox()

@@ -147,10 +147,37 @@ class MyWindow(QMainWindow):
             return
 
         menu = QMenu(self)
+        s = self
+        # self.prim_n* defined in ui/main.ui
+        actions = [s.prim_del, s.prim_edit, s.prim_nt, s.prim_nr, s.prim_nb,
+                   s.prim_nl, s.wipe_world, s.add_rectangle]
+
+        dx, dy = self.getCanvasSize()
+        target_ind = self.figure.click_over(x, y, dx, dy)
+        if target_ind != -1:
+            menu.addAction(actions[0])
+            menu.addAction(actions[1])
+            expand = menu.addMenu("Добавить примитив")
+            expand.addAction(actions[2])
+            expand.addAction(actions[3])
+            expand.addAction(actions[4])
+            expand.addAction(actions[5])
+            menu.addAction(actions[6])
+        else:
+            menu.addAction(actions[7])  # new rectangle
+            menu.addAction(actions[6])  # delete all
+
         pos = self.mapToGlobal(e.pos())
         pos.setX(pos.x() + 5)
-        dx, dy = self.getCanvasSize()
-        self.figure.click(x, y, dx, dy, menu, pos)
+        selected_act = menu.exec_(pos)
+        if selected_act:
+            act_ind = actions.index(selected_act)
+            if act_ind == 0:
+                self.figure.del_prim(target_ind)
+            elif act_ind == 1:
+                self.figure.mod_prim(target_ind)
+            elif act_ind > 1 and act_ind < 6:
+                self.figure.expand(target_ind, act_ind-2)
 
     def show_prims_dialog(self):
         self.prims_dialog.show(self.figure)
@@ -180,8 +207,8 @@ class MyWindow(QMainWindow):
 
 def my_excepthook(type_, value, tback):
     logging.error(''.join(format_exception(type_, value, tback)))
-    window.shit_happens()
     sys.__excepthook__(type_, value, tback)
+    window.shit_happens()
 
 
 def check_updates(recall):

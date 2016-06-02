@@ -10,6 +10,9 @@
     <height>473</height>
    </rect>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::ActionsContextMenu</enum>
+  </property>
   <property name="windowTitle">
    <string>d42do</string>
   </property>
@@ -86,54 +89,119 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="add_rectangle">
+   <property name="icon">
+    <iconset theme="list-add"/>
+   </property>
    <property name="text">
     <string>Добавить прямоугольник</string>
    </property>
   </action>
   <action name="create_world">
+   <property name="icon">
+    <iconset theme="document-new"/>
+   </property>
    <property name="text">
     <string>Задать рабочее пространство</string>
    </property>
   </action>
   <action name="save_world">
+   <property name="icon">
+    <iconset theme="document-save"/>
+   </property>
    <property name="text">
     <string>Сохранить</string>
    </property>
-  </action>
-  <action name="action_2">
-   <property name="checkable">
-    <bool>false</bool>
+   <property name="iconText">
+    <string>Ctrl+S</string>
    </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>                     Примитивы:</string>
-   </property>
-  </action>
-  <action name="empty">
-   <property name="text">
-    <string>Фигура пуста</string>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="edit_figure">
+   <property name="icon">
+    <iconset theme="document-properties"/>
+   </property>
    <property name="text">
     <string>Редактировать</string>
    </property>
   </action>
   <action name="wipe_world">
+   <property name="icon">
+    <iconset theme="edit-delete"/>
+   </property>
    <property name="text">
     <string>Очистить</string>
    </property>
   </action>
   <action name="save_world_as">
+   <property name="icon">
+    <iconset theme="document-save-as"/>
+   </property>
    <property name="text">
     <string>Сохранить как</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
   </action>
   <action name="shut_app_down">
+   <property name="icon">
+    <iconset theme="application-exit"/>
+   </property>
    <property name="text">
     <string>Выйти</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="prim_del">
+   <property name="icon">
+    <iconset theme="list-remove"/>
+   </property>
+   <property name="text">
+    <string>Удалить</string>
+   </property>
+  </action>
+  <action name="prim_edit">
+   <property name="icon">
+    <iconset theme="document-properties"/>
+   </property>
+   <property name="text">
+    <string>Редактировать</string>
+   </property>
+  </action>
+  <action name="prim_nt">
+   <property name="icon">
+    <iconset theme="go-top"/>
+   </property>
+   <property name="text">
+    <string>Сверху</string>
+   </property>
+  </action>
+  <action name="prim_nr">
+   <property name="icon">
+    <iconset theme="go-last"/>
+   </property>
+   <property name="text">
+    <string>Справа</string>
+   </property>
+  </action>
+  <action name="prim_nb">
+   <property name="icon">
+    <iconset theme="go-bottom"/>
+   </property>
+   <property name="text">
+    <string>Снизу</string>
+   </property>
+  </action>
+  <action name="prim_nl">
+   <property name="icon">
+    <iconset theme="go-first"/>
+   </property>
+   <property name="text">
+    <string>Слева</string>
    </property>
   </action>
  </widget>

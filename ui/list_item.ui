@@ -32,7 +32,10 @@
         </size>
        </property>
        <property name="text">
-        <string>x</string>
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset theme="edit-clear"/>
        </property>
       </widget>
      </item>
