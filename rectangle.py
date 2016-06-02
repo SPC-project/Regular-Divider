@@ -259,11 +259,7 @@ class Rectangle:
 
         he = self.binds[NAB]
         dx = self.step_x  # step_y should be same
-        end_self = self.start_x + self.element_count_w * dx
         end_he = he.start_x + he.element_count_w * dx
-
-        W_self = self.element_count_w  # here element_count_w fine
-        W_he = he.element_count_w + 1  # need nodes_count_w, actually
 
         fig_start_self = self.start_x + self.mesh[NAL]*dx
         fig_end_self = fig_start_self + self.mesh[NX]*dx
@@ -494,7 +490,7 @@ class NewRectangleDialog(QDialog):
         Nright = self.air_right.value()
         Nbottom = self.air_bottom.value()
         Nleft = self.air_left.value()
-        if not self.manual_air.isChecked():
+        if not self.manual_air.isChecked():  # use same air for all edges
             if self.watched_node == 2:
                 hold = Nleft
             else:
@@ -526,21 +522,25 @@ class NewRectangleDialog(QDialog):
         oppos_pos = [prim.y, prim.x + prim.width, prim.y + prim.height, prim.y]
         prim_dim = [prim.width, prim.height]
         prim_stp = [prim.step_x, prim.step_y]
+        prim_bounds = [(prim.y, prim.y + prim.height),
+                       (prim.x, prim.x + prim.width)]
 
         myPos = side_code % 2
         opposite_side = (side_code+2) % 4
 
         pos[not myPos].setValue(oppos_pos[side_code])
         pos[not myPos].setEnabled(False)
-        air[opposite_side].hide()
         pos[myPos].setValue(prim_pos[myPos])
         pos[myPos].setSingleStep(prim_stp[myPos])
+        air[opposite_side].hide()
         dim[myPos].setValue(prim_dim[myPos])
         dim[myPos].setSingleStep(prim_stp[myPos])
         dim[not myPos].setValue(prim_stp[not myPos])  # helpful to keep scale
-        fig[myPos].setValue(prim.mesh[myPos + 4])  # x - 4, y - 5
+        fig[myPos].setValue(prim.mesh[myPos + 4])  # mesh[4] is x
         fig[myPos].setEnabled(False)
         self.wath_node(fig[myPos], prim_stp[myPos])
+        con_min, con_max = prim_bounds[myPos]
+        self.wath_connection(pos[myPos], con_min, con_max, myPos == 1)
 
         if side_code == 2:  # air_top was default, but now it disabled
             self.air_left.setEnabled(True)
@@ -558,3 +558,20 @@ class NewRectangleDialog(QDialog):
         else:
             Nk = self.Ny
         Nk.setValue(int(dk/self.dezired_step))
+
+    def wath_connection(self, connected_side_coor, min_, max_, isVert):
+        connected_side_coor.setMaximum(max_)
+        self.allowed_min = min_
+        if isVert:
+            connected_side_coor.setMinimum(min_ - self.height.value())
+            self.height.valueChanged.connect(self.update_wathed_connection)
+        else:
+            connected_side_coor.setMinimum(min_ - self.width.value())
+            self.width.valueChanged.connect(self.update_wathed_connection)
+
+    def update_wathed_connection(self, length):
+        if self.watched_node % 2 == 1:
+            coor = self.y
+        else:
+            coor = self.x
+        coor.setMinimum(self.allowed_min - length)
