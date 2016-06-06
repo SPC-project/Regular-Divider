@@ -522,8 +522,8 @@ class NewRectangleDialog(QDialog):
         oppos_pos = [prim.y, prim.x + prim.width, prim.y + prim.height, prim.y]
         prim_dim = [prim.width, prim.height]
         prim_stp = [prim.step_x, prim.step_y]
-        prim_bounds = [(prim.y, prim.y + prim.height),
-                       (prim.x, prim.x + prim.width)]
+        prim_bounds = [(prim.x, prim.x + prim.width),
+                       (prim.y, prim.y + prim.height)]
 
         myPos = side_code % 2
         opposite_side = (side_code+2) % 4

@@ -90,7 +90,8 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="add_rectangle">
    <property name="icon">
-    <iconset theme="list-add"/>
+    <iconset theme="list-add">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Добавить прямоугольник</string>
@@ -98,7 +99,8 @@
   </action>
   <action name="create_world">
    <property name="icon">
-    <iconset theme="document-new"/>
+    <iconset theme="document-new">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Задать рабочее пространство</string>
@@ -106,7 +108,8 @@
   </action>
   <action name="save_world">
    <property name="icon">
-    <iconset theme="document-save"/>
+    <iconset theme="document-save">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Сохранить</string>
@@ -120,7 +123,8 @@
   </action>
   <action name="edit_figure">
    <property name="icon">
-    <iconset theme="document-properties"/>
+    <iconset theme="document-properties">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Редактировать</string>
@@ -128,7 +132,8 @@
   </action>
   <action name="wipe_world">
    <property name="icon">
-    <iconset theme="edit-delete"/>
+    <iconset theme="edit-delete">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Очистить</string>
@@ -136,7 +141,8 @@
   </action>
   <action name="save_world_as">
    <property name="icon">
-    <iconset theme="document-save-as"/>
+    <iconset theme="document-save-as">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Сохранить как</string>
@@ -147,7 +153,8 @@
   </action>
   <action name="shut_app_down">
    <property name="icon">
-    <iconset theme="application-exit"/>
+    <iconset theme="application-exit">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Выйти</string>
@@ -158,7 +165,8 @@
   </action>
   <action name="prim_del">
    <property name="icon">
-    <iconset theme="list-remove"/>
+    <iconset theme="list-remove">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Удалить</string>
@@ -166,7 +174,8 @@
   </action>
   <action name="prim_edit">
    <property name="icon">
-    <iconset theme="document-properties"/>
+    <iconset theme="document-properties">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Редактировать</string>
@@ -174,7 +183,8 @@
   </action>
   <action name="prim_nt">
    <property name="icon">
-    <iconset theme="go-top"/>
+    <iconset theme="go-top">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Сверху</string>
@@ -182,7 +192,8 @@
   </action>
   <action name="prim_nr">
    <property name="icon">
-    <iconset theme="go-last"/>
+    <iconset theme="go-last">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Справа</string>
@@ -190,7 +201,8 @@
   </action>
   <action name="prim_nb">
    <property name="icon">
-    <iconset theme="go-bottom"/>
+    <iconset theme="go-bottom">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Снизу</string>
@@ -198,7 +210,8 @@
   </action>
   <action name="prim_nl">
    <property name="icon">
-    <iconset theme="go-first"/>
+    <iconset theme="go-first">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Слева</string>
