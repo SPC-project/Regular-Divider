@@ -467,8 +467,8 @@ class NewRectangleDialog(QDialog):
 
         Ntop, Nright, Nbottom, Nleft, Nx, Ny = rectangle.mesh
         air = (Ntop, Nright, Nbottom, Nleft)
-        self.Nx.setValue(Nx)
-        self.Ny.setValue(Ny)
+        self.Nx.setValue(Nx+1)  # convert back from blocks to nodes
+        self.Ny.setValue(Ny+1)
 
         dlg = [self.air_top, self.air_right, self.air_bottom, self.air_left]
         for i in range(4):
@@ -484,9 +484,9 @@ class NewRectangleDialog(QDialog):
         y = self.y.value()
         width = self.width.value()
         height = self.height.value()
-        Nx = self.Nx.value()
-        Ny = self.Ny.value()
-        Ntop = self.air_top.value()
+        Nx = self.Nx.value() - 1  # '-1': proceed in blocks, not nodes
+        Ny = self.Ny.value() - 1
+        Ntop = self.air_top.value()  # no '-1' because 1 node belong to figure
         Nright = self.air_right.value()
         Nbottom = self.air_bottom.value()
         Nleft = self.air_left.value()

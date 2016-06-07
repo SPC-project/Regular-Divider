@@ -34,7 +34,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>309</width>
+     <width>310</width>
      <height>171</height>
     </rect>
    </property>
@@ -59,6 +59,12 @@
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
+        <property name="minimum">
+         <double>-1000.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
+        </property>
        </widget>
       </item>
      </layout>
@@ -80,6 +86,12 @@
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
+        <property name="minimum">
+         <double>-1000.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
+        </property>
        </widget>
       </item>
      </layout>
@@ -89,7 +101,7 @@
       <item>
        <widget class="QLabel" name="label_Ny">
         <property name="text">
-         <string>Элементов
+         <string>Узлов
  по Y</string>
         </property>
         <property name="alignment">
@@ -103,7 +115,7 @@
          <set>Qt::AlignCenter</set>
         </property>
         <property name="minimum">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="maximum">
          <number>1000</number>
@@ -129,6 +141,9 @@
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
+        </property>
        </widget>
       </item>
      </layout>
@@ -138,7 +153,7 @@
       <item>
        <widget class="QLabel" name="label_Nx">
         <property name="text">
-         <string>Элементов
+         <string>Узлов
 по X</string>
         </property>
         <property name="alignment">
@@ -152,7 +167,7 @@
          <set>Qt::AlignCenter</set>
         </property>
         <property name="minimum">
-         <number>1</number>
+         <number>2</number>
         </property>
         <property name="maximum">
          <number>1000</number>
@@ -177,6 +192,9 @@
        <widget class="QDoubleSpinBox" name="width">
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+        <property name="maximum">
+         <double>1000.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -277,14 +295,14 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>320</x>
+     <x>340</x>
      <y>0</y>
-     <width>161</width>
+     <width>121</width>
      <height>51</height>
     </rect>
    </property>
    <property name="text">
-    <string>Воздушных элементов:</string>
+    <string>Воздушных узлов:</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="manual_air">
