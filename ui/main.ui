@@ -82,6 +82,9 @@
     <addaction name="add_rectangle"/>
     <addaction name="edit_figure"/>
     <addaction name="separator"/>
+    <addaction name="import_figure"/>
+    <addaction name="export_figure"/>
+    <addaction name="separator"/>
     <addaction name="create_world"/>
    </widget>
    <addaction name="File"/>
@@ -215,6 +218,22 @@
    </property>
    <property name="text">
     <string>Слева</string>
+   </property>
+  </action>
+  <action name="import_figure">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
+   <property name="text">
+    <string>Импортировать фигуру</string>
+   </property>
+  </action>
+  <action name="export_figure">
+   <property name="icon">
+    <iconset theme="accessories-text-editor"/>
+   </property>
+   <property name="text">
+    <string>Экспортировать фигуру</string>
    </property>
   </action>
  </widget>

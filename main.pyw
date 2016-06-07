@@ -52,6 +52,8 @@ class MyWindow(QMainWindow):
         self.save_world.triggered.connect(self.save)
         self.save_world_as.triggered.connect(self.save_as)
         self.shut_app_down.triggered.connect(self.close)
+        self.import_figure.triggered.connect(self.pre_import)
+        self.export_figure.triggered.connect(self.pre_export)
 
         self.add_rectangle.triggered.connect(self.figure.new_figure)
         self.edit_figure.triggered.connect(self.show_prims_dialog)
@@ -102,11 +104,12 @@ class MyWindow(QMainWindow):
         mesh_canvas = QPainter(self.canvas_mesh_buffer)
         dx, dy = self.getCanvasSize()
         self.figure.redraw(canvas, dx, dy, mesh_canvas)
-        self.update()
+        self.repaint()
 
     def clearing(self):
         self.canvas_figure_buffer.fill(BLANK)
         self.canvas_mesh_buffer.fill(BLANK)
+        print("cleared")
 
     def keyPressEvent(self, e):
         needRefresh = False
@@ -203,6 +206,18 @@ class MyWindow(QMainWindow):
                           'Regular-Divider">обновление!</a>')
         self.msg.setOpenExternalLinks(True)
         self.statusbar.addWidget(self.msg)
+
+    def pre_import(self):
+        fname = QFileDialog.getOpenFileName(self, 'Открыть...', './samples',
+                                            "Text files (*.d42do)")[0]
+        if fname != '':
+            self.figure.importing(fname)
+
+    def pre_export(self):
+        fname = QFileDialog.getSaveFileName(self, 'Открыть...', './samples',
+                                            "Text files (*.d42do)")[0]
+        if fname != '':
+            self.figure.exporting(fname)
 
 
 def my_excepthook(type_, value, tback):

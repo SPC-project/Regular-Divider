@@ -31,7 +31,7 @@ class Figure(QtCore.QObject):
         self.world_size = 0
         self.start_x = 0
         self.start_y = 0
-        self.shape = list()
+        self.shape.clear()
         self.parent_clear.emit()
         self.parent_update.emit()
 
@@ -214,3 +214,51 @@ class Figure(QtCore.QObject):
             new_prim.shave_air((side_code+2) % 4, prim)  # shave opposite side
             self.parent_clear.emit()
             self.parent_update.emit()
+
+    def exporting(self, filename):
+        if len(self.shape) == 1:
+            self.send_message("Экспортировать нечего: фигура пуста")
+            return
+
+        with open(filename, 'w') as f:
+            for prim in self.shape:
+                x = prim.x
+                y = prim.y
+                w = prim.width
+                h = prim.height
+                f.write("{} {} {} {} ".format(x, y, w, h))
+                f.write("{} {} {} {} {} {}\n".format(*prim.mesh))
+
+            f.write("# connections\n")
+            for prim in self.shape:
+                for side in prim.binds:
+                    if side:
+                        f.write("{} ".format(self.shape.index(side)))
+                    else:
+                        f.write("-1 ")
+                f.write("\n")
+
+    def importing(self, filename):
+        self.shape.clear()
+        with open(filename, 'r') as f:
+            rectangles_still = True
+            shift = 0
+            for i, line in enumerate(f.readlines()):
+                if line[0:1] == '#':
+                    rectangles_still = False
+                    shift = i+1
+                    continue
+
+                data = line.split(' ')
+                if rectangles_still:
+                    fig = tuple(float(d) for d in data[0:4])
+                    mesh = list(int(i) for i in data[4:10])
+                    self.adopt_new_figure(fig, mesh)
+                else:
+                    for side, code in enumerate(data[:-1]):  # last is '\n'
+                        code = int(code)
+                        if code != -1:
+                            neighbour = self.shape[code]
+                            self.shape[i-shift].shave_air(side, neighbour)
+        self.parent_clear.emit()
+        self.parent_update.emit()
