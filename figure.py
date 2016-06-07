@@ -1,6 +1,7 @@
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from rectangle import Rectangle, NewRectangleDialog
+import math
 
 SPACING = 5
 
@@ -36,8 +37,9 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def update_status(self):
-        self.status.setText("Рабочая область: <b>{:g}x{:g}<\b>".format(
+        self.status.setText("{:g}x{:g}".format(
             self.world_size, self.world_size))
+        self.status.adjustSize()
 
     def send_message(self, text):
         self.message = text
@@ -260,5 +262,34 @@ class Figure(QtCore.QObject):
                         if code != -1:
                             neighbour = self.shape[code]
                             self.shape[i-shift].shave_air(side, neighbour)
+        self.parent_clear.emit()
+        self.parent_update.emit()
+
+    def adjust(self):
+        min_x = float('infinity')
+        min_y = float('infinity')
+        max_x = float('-infinity')
+        max_y = float('-infinity')
+        for prim in self.shape:
+            x0, y0, x1, y1 = prim.get_box()
+            if x0 < min_x:
+                min_x = x0
+            if y0 < min_y:
+                min_y = y0
+            if x1 > max_x:
+                max_x = x1
+            if y1 > max_y:
+                max_y = y1
+
+        self.start_x = min_x - 3
+        self.start_y = min_y - 3
+        max_width = math.ceil(max_x - min_x) + 6
+        max_height = math.ceil(max_y - max_y) + 6
+        if max_width > max_height:
+            self.world_size = max_width
+        else:
+            self.world_size = max_height
+
+        self.update_status()
         self.parent_clear.emit()
         self.parent_update.emit()

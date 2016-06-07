@@ -44,6 +44,11 @@ class Rectangle:
         self.start_x = self.x - self.step_x*mesh[NAL]  # where air start
         self.start_y = self.y - self.step_y*mesh[NAT]
 
+    def get_box(self):
+        end_x = self.x + self.step_x*(self.mesh[NX] + self.mesh[NAR])
+        end_y = self.y + self.step_y*(self.mesh[NY] + self.mesh[NAB])
+        return (self.start_x, self.start_y, end_x, end_y)
+
     def shave_air(self, edge, neighbour):
         if not neighbour:
             raise ValueError("Пропущен второй аргумент (neighbour)")

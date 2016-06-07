@@ -15,7 +15,7 @@ import urllib.request
 import urllib.error
 from traceback import format_exception
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
@@ -42,12 +42,18 @@ class MyWindow(QMainWindow):
         # First call of resizeEvent (call when window create)
         # will initialize a 2 QPixmap buffer
 
-        size_tip = QLabel()
+        size_tip = QPushButton()
+        size_tip.setStyleSheet("QPushButton{ font-weight: bold; }")
+        txt = "Размеры рабочей области.\nПо нажатию масштабирует область"
+        size_tip.setToolTip(txt)
+
         self.msg = None
+        self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
         self.prims_dialog = PrimitivesListDialog()
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
 
+        size_tip.clicked.connect(self.figure.adjust)
         self.wipe_world.triggered.connect(self.clean)
         self.save_world.triggered.connect(self.save)
         self.save_world_as.triggered.connect(self.save_as)
@@ -109,7 +115,6 @@ class MyWindow(QMainWindow):
     def clearing(self):
         self.canvas_figure_buffer.fill(BLANK)
         self.canvas_mesh_buffer.fill(BLANK)
-        print("cleared")
 
     def keyPressEvent(self, e):
         needRefresh = False
