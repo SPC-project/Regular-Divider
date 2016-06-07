@@ -59,21 +59,21 @@ class Rectangle:
     def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
         def pixel_x(n_elements):
             val = shift_x + self.start_x + n_elements*self.step_x
-            return int(val*kx)
+            return int(round(val*kx))
 
         def pixel_y(n_elements):
             val = shift_y + self.start_y + n_elements*self.step_y
-            return int(val*ky)
+            return int(round(val*ky))
 
         self.draw_figure(canvas, shift_x, shift_y, kx, ky)
         self.draw_mesh(mesh_canvas, pixel_x, pixel_y)
 
     def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
         canvas.setPen(Qt.black)
-        x = int((shift_x + self.x)*kx)
-        y = int((shift_y + self.y)*ky)
-        w = int(self.width*kx)
-        h = int(self.height*ky)
+        x = int(round((shift_x + self.x)*kx))
+        y = int(round((shift_y + self.y)*ky))
+        w = int(round(self.width*kx))
+        h = int(round(self.height*ky))
         canvas.drawRect(x, y, w, h)
 
     def draw_mesh(self, canvas, pixel_x, pixel_y):
@@ -452,6 +452,11 @@ class Rectangle:
 
 
 class NewRectangleDialog(QDialog):
+    """
+    Важно: пользователь вводит количество узлов, но программе работать удобнее
+    с "квадратами" (по диагонали которого впоследствии образуется два элемента)
+    Так что при переходе туда-обратно придется прибавлять\отнимать единицу
+    """
     def __init__(self):
         QDialog.__init__(self)
         uic.loadUi('ui/new_rectangle.ui', self)
@@ -541,7 +546,8 @@ class NewRectangleDialog(QDialog):
         dim[myPos].setValue(prim_dim[myPos])
         dim[myPos].setSingleStep(prim_stp[myPos])
         dim[not myPos].setValue(prim_stp[not myPos])  # helpful to keep scale
-        fig[myPos].setValue(prim.mesh[myPos + 4])  # mesh[4] is x
+        nodes_on_axis = prim.mesh[myPos + 4]  # mesh[4] is x
+        fig[myPos].setValue(nodes_on_axis + 1)  # +1 - go back to nodes
         fig[myPos].setEnabled(False)
         self.wath_node(fig[myPos], prim_stp[myPos])
         con_min, con_max = prim_bounds[myPos]
@@ -562,7 +568,7 @@ class NewRectangleDialog(QDialog):
             Nk = self.Nx
         else:
             Nk = self.Ny
-        Nk.setValue(int(dk/self.dezired_step))
+        Nk.setValue(int(round(dk/self.dezired_step)) + 1)
 
     def wath_connection(self, connected_side_coor, min_, max_, isVert):
         connected_side_coor.setMaximum(max_)
