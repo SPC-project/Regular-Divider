@@ -266,6 +266,9 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def adjust(self):
+        if len(self.shape) == 0:
+            return
+
         min_x = float('infinity')
         min_y = float('infinity')
         max_x = float('-infinity')

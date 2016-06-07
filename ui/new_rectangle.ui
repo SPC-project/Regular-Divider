@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>481</width>
+    <width>483</width>
     <height>219</height>
    </rect>
   </property>
@@ -34,7 +34,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>310</width>
+     <width>301</width>
      <height>171</height>
     </rect>
    </property>
@@ -85,6 +85,9 @@
        <widget class="QDoubleSpinBox" name="y">
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+        <property name="suffix">
+         <string/>
         </property>
         <property name="minimum">
          <double>-1000.000000000000000</double>
