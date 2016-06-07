@@ -90,7 +90,7 @@
        <widget class="QLabel" name="label_Ny">
         <property name="text">
          <string>Элементов
- поY</string>
+ по Y</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>

@@ -449,7 +449,7 @@ class Rectangle:
 class NewRectangleDialog(QDialog):
     def __init__(self):
         QDialog.__init__(self)
-        uic.loadUi('ui/new_figure.ui', self)
+        uic.loadUi('ui/new_rectangle.ui', self)
         self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
         self.watched_node = -1
 
