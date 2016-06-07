@@ -44,6 +44,7 @@ class MyWindow(QMainWindow):
 
         size_tip = QPushButton()
         size_tip.setStyleSheet("QPushButton{ font-weight: bold; }")
+        size_tip.setFocusPolicy(QtCore.Qt.NoFocus)  # instead mess with arrows
         txt = "Размеры рабочей области.\nПо нажатию масштабирует область"
         size_tip.setToolTip(txt)
 
@@ -81,6 +82,7 @@ class MyWindow(QMainWindow):
 
     def paintEvent(self, event):
         p = QPainter(self)
+        p.setRenderHint(QPainter.HighQualityAntialiasing)
         # drawPixmap ignore action bar, need shift y-coordinate then
         p.drawPixmap(OFFSET_X, OFFSET_Y, self.canvas_figure_buffer)
         p.drawPixmap(self.canvas_mesh.x(), OFFSET_Y, self.canvas_mesh_buffer)
