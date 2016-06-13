@@ -1,0 +1,40 @@
+(Ставим python3.5)
+sudo add-apt-repository ppa:fkrull/deadsnakes
+sudo apt-get update
+sudo apt-get install python3.5
+sudo apt-get install python3.5-dev
+
+(Обновим ссылку 'python3', чтобы она использовала 5.3 -- может и не понадобиться)
+sudo mv /usr/bin/python3 /usr/bin/python3-old
+sudo ln -s /usr/bin/python3.5 /usr/bin/python3
+
+(Ставим pip)
+wget https://bootstrap.pypa.io/get-pip.py
+sudo python3 get-pip.py
+sudo pip install virtualenv
+virtualenv --prompt="[pyqt5] " pyqt5
+source pyqt5/bin/activate
+pip install -U pip setuptools
+
+(Ставим Qt 5.6)
+wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x86-online.run
+chmod u+x qt-unified-linux-x86-online.run
+./qt-unified-linux-x86-online.run 
+rm qt-unified-linux-x86-online.run
+
+(Sip нужен для сборки)
+wget http://heanet.dl.sourceforge.net/project/pyqt/sip/sip-4.18/sip-4.18.tar.gz
+tar xvzf sip-4.18.tar.gz
+cd sip-4.18/
+python3 configure.py -d ~/dev/envs/pyqt5/lib/python3.5/site-packages/
+make
+sudo checkinstall
+sudo make clean
+cd ..
+rm -rf sip-4.18 sip-4.18.tar.gz
+
+(PyQt 5.6)
+wget https://sourceforge.net/projects/pyqt/files/PyQt5/PyQt-5.6/PyQt5_gpl-5.6.tar.gz
+tar xvzf PyQt5_gpl-5.6.tar.gz
+cd PyQt5_gpl-5.6/
+python3 configure.py --destdir ~/dev/envs/pyqt5/lib/python3.5/site-packages/ --qmake ~/Qt/5.5/gcc/bin/qmake --sip-incdir /usr/include/python3.5/ --disable=QtPositioning
