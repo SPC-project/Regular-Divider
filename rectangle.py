@@ -1,4 +1,5 @@
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt, QPoint, QRect
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QDialog
 from PyQt5 import uic
 
@@ -88,8 +89,9 @@ class Rectangle:
         Y2 = M[NAT] + M[NY]  # start of bottom air layer
         X_NLEN = X2 + M[NAR]
         Y_NLEN = Y2 + M[NAB]
-        COL_AIR = Qt.blue
-        COL_FIG = Qt.green
+        COL_AIR = QColor(0, 0, 255, 127)
+        COL_FIG = Qt.black
+        COL_FIG_INNNER = QColor(0, 0, 0, 64)
         A = QPoint()
         B = QPoint()
 
@@ -138,15 +140,16 @@ class Rectangle:
             B.setY(y)
             A.setX(x)
             for j in range(Y_NLEN):
-                if X1 <= i and i < X2 and Y1 <= j and j < Y2:
-                    canvas.setPen(COL_FIG)
-                else:
-                    canvas.setPen(COL_AIR)
                 A.setY(B.y())
                 x = pixel_x(i+1)
                 y = pixel_y(j+1)
                 B.setX(x)
                 B.setY(y)
+                if X1 <= i and i < X2 and Y1 <= j and j < Y2:
+                    canvas.setPen(COL_FIG)
+                    canvas.fillRect(QRect(A, B), COL_FIG_INNNER)
+                else:
+                    canvas.setPen(COL_AIR)
                 canvas.drawLine(A, B)
 
     def save_indexes(self, f, index_start):

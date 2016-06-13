@@ -6,7 +6,7 @@ Author: Mykolaj Konovalow
     for SPC department of NTU "KhPI"
 """
 
-VERSION = (0, 3, 0)
+VERSION = (0, 3, 1)
 
 import sys
 import logging
@@ -244,8 +244,8 @@ def check_updates(recall):
         '/master/Changelog.txt'
     try:
         changelog = urllib.request.urlopen(ch_url)
-    except (urllib.error.URLError, urllib.errorHTTPError,
-            urllib.ContentTooShortError):
+    except (urllib.error.URLError, urllib.error.HTTPError,
+            urllib.error.ContentTooShortError):
         return
 
     changelog = urllib.request.urlopen(ch_url)

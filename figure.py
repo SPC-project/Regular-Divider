@@ -267,6 +267,7 @@ class Figure(QtCore.QObject):
 
     def adjust(self):
         if len(self.shape) == 0:
+            self.send_message("Нечего масштабировать: фигура пуста")
             return
 
         min_x = float('infinity')
