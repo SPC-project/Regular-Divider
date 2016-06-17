@@ -464,7 +464,7 @@ class NewRectangleDialog(QDialog):
         QDialog.__init__(self)
         uic.loadUi('ui/new_rectangle.ui', self)
         self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
-        self.watched_node = -1
+        self.connection_side = -1
 
     def upd_air_spinboxes(self, value):
         isEnabled = value == 2
@@ -504,7 +504,7 @@ class NewRectangleDialog(QDialog):
         Nbottom = self.air_bottom.value()
         Nleft = self.air_left.value()
         if not self.manual_air.isChecked():  # use same air for all edges
-            if self.watched_node == 2:
+            if self.connection_side == 2:
                 hold = Nleft
             else:
                 hold = Ntop
@@ -514,47 +514,60 @@ class NewRectangleDialog(QDialog):
             Nleft = hold
 
         mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
-        if self.watched_node != -1:
-            mesh[(self.watched_node+2) % 4] = 0
+        if self.connection_side != -1:
+            mesh[(self.connection_side+2) % 4] = 0
 
-        if self.watched_node == 0:
+        if self.connection_side == 0:
             y -= height
-        elif self.watched_node == 3:
+        elif self.connection_side == 3:
+            print("move", x, width)
             x -= width
 
         return (x, y, width, height), mesh,
 
     def for_expanding(self, prim, side_code):
-        self.watched_node = side_code
+        """
+        Расширяем фигуру, пристраивая прямоугольник со стороны side_code к prim
 
+        side_code:
+            0 - вверх
+            1 - справа
+            2 - низ
+            3 - слева
+        """
+        self.connection_side = side_code
         pos = [self.x, self.y]
         dim = [self.width, self.height]
         air = [self.air_top, self.air_right, self.air_bottom, self.air_left]
         fig = [self.Nx, self.Ny]
         prim_pos = [prim.x, prim.y]
-        oppos_pos = [prim.y, prim.x + prim.width, prim.y + prim.height, prim.y]
+        fixed_pos = [prim.y, prim.x + prim.width, prim.y + prim.height, prim.x]
         prim_dim = [prim.width, prim.height]
         prim_stp = [prim.step_x, prim.step_y]
         prim_bounds = [(prim.x, prim.x + prim.width),
                        (prim.y, prim.y + prim.height)]
+        nodes = [prim.mesh[4], prim.mesh[5]]  # mesh[4] is x
 
-        myPos = side_code % 2
-        opposite_side = (side_code+2) % 4
+        free_axis = side_code % 2  # ось, по которой можно двигать примитив
+        to_prim = (side_code+2) % 4  # сторона, с которой находится prim
 
-        pos[not myPos].setValue(oppos_pos[side_code])
-        pos[not myPos].setEnabled(False)
-        pos[myPos].setValue(prim_pos[myPos])
-        pos[myPos].setSingleStep(prim_stp[myPos])
-        air[opposite_side].hide()
-        dim[myPos].setValue(prim_dim[myPos])
-        dim[myPos].setSingleStep(prim_stp[myPos])
-        dim[not myPos].setValue(prim_stp[not myPos])  # helpful to keep scale
-        nodes_on_axis = prim.mesh[myPos + 4]  # mesh[4] is x
-        fig[myPos].setValue(nodes_on_axis + 1)  # +1 - go back to nodes
-        fig[myPos].setEnabled(False)
-        self.wath_node(fig[myPos], prim_stp[myPos])
-        con_min, con_max = prim_bounds[myPos]
-        self.wath_connection(pos[myPos], con_min, con_max, myPos == 1)
+        pos[free_axis].setValue(prim_pos[free_axis])
+        pos[free_axis].setSingleStep(prim_stp[free_axis])
+        pos[not free_axis].setValue(fixed_pos[side_code])
+        pos[not free_axis].setEnabled(False)
+
+        air[to_prim].hide()
+
+        dim[free_axis].setValue(prim_dim[free_axis])
+        dim[free_axis].setSingleStep(prim_stp[free_axis])  # help with scale
+        dim[not free_axis].setValue(prim_stp[not free_axis])
+        dim[not free_axis].setSingleStep(prim_stp[not free_axis])
+
+        fig[free_axis].setValue(nodes[free_axis] + 1)  # +1 - go back to nodes
+        fig[free_axis].setEnabled(False)
+        self.wath_node(fig[free_axis], prim_stp[free_axis])
+        con_min, con_max = prim_bounds[free_axis]
+        self.wath_connection(pos[free_axis], con_min, con_max, free_axis == 1)
 
         if side_code == 2:  # air_top was default, but now it disabled
             self.air_left.setEnabled(True)
@@ -567,7 +580,7 @@ class NewRectangleDialog(QDialog):
             self.height.valueChanged.connect(self.update_wathed_nodes)
 
     def update_wathed_nodes(self, dk):
-        if self.watched_node % 2 == 0:
+        if self.connection_side % 2 == 0:
             Nk = self.Nx
         else:
             Nk = self.Ny
@@ -584,8 +597,9 @@ class NewRectangleDialog(QDialog):
             self.width.valueChanged.connect(self.update_wathed_connection)
 
     def update_wathed_connection(self, length):
-        if self.watched_node % 2 == 1:
+        if self.connection_side % 2 == 1:
             coor = self.y
         else:
             coor = self.x
         coor.setMinimum(self.allowed_min - length)
+
