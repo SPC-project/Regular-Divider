@@ -123,11 +123,54 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def save_mesh(self, filename="temp.pmd"):
+        self.shape.sort(key=lambda prim: prim.start_x)
+        self.shape.sort(key=lambda prim: prim.start_y)
+
+        isRegular = True
+        stp_x = self.shape[0].step_x
+        stp_y = self.shape[0].step_y
+        for prim in self.shape:
+            if stp_x != prim.step_x and stp_y != prim.step_y:
+                isRegular = False
+                break
+
+        if isRegular:
+            self.regular_mesh_saving(filename)
+        else:
+            self.irregular_mesh_saving(filename)
+
+    def regular_mesh_saving(self, filename):
+        min_x = float("inf")
+        min_y = float("inf")
+        max_x = float("-inf")
+        max_y = float("-inf")
+        for prim in self.shape:
+            x, y, X, Y = prim.get_box()
+            if x < min_x:
+                min_x = x
+            if y < min_y:
+                min_y = y
+            if X > max_x:
+                max_x = X
+            if Y > max_y:
+                max_y = Y
+
+        dk = self.shape[0].step_x
+        curr = 0
+        frame_x, frame_y, frame_X, frame_Y = self.shape[curr].get_box()
+        for j in range(int(max_y/dk)):
+            for i in range(int(max_x/dk)):
+                x = min_x + i*dk
+                y = min_y + j*dk
+                horizontal = frame_x <= x and x <= frame_X
+
+            vertical = frame_y <= y and y <= frame_Y
+
+
+    def irregular_mesh_saving(self, filename):
         '''
         Владельцем узлов на стыке двух примитивов считают правый/нижний сосед
         '''
-        self.shape.sort(key=lambda prim: prim.start_x)
-        self.shape.sort(key=lambda prim: prim.start_y)
         node_index = 0
 
         f = open(filename, 'w')

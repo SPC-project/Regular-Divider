@@ -9,6 +9,7 @@ Author: Mykolaj Konovalow
 VERSION = (0, 3, 1)
 
 import sys
+import os
 import logging
 import _thread
 import urllib.request
@@ -228,6 +229,9 @@ class MyWindow(QMainWindow):
 
 
 def my_excepthook(type_, value, tback):
+    """
+    Перехватывает исключения, логгирует их и позволяет уронить програму
+    """
     logging.error(''.join(format_exception(type_, value, tback)))
     sys.__excepthook__(type_, value, tback)
     window.shit_happens()
@@ -236,7 +240,7 @@ def my_excepthook(type_, value, tback):
 def check_updates(recall):
     """
     Get version fresh program from GitHub, compare with self and, if have
-        nevest - propose to update
+        newest - propose to update
 
     First line of Changelog.txt is: v<major>.<minor>.[<revision>]\n
     """
@@ -260,6 +264,16 @@ def check_updates(recall):
     if major > VERSION[0] or minor > VERSION[1] or revision > VERSION[2]:
         recall.emit()
 
+
+def testing():
+    """
+    Запускает вложенные тесты для всех .py-файлов в директории
+    """
+    if os.system("git diff-index --quiet HEAD --") == 256:
+        pass
+        #os.system("mk% python -m unittest discover --start-directory=./test")
+
+
 if __name__ == '__main__':
     log_format = '[%(asctime)s]  %(message)s'
     logging.basicConfig(format=log_format, level=logging.ERROR,
@@ -268,6 +282,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MyWindow()
 
+    _thread.start_new_thread(testing, ())
     _thread.start_new_thread(check_updates, (window.sig_mayUpdate,))
 
     sys.excepthook = my_excepthook

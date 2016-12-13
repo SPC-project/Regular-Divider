@@ -389,70 +389,6 @@ class Rectangle:
                     f.write("0\n")  # Air
                     f.write("0\n")  # Air
 
-    def save(self, f, index_start):
-        """
-        Сохраняем примитив, записывая координаты узлов, индексы вершин
-            элементов и материал узлов/элементов
-
-        Если он с кем-то граничит, то узлы левой/нижней границы отходят
-            соседнему, а правой/верхней - себе. Если какие-то из граничных
-            узлов ни с чем не соприкасаются - их прибавляют себе
-
-        """
-        x_elems = self.element_count_w
-        y_elems = self.element_count_h
-        x_nodes = x_elems
-        y_nodes = y_elems
-
-
-        self.problem_zone_first_index = x_nodes*y_nodes
-        self.index_start = index_start
-
-        M = self.mesh
-        X1 = M[NAL]
-        Y1 = M[NAT]
-        X2 = X1 + M[NX]  # start of right air layer
-        Y2 = Y1 + M[NY]  # start of bottom air layer
-        X_NLEN = X2 + M[NAR]
-        Y_NLEN = Y2 + M[NAB]
-
-        for j in range(Y_NLEN):
-            for i in range(X_NLEN):
-                # +1 because node indexing start from 1, not 0
-                first_ind = index_start + i + j*x_nodes + 1
-                second_ind = index_start + (i+1) + j*x_nodes + 1
-                third_ind = index_start + (i+1) + (j+1)*x_nodes + 1
-                forth_ind = index_start + i + (j+1)*x_nodes + 1
-                f.write("{} {} {}\n".format(first_ind, second_ind, third_ind))
-                f.write("{} {} {}\n".format(first_ind, third_ind, forth_ind))
-
-        for i in range(x_nodes):
-            x = i*self.step_x
-            for j in range(Y_nodes):
-                y = j*self.step_y
-                f.write("{} {}\n".format(x, y))
-
-        for j in range(Y_nodes):
-            in_figure_y = j >= Y1 and j <= Y2
-            for i in range(x_nodes):
-                in_figure_x = i >= X1 and i <= X2
-                if in_figure_x and in_figure_y:
-                    f.write("1\n")  # Figure's flag
-                else:
-                    f.write("0\n")  # Air
-
-        for j in range(Y_NLEN):
-            in_figure_y = j >= Y1 and j < Y2
-            for i in range(X_NLEN):
-                in_figure_x = i >= X1 and i < X2
-                if in_figure_x and in_figure_y:
-                    f.write("1\n")  # Figure's flag
-                    f.write("1\n")  # Figure's flag
-                else:
-                    f.write("0\n")  # Air
-                    f.write("0\n")  # Air
-        return x_elems*y_elems*2, x_nodes*y_nodes
-
 
 class NewRectangleDialog(QDialog):
     """
@@ -602,4 +538,5 @@ class NewRectangleDialog(QDialog):
         else:
             coor = self.x
         coor.setMinimum(self.allowed_min - length)
+
 
