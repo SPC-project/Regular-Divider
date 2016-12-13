@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, QPoint, QRect
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QWidget
 from PyQt5 import uic
 
 NAT = 0
@@ -390,15 +390,16 @@ class Rectangle:
                     f.write("0\n")  # Air
 
 
-class NewRectangleDialog(QDialog):
+class NewRectangleWidget(QWidget):
     """
     Важно: пользователь вводит количество узлов, но программе работать удобнее
     с "квадратами" (по диагонали которого впоследствии образуется два элемента)
     Так что при переходе туда-обратно придется прибавлять\отнимать единицу
     """
     def __init__(self):
-        QDialog.__init__(self)
+        QWidget.__init__(self)
         uic.loadUi('ui/new_rectangle.ui', self)
+        self.x.setFocus()
         self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
         self.connection_side = -1
 
@@ -538,5 +539,3 @@ class NewRectangleDialog(QDialog):
         else:
             coor = self.x
         coor.setMinimum(self.allowed_min - length)
-
-

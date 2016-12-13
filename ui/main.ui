@@ -97,7 +97,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Добавить прямоугольник</string>
+    <string>Добавить примитив</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>

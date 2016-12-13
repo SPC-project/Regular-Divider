@@ -1,6 +1,7 @@
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
-from rectangle import Rectangle, NewRectangleDialog
+from rectangle import Rectangle
+from primitive import NewPrimitiveDialog
 import math
 
 SPACING = 5
@@ -24,7 +25,7 @@ class Figure(QtCore.QObject):
         self.primitive_deletion.connect(self.del_prim)
         self.primitive_modification.connect(self.mod_prim)
 
-        self.nf_dialog = NewRectangleDialog()
+        self.prim_dialog = NewPrimitiveDialog()
 
         self.update_status()
 
@@ -62,11 +63,10 @@ class Figure(QtCore.QObject):
             self.send_message("Рабочая область создана")
 
     def new_figure(self):
-        self.nf_dialog.x.setFocus()
-        self.nf_dialog.exec_()
-        if self.nf_dialog.result() == 1:
+        self.prim_dialog.exec_()
+        if self.prim_dialog.result() == 1:
             self.parent_clear.emit()
-            self.adopt_new_figure(*self.nf_dialog.get_data())
+            self.adopt_new_figure(*self.prim_dialog.get_data())
 
     def adopt_new_figure(self, fig, mesh, primitive_ind=-1):
         resized = False
