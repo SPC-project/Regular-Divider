@@ -399,7 +399,6 @@ class NewRectangleWidget(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         uic.loadUi('ui/new_rectangle.ui', self)
-        self.x.setFocus()
         self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
         self.connection_side = -1
 

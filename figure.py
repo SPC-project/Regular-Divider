@@ -64,6 +64,7 @@ class Figure(QtCore.QObject):
 
     def new_figure(self):
         self.prim_dialog.exec_()
+        self.prim_dialog.grab_focus()
         if self.prim_dialog.result() == 1:
             self.parent_clear.emit()
             self.adopt_new_figure(*self.prim_dialog.get_data())
