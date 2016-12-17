@@ -13,47 +13,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QCheckBox" name="manual_air">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>30</y>
-     <width>88</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>8</pointsize>
-     <italic>true</italic>
-    </font>
-   </property>
-   <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Вручную назначить количество узлов для каждой из сторон&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="text">
-    <string>в ручную</string>
-   </property>
-   <property name="iconSize">
-    <size>
-     <width>16</width>
-     <height>16</height>
-    </size>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>340</x>
-     <y>-10</y>
-     <width>121</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Воздушных узлов:</string>
-   </property>
-  </widget>
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
@@ -230,6 +189,55 @@
     </item>
    </layout>
   </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>0</y>
+     <width>111</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Форма:</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QComboBox" name="comboBox">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+      <item>
+       <property name="text">
+        <string>:.</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>.:</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>˸˙</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>˙˸</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
@@ -239,14 +247,14 @@
      <height>51</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
     <property name="rightMargin">
      <number>0</number>
     </property>
     <item>
      <widget class="QSpinBox" name="air_left">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="maximum">
        <number>1000</number>
@@ -290,6 +298,9 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <widget class="QSpinBox" name="air_top">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
       <property name="maximum">
        <number>1000</number>
       </property>
@@ -311,7 +322,7 @@
     <item>
      <widget class="QSpinBox" name="air_bottom">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="maximum">
        <number>1000</number>
@@ -325,7 +336,7 @@
     <rect>
      <x>300</x>
      <y>0</y>
-     <width>16</width>
+     <width>20</width>
      <height>171</height>
     </rect>
    </property>
@@ -341,11 +352,6 @@
   <tabstop>height</tabstop>
   <tabstop>Nx</tabstop>
   <tabstop>Ny</tabstop>
-  <tabstop>manual_air</tabstop>
-  <tabstop>air_top</tabstop>
-  <tabstop>air_left</tabstop>
-  <tabstop>air_right</tabstop>
-  <tabstop>air_bottom</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -456,7 +456,6 @@ class NewRectangleWidget(QWidget):
         if self.connection_side == 0:
             y -= height
         elif self.connection_side == 3:
-            print("move", x, width)
             x -= width
 
         return (x, y, width, height), mesh,
