@@ -79,7 +79,7 @@
     <property name="title">
      <string>Фигура</string>
     </property>
-    <addaction name="add_rectangle"/>
+    <addaction name="add_primitive"/>
     <addaction name="edit_figure"/>
     <addaction name="separator"/>
     <addaction name="import_figure"/>
@@ -91,7 +91,7 @@
    <addaction name="Figure"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="add_rectangle">
+  <action name="add_primitive">
    <property name="icon">
     <iconset theme="list-add">
      <normaloff>.</normaloff>.</iconset>

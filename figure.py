@@ -63,8 +63,8 @@ class Figure(QtCore.QObject):
             self.send_message("Рабочая область создана")
 
     def new_figure(self):
-        self.prim_dialog.exec_()
         self.prim_dialog.grab_focus()
+        self.prim_dialog.exec_()
         if self.prim_dialog.result() == 1:
             self.parent_clear.emit()
             self.adopt_new_figure(*self.prim_dialog.get_data())
