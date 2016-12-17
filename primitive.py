@@ -15,12 +15,25 @@ class NewPrimitiveDialog(QDialog):
         self.tabWidget.addTab(self.Rectangle_widget, "Прямоугольник")
         self.tabWidget.addTab(self.Triangle_widget, "Треугольник")
 
+        self.tabWidget.currentChanged.connect(self.grab_focus)
+
     def grab_focus(self):
         self.tabWidget.currentWidget().x.setFocus()
 
     def get_data(self):
         curr_tab_index = self.tabWidget.currentIndex()
+        fig = None
+        mesh = None
         if curr_tab_index == 0:
-            return self.Rectangle_widget.get_data()
+            fig, mesh = self.Rectangle_widget.get_data()
         elif curr_tab_index == 1:
-            return self.Triangle_widget.get_data()
+            fig, mesh = self.Triangle_widget.get_data()
+
+        return fig, mesh, curr_tab_index
+
+    def for_expanding(self, prim, side_code):
+        curr_tab_index = self.tabWidget.currentIndex()
+        if curr_tab_index == 0:
+            self.Rectangle_widget.for_expanding(prim, side_code)
+        elif curr_tab_index == 1:
+            return self.Triangle_widget.get_data(prim, side_code)

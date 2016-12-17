@@ -1,6 +1,15 @@
 from PyQt5.QtWidgets import QWidget
 from PyQt5 import uic
 
+class Triangle:
+    """
+    Primitive figure, a rectangle
+    """
+    def __init__(self, fig, mesh):
+        """
+        """
+        self.binds = [None]*4
+        self.modify(fig, mesh)
 
 class NewTriangleWidget(QWidget):
     def __init__(self):

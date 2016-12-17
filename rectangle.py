@@ -458,7 +458,7 @@ class NewRectangleWidget(QWidget):
         elif self.connection_side == 3:
             x -= width
 
-        return (x, y, width, height), mesh,
+        return (x, y, width, height), mesh
 
     def for_expanding(self, prim, side_code):
         """

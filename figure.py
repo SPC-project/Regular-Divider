@@ -1,10 +1,13 @@
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from rectangle import Rectangle
+from triangle import Triangle
 from primitive import NewPrimitiveDialog
 import math
 
-SPACING = 5
+SPACING = 3
+RECT = 0
+TRI = 1
 
 
 class Figure(QtCore.QObject):
@@ -67,9 +70,9 @@ class Figure(QtCore.QObject):
         self.prim_dialog.exec_()
         if self.prim_dialog.result() == 1:
             self.parent_clear.emit()
-            self.adopt_new_figure(*self.prim_dialog.get_data())
+            self.adopt_primitive(*self.prim_dialog.get_data())
 
-    def adopt_new_figure(self, fig, mesh, primitive_ind=-1):
+    def adopt_primitive(self, fig, mesh, prim_type, primitive_ind=-1):
         resized = False
         x, y, w, h = fig
         if x+w > self.world_size:
@@ -80,8 +83,12 @@ class Figure(QtCore.QObject):
             resized = True
 
         if primitive_ind == -1:
-            r = Rectangle(fig, mesh)
-            self.shape.append(r)
+            primitive = None
+            if prim_type == RECT:
+                primitive = Rectangle(fig, mesh)
+            elif prim_type == TRI:
+                primitive = Triangle(fig, mesh)
+            self.shape.append(primitive)
         else:
             self.shape[primitive_ind].modify(fig, mesh)
 
@@ -102,14 +109,14 @@ class Figure(QtCore.QObject):
             primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
 
     def mod_prim(self, ind):
-        dialog = NewRectangleDialog()
+        dialog = NewPrimitiveDialog()
         dialog.set_data(self.shape[ind])
-        dialog.x.setFocus()
+        dialog.grab_focus()
         dialog.exec_()
         if dialog.result() == 1:
             self.parent_clear.emit()
-            fig, mesh = dialog.get_data()
-            self.adopt_new_figure(fig, mesh, ind)
+            fig, mesh, prim_type = dialog.get_data()
+            self.adopt_primitive(fig, mesh, prim_type, ind)
 
     def del_prim(self, ind):
         to_del = self.shape[ind]
@@ -163,10 +170,6 @@ class Figure(QtCore.QObject):
             for i in range(int(max_x/dk)):
                 x = min_x + i*dk
                 y = min_y + j*dk
-                horizontal = frame_x <= x and x <= frame_X
-
-            vertical = frame_y <= y and y <= frame_Y
-
 
     def irregular_mesh_saving(self, filename):
         '''
@@ -248,13 +251,13 @@ class Figure(QtCore.QObject):
             msg.exec_()
             return
 
-        dialog = NewRectangleDialog()
+        dialog = NewPrimitiveDialog()
         dialog.for_expanding(prim, side_code)
-        dialog.x.setFocus()
+        dialog.grab_focus()
         dialog.exec_()
 
         if dialog.result() == 1:
-            self.adopt_new_figure(*dialog.get_data())
+            self.adopt_primitive(*dialog.get_data())
             new_prim = self.shape[-1]
             prim.shave_air(side_code, new_prim)
             new_prim.shave_air((side_code+2) % 4, prim)  # shave opposite side
@@ -299,7 +302,7 @@ class Figure(QtCore.QObject):
                 if rectangles_still:
                     fig = tuple(float(d) for d in data[0:4])
                     mesh = list(int(i) for i in data[4:10])
-                    self.adopt_new_figure(fig, mesh)
+                    self.adopt_primitive(fig, mesh)
                 else:
                     for side, code in enumerate(data[:-1]):  # last is '\n'
                         code = int(code)
@@ -329,10 +332,10 @@ class Figure(QtCore.QObject):
             if y1 > max_y:
                 max_y = y1
 
-        self.start_x = min_x - 3
-        self.start_y = min_y - 3
-        max_width = math.ceil(max_x - min_x) + 6
-        max_height = math.ceil(max_y - max_y) + 6
+        self.start_x = min_x - SPACING
+        self.start_y = min_y - SPACING
+        max_width = math.ceil(max_x - min_x) + SPACING
+        max_height = math.ceil(max_y - max_y) + SPACING
         if max_width > max_height:
             self.world_size = max_width
         else:
