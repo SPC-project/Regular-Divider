@@ -5,7 +5,7 @@ from triangle import Triangle
 from primitive import NewPrimitiveDialog
 import math
 
-SPACING = 3
+SPACING = 5
 RECT = 0
 TRI = 1
 

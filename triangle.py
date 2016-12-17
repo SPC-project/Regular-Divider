@@ -1,7 +1,9 @@
-from PyQt5.QtWidgets import QWidget
-from PyQt5 import uic
+from primitive import AbstractPrimitive
+from PyQt5.QtCore import Qt, QPoint, QRect
+from PyQt5.QtGui import QColor
 
-class Triangle:
+
+class Triangle(AbstractPrimitive):
     """
     Primitive figure, a rectangle
     """
@@ -11,25 +13,52 @@ class Triangle:
         self.binds = [None]*4
         self.modify(fig, mesh)
 
-class NewTriangleWidget(QWidget):
-    def __init__(self):
-        QWidget.__init__(self)
-        uic.loadUi('ui/new_triangle.ui', self)
+    def modify(self, fig, mesh):
+        x, y, width, height = fig
+        self.x, self.y, self.width, self.height = fig
+        Ntop, Nright, Nbottom, Nleft, Nx, Ny, self.triangle_type = mesh
+        self.vertexes = list()
+        if self.triangle_type == 0:
+            self.vertexes.append(QPoint(x, y))
+            self.vertexes.append(QPoint(x+width, y+height))
+            self.vertexes.append(QPoint(x, y+height))
+        elif self.triangle_type == 1:
+            self.vertexes.append(QPoint(x, y+height))
+            self.vertexes.append(QPoint(x+width, y))
+            self.vertexes.append(QPoint(x+width, y+height))
+        elif self.triangle_type == 2:
+            self.vertexes.append(QPoint(x, y))
+            self.vertexes.append(QPoint(x+width, y))
+            self.vertexes.append(QPoint(x, y+height))
+        elif self.triangle_type == 3:
+            self.vertexes.append(QPoint(x, y))
+            self.vertexes.append(QPoint(x+width, y))
+            self.vertexes.append(QPoint(x+width, y+height))
 
-        self.comboBox.currentIndexChanged.connect(self.select_type)
+        self.mesh = mesh
 
-    def select_type(self, index):
-        boxes = [self.air_top, self.air_left, self.air_right, self.air_bottom]
-        states = [False, True, False, True]
-        if index == 1:
-            states = [False, False, True, True]
-        if index == 2:
-            states = [True, True, False, False]
-        if index == 3:
-            states = [True, False, True, False]
+    def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
+        canvas.setPen(Qt.black)
 
-        for i in range(0, 4):
-            boxes[i].setEnabled(states[i])
+        def convert_x(pos_x):
+            return int(round(kx*(shift_x + pos_x)))
 
-    def get_data(self):
+        def convert_y(pos_y):
+            return int(round(ky*(shift_y + pos_y)))
+
+        def convert_line(A, B):
+            start_x = convert_x(A.x())
+            start_y = convert_y(A.y())
+            end_x = convert_x(B.x())
+            end_y = convert_y(B.y())
+            return start_x, start_y, end_x, end_y
+
+        l1 = self.vertexes[0]
+        l2 = self.vertexes[1]
+        l3 = self.vertexes[2]
+        canvas.drawLine(*convert_line(l1, l2))
+        canvas.drawLine(*convert_line(l2, l3))
+        canvas.drawLine(*convert_line(l3, l1))
+
+    def draw_mesh(self, canvas, pixel_x, pixel_y):
         pass
