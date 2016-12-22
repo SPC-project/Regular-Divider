@@ -17,7 +17,7 @@ class Rectangle(AbstractPrimitive):
     def __init__(self, fig, mesh):
         """
         fig: tuple of rectangle - (x, y, width, hegiht)
-        mesh: specify how to divide @fig, list - [NAT, NAR, NAB, NAL, NX, NY]
+        mesh: specify how to divide fig, list - [NAT, NAR, NAB, NAL, NX, NY]
             NAT - how many air elements at the top of @fig
             NAR - air elements at right
             NAB - air elements at bottom
@@ -26,28 +26,13 @@ class Rectangle(AbstractPrimitive):
             NY - count of fig's elements by height
         """
         self.binds = [None]*4
-        self.modify(fig, mesh)
+        super(Rectangle, self).__init__(fig, mesh)
 
-    def modify(self, fig, mesh):
-        self.x, self.y, self.width, self.height = fig
-        self.mesh = mesh
-
+    def modify(self):
         # if has connection to another Rectangles, 'shave' that edge from air
         for i in range(4):
             if self.binds[i]:
                 self.mesh[i] = 0
-
-        self.element_count_w = mesh[NAL] + mesh[NX] + mesh[NAR]
-        self.element_count_h = mesh[NAT] + mesh[NY] + mesh[NAB]
-        self.step_x = self.width/mesh[NX]
-        self.step_y = self.height/mesh[NY]
-        self.start_x = self.x - self.step_x*mesh[NAL]  # where air start
-        self.start_y = self.y - self.step_y*mesh[NAT]
-
-    def get_box(self):
-        end_x = self.x + self.step_x*(self.mesh[NX] + self.mesh[NAR])
-        end_y = self.y + self.step_y*(self.mesh[NY] + self.mesh[NAB])
-        return (self.start_x, self.start_y, end_x, end_y)
 
     def shave_air(self, edge, neighbour):
         if not neighbour:
@@ -257,9 +242,9 @@ class Rectangle(AbstractPrimitive):
         end_he = he.start_x + he.element_count_w * dx
 
         fig_start_self = self.start_x + self.mesh[NAL]*dx
-        fig_end_self = fig_start_self + self.mesh[NX]*dx
+        fig_end_self = fig_start_self + self.mesh[NAT]*dx
         fig_start_he = he.start_x + he.mesh[NAL]*dx
-        fig_end_he = fig_start_he + he.mesh[NX]*dx
+        fig_end_he = fig_start_he + he.mesh[NAT]*dx
 
         SEW_Y = self.start_y + self.element_count_h*self.step_y
         offset_self = (self.element_count_w+1)*(self.element_count_h-1)
@@ -375,5 +360,3 @@ class Rectangle(AbstractPrimitive):
                 else:
                     f.write("0\n")  # Air
                     f.write("0\n")  # Air
-
-

@@ -1,8 +1,11 @@
 from PyQt5.QtWidgets import QDialog
 from PyQt5 import uic
+
 from primitive_dialogues import NewRectangleWidget
 from primitive_dialogues import NewTriangleWidget
+
 import abc
+
 
 class NewPrimitiveDialog(QDialog):
     def __init__(self):
@@ -39,19 +42,40 @@ class NewPrimitiveDialog(QDialog):
             return self.Triangle_widget.get_data(prim, side_code)
 
 
+NAT = 0
+NAR = 1
+NAB = 2
+NAL = 3
+NX = 4
+NY = 5
+
+
 class AbstractPrimitive:
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, fig, mesh):
-        self.modify(fig, mesh)
+        self.x, self.y, self.width, self.height = fig
+        self.mesh = mesh
+
+        self.element_count_w = mesh[NAL] + mesh[NAT] + mesh[NAR]
+        self.element_count_h = mesh[NAT] + mesh[NY] + mesh[NAB]
+        self.step_x = self.width/mesh[NAT]
+        self.step_y = self.height/mesh[NY]
+        self.start_x = self.x - self.step_x*mesh[NAL]  # where air start
+        self.start_y = self.y - self.step_y*mesh[NAT]
+        width = self.mesh[NX] + self.mesh[NAR]
+        height = self.mesh[NY] + self.mesh[NAB]
+        self.end_x = self.x + self.step_x*width
+        self.end_y = self.y + self.step_y*(height)
+
+        self.modify()
 
     @abc.abstractmethod
-    def modify(self, fig, mesh):
+    def modify(self):
         pass
 
-    @abc.abstractmethod
     def get_box(self):
-        return
+        return (self.start_x, self.start_y, self.end_x, self.end_y)
 
     def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
         def pixel_x(n_elements):
