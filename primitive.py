@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5 import uic
 
 from primitive_dialogues import NewRectangleWidget
@@ -9,7 +9,7 @@ import abc
 
 class NewPrimitiveDialog(QDialog):
     def __init__(self):
-        QDialog.__init__(self)
+        super(NewPrimitiveDialog, self).__init__()
         uic.loadUi('ui/new_primitive.ui', self)
 
         self.tabWidget.clear()  # Очистим пустые страницы
@@ -17,6 +17,8 @@ class NewPrimitiveDialog(QDialog):
         self.Triangle_widget = NewTriangleWidget()
         self.tabWidget.addTab(self.Rectangle_widget, "Прямоугольник")
         self.tabWidget.addTab(self.Triangle_widget, "Треугольник")
+
+        self.accepted.connect(self.validate)
 
         self.tabWidget.currentChanged.connect(self.grab_focus)
 
@@ -33,6 +35,14 @@ class NewPrimitiveDialog(QDialog):
             fig, mesh = self.Triangle_widget.get_data()
 
         return fig, mesh, curr_tab_index
+
+    def validate(self):
+        curr = self.tabWidget.currentWidget()
+        if curr.height.value() == 0 or curr.width.value() == 0:
+            msg = QMessageBox(QMessageBox.Critical, "Неверное значение!",
+                              'Ширина и высота не могут быть равны 0')
+            msg.exec_()
+            self.done(0)
 
     def for_expanding(self, prim, side_code):
         curr_tab_index = self.tabWidget.currentIndex()

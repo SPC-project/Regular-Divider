@@ -16,7 +16,7 @@ class Rectangle(AbstractPrimitive):
     """
     def __init__(self, fig, mesh):
         """
-        fig: tuple of rectangle - (x, y, width, hegiht)
+        fig: tuple of rectangle - (x, y, width, height)
         mesh: specify how to divide fig, list - [NAT, NAR, NAB, NAL, NX, NY]
             NAT - how many air elements at the top of @fig
             NAR - air elements at right
