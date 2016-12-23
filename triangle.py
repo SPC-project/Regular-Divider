@@ -3,12 +3,6 @@ from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QColor
 import math
 
-NAT = 0
-NAR = 1
-NAB = 2
-NAL = 3
-NX = 4
-NY = 5
 
 class Triangle(AbstractPrimitive):
     """
@@ -30,7 +24,7 @@ class Triangle(AbstractPrimitive):
         most_left = QPoint(self.x, self.y)
         most_right = QPoint(self.x + self.width, self.y)
         third = QPoint(self.x, self.y + self.height)
-        form = self.mesh.other.form
+        form = self.mesh.data['form']
         if form == 1:
             most_left.setY(self.y + self.height)
             third.setX(self.x + self.width)
@@ -69,11 +63,11 @@ class Triangle(AbstractPrimitive):
     def draw_mesh(self, canvas, pixel_x, pixel_y):
         """ pixel_[x/y]: insert node index, get x/y coordinate of it """
         M = self.mesh
-        X1 = M.NAL          # start of figure's nodes
+        X1 = M.NAL            # start of figure's nodes
         Y1 = M.NAT
-        X2 = M.NAL + M.NX   # start of right air layer
-        Y2 = M.NAT + M.NY   # start of bottom air layer
-        X_NLEN = X2 + M.NR  # last node in row
+        X2 = M.NAL + M.NFX    # start of right air layer
+        Y2 = M.NAT + M.NFY    # start of bottom air layer
+        X_NLEN = X2 + M.NAR   # last node in row
         Y_NLEN = Y2 + M.NAB
         COL_AIR = QColor(0, 0, 255, 127)
         COL_FIG = Qt.black

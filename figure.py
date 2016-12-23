@@ -73,14 +73,7 @@ class Figure(QtCore.QObject):
             self.adopt_primitive(*self.prim_dialog.get_data())
 
     def adopt_primitive(self, fig, mesh, prim_type, primitive_ind=-1):
-        resized = False
         x, y, w, h = fig
-        if x+w > self.world_size:
-            self.world_size = x+w + SPACING
-            resized = True
-        if y+h > self.world_size:
-            self.world_size = y+h + SPACING
-            resized = True
 
         if primitive_ind == -1:
             primitive = None
@@ -92,8 +85,11 @@ class Figure(QtCore.QObject):
         else:
             self.shape[primitive_ind].modify(fig, mesh)
 
-        if resized:
-            self.send_message("Рабочая область была расширена")
+        not_match_x = x+w > self.world_size or x <= self.start_x
+        not_match_y = y+h > self.world_size or y <= self.start_y
+        if not_match_x or not_match_y:
+            self.message = "Рабочая область была расширена"
+            self.adjust()
         else:
             self.parent_update.emit()
 
@@ -313,7 +309,6 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def adjust(self):
-        print("adjusting")
         if len(self.shape) == 0:
             self.send_message("Нечего масштабировать: фигура пуста")
             return
@@ -335,8 +330,8 @@ class Figure(QtCore.QObject):
 
         self.start_x = min_x - SPACING
         self.start_y = min_y - SPACING
-        max_width = math.ceil(max_x - min_x) + SPACING
-        max_height = math.ceil(max_y - max_y) + SPACING
+        max_width = max_x - min_x + 2*SPACING
+        max_height = max_y - min_y + 2*SPACING
         if max_width > max_height:
             self.world_size = max_width
         else:

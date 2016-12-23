@@ -12,7 +12,7 @@ class Mesh:
         self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = air
         self.data = other
         if not other:
-            self.data = {type: "undefined"}
+            self.data = {"type": "undefined"}
 
     def set_val_at(self, index, value):
         holder = [self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY]
