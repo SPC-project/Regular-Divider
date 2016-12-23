@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox, QWidget
+from PyQt5.QtGui import QColor
 from PyQt5 import uic
 
 import abc
@@ -255,6 +256,10 @@ class NewTriangleWidget(QWidget):
 
 class AbstractPrimitive:
     __metaclass__ = abc.ABCMeta
+
+    COL_AIR = QColor(0, 0, 255, 127)
+    COL_FIG = QColor(0, 0, 0)
+    COL_FIG_INNNER = QColor(0, 0, 0, 64)
 
     def __init__(self, fig, mesh):
         self.x, self.y, self.width, self.height = fig

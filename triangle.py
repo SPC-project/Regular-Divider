@@ -1,6 +1,6 @@
 from primitive import AbstractPrimitive
-from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QColor, QPolygon, QBrush
+from PyQt5.QtCore import QPoint
+from PyQt5.QtGui import QPolygon, QBrush
 
 
 class Triangle(AbstractPrimitive):
@@ -44,7 +44,7 @@ class Triangle(AbstractPrimitive):
         return scaler
 
     def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
-        canvas.setPen(Qt.black)
+        canvas.setPen(self.COL_FIG)
 
         scale = self.generate_scaler(shift_x, shift_y, kx, ky)
 
@@ -61,14 +61,10 @@ class Triangle(AbstractPrimitive):
         canvas.drawLine(*convert_line(l3, l1))
 
     def draw_mesh(self, canvas, shift_x, shift_y, kx, ky):
-        """ pixel_[x/y]: insert node index, get x/y coordinate of it """
-        COL_AIR = QColor(0, 0, 255, 127)
-        COL_FIG = Qt.black
-        COL_FIG_INNNER = QColor(0, 0, 0, 64)
+        canvas.setPen(self.COL_FIG)
 
-        canvas.setPen(COL_FIG)
-        canvas.setBrush(QBrush(COL_FIG_INNNER))
-
+        # Fill the figure
+        canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
         triangle = QPolygon()
         scale = self.generate_scaler(shift_x, shift_y, kx, ky)
         for vertex in self.vertexes:

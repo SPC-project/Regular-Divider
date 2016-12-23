@@ -1,5 +1,4 @@
-from PyQt5.QtCore import Qt, QPoint, QRect
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import QPoint, QRect
 from primitive import AbstractPrimitive
 
 air_nodes_top = 0
@@ -39,7 +38,7 @@ class Rectangle(AbstractPrimitive):
         self.modify(fig, self.mesh)
 
     def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
-        canvas.setPen(Qt.black)
+        canvas.setPen(self.COL_FIG)
         x = int(round((shift_x + self.x)*kx))
         y = int(round((shift_y + self.y)*ky))
         w = int(round(self.width*kx))
@@ -66,9 +65,6 @@ class Rectangle(AbstractPrimitive):
         Y2 = M.NAT + M.NFY  # start of bottom air layer
         X_NLEN = X2 + M.NAR
         Y_NLEN = Y2 + M.NAB
-        COL_AIR = QColor(0, 0, 255, 127)
-        COL_FIG = Qt.black
-        COL_FIG_INNNER = QColor(0, 0, 0, 64)
         A = QPoint()
         B = QPoint()
 
@@ -86,9 +82,9 @@ class Rectangle(AbstractPrimitive):
                 A.setX(B.x())
                 B.setX(xi)
                 if xi == x2 and j >= Y1 and j <= Y2:
-                    canvas.setPen(COL_FIG)
+                    canvas.setPen(self.COL_FIG)
                 else:
-                    canvas.setPen(COL_AIR)
+                    canvas.setPen(self.COL_AIR)
                 canvas.drawLine(A, B)
 
         # Vertical lines
@@ -105,9 +101,9 @@ class Rectangle(AbstractPrimitive):
                 A.setY(B.y())
                 B.setY(yi)
                 if yi == y2 and i >= X1 and i <= X2:
-                    canvas.setPen(COL_FIG)
+                    canvas.setPen(self.COL_FIG)
                 else:
-                    canvas.setPen(COL_AIR)
+                    canvas.setPen(self.COL_AIR)
                 canvas.drawLine(A, B)
 
         # Diagonal lines
@@ -123,17 +119,17 @@ class Rectangle(AbstractPrimitive):
                 B.setX(x)
                 B.setY(y)
                 if X1 <= i and i < X2 and Y1 <= j and j < Y2:
-                    canvas.setPen(COL_FIG)
+                    canvas.setPen(self.COL_FIG)
                 else:
-                    canvas.setPen(COL_AIR)
+                    canvas.setPen(self.COL_AIR)
                 canvas.drawLine(A, B)
 
-        # Mark figure
+        # Fill the figure
         A.setX(pixel_x(X1))
         A.setY(pixel_y(Y1))
         B.setX(pixel_x(X2))
         B.setY(pixel_y(Y2))
-        canvas.fillRect(QRect(A, B), COL_FIG_INNNER)
+        canvas.fillRect(QRect(A, B), self.COL_FIG_INNNER)
 
     def save_indexes(self, f, index_start):
         x_elem = self.element_count_w - 1
