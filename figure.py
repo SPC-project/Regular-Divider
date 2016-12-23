@@ -313,6 +313,7 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def adjust(self):
+        print("adjusting")
         if len(self.shape) == 0:
             self.send_message("Нечего масштабировать: фигура пуста")
             return
