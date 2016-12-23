@@ -281,16 +281,8 @@ class AbstractPrimitive:
         return (self.start_x, self.start_y, self.end_x, self.end_y)
 
     def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
-        def pixel_x(n_elements):
-            val = shift_x + self.start_x + n_elements*self.step_x
-            return int(round(val*kx))
-
-        def pixel_y(n_elements):
-            val = shift_y + self.start_y + n_elements*self.step_y
-            return int(round(val*ky))
-
         self.draw_figure(canvas, shift_x, shift_y, kx, ky)
-        self.draw_mesh(mesh_canvas, pixel_x, pixel_y)
+        self.draw_mesh(mesh_canvas, shift_x, shift_y, kx, ky)
 
     @abc.abstractmethod
     def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
@@ -299,5 +291,3 @@ class AbstractPrimitive:
     @abc.abstractmethod
     def draw_mesh(self, canvas, pixel_x, pixel_y):
         pass
-
-

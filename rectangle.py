@@ -46,11 +46,19 @@ class Rectangle(AbstractPrimitive):
         h = int(round(self.height*ky))
         canvas.drawRect(x, y, w, h)
 
-    def draw_mesh(self, canvas, pixel_x, pixel_y):
+    def draw_mesh(self, canvas, shift_x, shift_y, kx, ky):
         """
         Split rectangle to smaller rectangles step_x*step_y,
         then for each draw diagonal
         """
+        def pixel_x(N):  # calculate coordinate of mesh's Nth node
+            val = shift_x + self.start_x + N*self.step_x
+            return int(round(val*kx))
+
+        def pixel_y(N):
+            val = shift_y + self.start_y + N*self.step_y
+            return int(round(val*ky))
+
         M = self.mesh
         X1 = M.NAL
         Y1 = M.NAT
@@ -116,10 +124,16 @@ class Rectangle(AbstractPrimitive):
                 B.setY(y)
                 if X1 <= i and i < X2 and Y1 <= j and j < Y2:
                     canvas.setPen(COL_FIG)
-                    canvas.fillRect(QRect(A, B), COL_FIG_INNNER)
                 else:
                     canvas.setPen(COL_AIR)
                 canvas.drawLine(A, B)
+
+        # Mark figure
+        A.setX(pixel_x(X1))
+        A.setY(pixel_y(Y1))
+        B.setX(pixel_x(X2))
+        B.setY(pixel_y(Y2))
+        canvas.fillRect(QRect(A, B), COL_FIG_INNNER)
 
     def save_indexes(self, f, index_start):
         x_elem = self.element_count_w - 1
