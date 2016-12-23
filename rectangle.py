@@ -2,12 +2,9 @@ from PyQt5.QtCore import Qt, QPoint, QRect
 from PyQt5.QtGui import QColor
 from primitive import AbstractPrimitive
 
-NAT = 0
-NAR = 1
-NAB = 2
-NAL = 3
-NX = 4
-NY = 5
+air_nodes_top = 0
+air_nodes_right = 1
+air_nodes_bottom = 2
 
 
 class Rectangle(AbstractPrimitive):
@@ -17,13 +14,13 @@ class Rectangle(AbstractPrimitive):
     def __init__(self, fig, mesh):
         """
         fig: tuple of rectangle - (x, y, width, height)
-        mesh: specify how to divide fig, list - [NAT, NAR, NAB, NAL, NX, NY]
-            NAT - how many air elements at the top of @fig
-            NAR - air elements at right
-            NAB - air elements at bottom
-            NAL - air elements at left
-            NX - count of fig's elements by width
-            NY - count of fig's elements by height
+        mesh: class specified at primitive_dialogues.py
+            mesh.NAT - how many air elements at the top of @fig
+            mesh.NAR - air elements at right
+            mesh.NAB - air elements at bottom
+            mesh.NAL - air elements at left
+            mesh.NFX - count of fig's elements by width
+            mesh.NFY - count of fig's elements by height
         """
         self.binds = [None]*4
         super(Rectangle, self).__init__(fig, mesh)
@@ -32,7 +29,7 @@ class Rectangle(AbstractPrimitive):
         # if has connection to another Rectangles, 'shave' that edge from air
         for i in range(4):
             if self.binds[i]:
-                self.mesh[i] = 0
+                self.mesh.set_val_at(i, 0)
 
     def shave_air(self, edge, neighbour):
         if not neighbour:
@@ -55,12 +52,12 @@ class Rectangle(AbstractPrimitive):
         then for each draw diagonal
         """
         M = self.mesh
-        X1 = M[NAL]
-        Y1 = M[NAT]
-        X2 = M[NAL] + M[NX]  # start of right air layer
-        Y2 = M[NAT] + M[NY]  # start of bottom air layer
-        X_NLEN = X2 + M[NAR]
-        Y_NLEN = Y2 + M[NAB]
+        X1 = M.NAL
+        Y1 = M.NAT
+        X2 = M.NAL + M.NFX  # start of right air layer
+        Y2 = M.NAT + M.NFY  # start of bottom air layer
+        X_NLEN = X2 + M.NAR
+        Y_NLEN = Y2 + M.NAB
         COL_AIR = QColor(0, 0, 255, 127)
         COL_FIG = Qt.black
         COL_FIG_INNNER = QColor(0, 0, 0, 64)
@@ -130,10 +127,10 @@ class Rectangle(AbstractPrimitive):
         x_nodes = self.element_count_w
         y_nodes = self.element_count_h
         # N отрезков создаются N+1 точками - будем добавлять 1 в конце цепочки
-        if not self.binds[NAR]:
+        if not self.binds[air_nodes_right]:
             x_nodes += 1
             x_elem += 1
-        if not self.binds[NAB]:
+        if not self.binds[air_nodes_bottom]:
             y_nodes += 1
             y_elem += 1
 
@@ -154,10 +151,10 @@ class Rectangle(AbstractPrimitive):
         return self.problem_zone_first_index
 
     def deal_with_horizontal_contact_regions(self, f, index, sewing_nodes, material):
-        if not self.binds[NAR]:
+        if not self.binds[air_nodes_top]:
             return index
 
-        he = self.binds[NAR]
+        he = self.binds[air_nodes_right]
         dy = self.step_y  # step_y should be same
         end_self = self.start_y + self.element_count_h * dy
         end_he = he.start_y + he.element_count_h * dy
@@ -165,10 +162,10 @@ class Rectangle(AbstractPrimitive):
         W_self = self.element_count_w  # here element_count_w fine
         W_he = he.element_count_w + 1  # need nodes_count_w, actually
         SEW_X = self.start_x + W_self*self.step_x
-        fig_start_self = self.start_y + self.mesh[NAT]*dy
-        fig_end_self = fig_start_self + self.mesh[NY]*dy
-        fig_start_he = he.start_y + he.mesh[NAT]*dy
-        fig_end_he = fig_start_he + he.mesh[NY]*dy
+        fig_start_self = self.start_y + self.mesh.NAT*dy
+        fig_end_self = fig_start_self + self.mesh.NFY*dy
+        fig_start_he = he.start_y + he.mesh.NAT*dy
+        fig_end_he = fig_start_he + he.mesh.NFY*dy
 
         iterate_count = int((end_self-self.start_y) / dy)
         offset_he = int((he.start_y - self.start_y) / dy)
@@ -234,17 +231,17 @@ class Rectangle(AbstractPrimitive):
         return index
 
     def deal_with_vertical_contact_regions(self, f, index, sewing_nodes, material):
-        if not self.binds[NAB]:
+        if not self.binds[air_nodes_bottom]:
             return index
 
-        he = self.binds[NAB]
+        he = self.binds[air_nodes_bottom]
         dx = self.step_x  # step_y should be same
         end_he = he.start_x + he.element_count_w * dx
 
-        fig_start_self = self.start_x + self.mesh[NAL]*dx
-        fig_end_self = fig_start_self + self.mesh[NAT]*dx
-        fig_start_he = he.start_x + he.mesh[NAL]*dx
-        fig_end_he = fig_start_he + he.mesh[NAT]*dx
+        fig_start_self = self.start_x + self.mesh.NAL*dx
+        fig_end_self = fig_start_self + self.mesh.NAT*dx
+        fig_start_he = he.start_x + he.mesh.NAL*dx
+        fig_end_he = fig_start_he + he.mesh.NAT*dx
 
         SEW_Y = self.start_y + self.element_count_h*self.step_y
         offset_self = (self.element_count_w+1)*(self.element_count_h-1)
@@ -312,9 +309,9 @@ class Rectangle(AbstractPrimitive):
         x_nodes = self.element_count_w
         y_nodes = self.element_count_h
         # N отрезков создаются N+1 точками - будем добавлять 1 в конце цепочки
-        if not self.binds[NAR]:
+        if not self.binds[air_nodes_right]:
             x_nodes += 1
-        if not self.binds[NAB]:
+        if not self.binds[air_nodes_bottom]:
             y_nodes += 1
         for j in range(y_nodes):
             y = self.start_y + j*self.step_y
@@ -325,15 +322,15 @@ class Rectangle(AbstractPrimitive):
     def save_material(self, f):
         x_nodes = self.element_count_w
         y_nodes = self.element_count_h
-        if not self.binds[NAR]:
+        if not self.binds[air_nodes_right]:
             x_nodes += 1
-        if not self.binds[NAB]:
+        if not self.binds[air_nodes_bottom]:
             y_nodes += 1
         M = self.mesh
-        X1 = M[NAL]
-        Y1 = M[NAT]
-        X2 = X1 + M[NX]  # start of right air layer
-        Y2 = Y1 + M[NY]  # start of bottom air layer
+        X1 = M.NAL
+        Y1 = M.NAT
+        X2 = X1 + M.NFX  # start of right air layer
+        Y2 = Y1 + M.NFY  # start of bottom air layer
 
         for j in range(y_nodes):
             in_figure_y = j >= Y1 and j <= Y2
@@ -346,10 +343,10 @@ class Rectangle(AbstractPrimitive):
 
     def save_material_of_element(self, f):
         M = self.mesh
-        X1 = M[NAL]
-        Y1 = M[NAT]
-        X2 = X1 + M[NX]  # start of right air layer
-        Y2 = Y1 + M[NY]  # start of bottom air layer
+        X1 = M.NAL
+        Y1 = M.NAT
+        X2 = X1 + M.NFX  # start of right air layer
+        Y2 = Y1 + M.NFY  # start of bottom air layer
         for j in range(self.element_count_h):
             in_figure_y = j >= Y1 and j < Y2
             for i in range(self.element_count_w):

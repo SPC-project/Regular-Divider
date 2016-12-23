@@ -2,6 +2,23 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5 import uic
 
 
+class Mesh:
+    """ Auxiliary abstraction for finite-elemental grid """
+    def __init__(self, air, other=None):
+        """
+            NAT, NAR, NAB, NAL: [count of] Nodes Air at Top/Right/Bottom/Left
+            NFX, NFY: [count of] Nodes Figure Width/Height
+        """
+        self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = air
+        self.data = other
+        if not other:
+            self.data = {type: "undefined"}
+
+    def set_val_at(self, index, value):
+        holder = [self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY]
+        holder[index] = value
+
+
 class NewRectangleWidget(QWidget):
     """
     Важно: пользователь вводит количество узлов, но программе работать удобнее
@@ -70,7 +87,8 @@ class NewRectangleWidget(QWidget):
         elif self.connection_side == 3:
             x -= width
 
-        return (x, y, width, height), mesh
+        other_data = {'type': 'rectangle'}
+        return (x, y, width, height), Mesh(mesh, other_data)
 
     def for_expanding(self, prim, side_code):
         """
@@ -183,7 +201,7 @@ class NewTriangleWidget(QWidget):
         Nright = self.air_right.value()
         Nbottom = self.air_bottom.value()
         Nleft = self.air_left.value()
-        triangle_type = self.comboBox.currentIndex()
-        mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny, triangle_type]
+        mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
+        other_data = {'type': 'triangle', 'form': self.comboBox.currentIndex()}
 
-        return (x, y, width, height), mesh
+        return (x, y, width, height), Mesh(mesh, other_data)

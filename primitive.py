@@ -52,14 +52,6 @@ class NewPrimitiveDialog(QDialog):
             return self.Triangle_widget.get_data(prim, side_code)
 
 
-NAT = 0
-NAR = 1
-NAB = 2
-NAL = 3
-NX = 4
-NY = 5
-
-
 class AbstractPrimitive:
     __metaclass__ = abc.ABCMeta
 
@@ -67,14 +59,14 @@ class AbstractPrimitive:
         self.x, self.y, self.width, self.height = fig
         self.mesh = mesh
 
-        self.element_count_w = mesh[NAL] + mesh[NAT] + mesh[NAR]
-        self.element_count_h = mesh[NAT] + mesh[NY] + mesh[NAB]
-        self.step_x = self.width/mesh[NAT]
-        self.step_y = self.height/mesh[NY]
-        self.start_x = self.x - self.step_x*mesh[NAL]  # where air start
-        self.start_y = self.y - self.step_y*mesh[NAT]
-        width = self.mesh[NX] + self.mesh[NAR]
-        height = self.mesh[NY] + self.mesh[NAB]
+        self.element_count_w = mesh.NAL + mesh.NFX + mesh.NAR
+        self.element_count_h = mesh.NAT + mesh.NFY + mesh.NAB
+        self.step_x = self.width/mesh.NFX
+        self.step_y = self.height/mesh.NFY
+        self.start_x = self.x - self.step_x*mesh.NAL  # where air start
+        self.start_y = self.y - self.step_y*mesh.NAT
+        width = self.mesh.NFX + self.mesh.NAR
+        height = self.mesh.NFY + self.mesh.NAB
         self.end_x = self.x + self.step_x*width
         self.end_y = self.y + self.step_y*(height)
 
