@@ -304,9 +304,9 @@ class AbstractPrimitive:
             val = shift_y + self.start_y + N*self.step_y
             return int(round(val*ky))
 
-        self.scale_x = sx
+        self.scale_x = sx  # Scale from world coordinates to canvas coordinates
         self.scale_y = sy
-        self.pixel_x = tx
+        self.pixel_x = tx  # Get the coordinate of Nth node
         self.pixel_y = ty
         self.drawing_coefs = {'shift_x': shift_x, 'shift_y': shift_x,
                               'kx': kx, 'ky': ky}

@@ -60,12 +60,19 @@ class Triangle(AbstractPrimitive):
         canvas.drawLine(*convert_line(l3, l1))
 
     def draw_mesh(self, canvas):
+        M = self.mesh
         # Make a rectangle with one diagonal (upper-left bottom-right)
         tile_w = self.step_x * self.drawing_coefs['kx']
         tile_h = self.step_y * self.drawing_coefs['ky']
-        dual_element = QPolygon(QRect(0, 0, tile_w, tile_h), True)
-        dual_element.putPoints(5, tile_w, tile_h)  # insert sixth vertex
-        canvas.drawPolygon(dual_element)
+
+        # Draw air
+        canvas.setPen(self.COL_AIR)
+        if M.NAL != 0:
+            x, y, w, h = 0, 0, M.NAL, M.NFY + M.NAB
+            self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
+        if M.NAB != 0:
+            x, y, w, h = M.NAL, M.NAT + M.NFY, M.NFX, M.NAB
+            self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
 
         # Fill the figure
         the_figure = QPolygon()
@@ -78,6 +85,17 @@ class Triangle(AbstractPrimitive):
         canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
         canvas.drawPolygon(the_figure)
 
-    def draw_rect_mesh(self, canvas, tile, dx, dy,
-                       node_start_x, node_start_y, node_end_x, node_end_y):
-        pass
+    def draw_rect_mesh(self, canvas, dx, dy,
+                       grid_x, grid_y, grid_width, grid_height):
+        tile = QPolygon(QRect(0, 0, dx, dy), True)
+        tile.putPoints(5, dx, dy)  # insert sixth vertex, for diagonal
+        x0 = self.pixel_x(grid_x)
+        y0 = self.pixel_y(grid_y)
+        tile.translate(x0, y0)
+
+        backward_x = -grid_width*dx
+        for j in range(grid_height):
+            for i in range(grid_width):
+                canvas.drawPolygon(tile)
+                tile.translate(dx, 0)
+            tile.translate(backward_x, dy)
