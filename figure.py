@@ -96,8 +96,8 @@ class Figure(QtCore.QObject):
         if self.world_size == 0:
             return
 
-        kx = canvas_width/self.world_size
-        ky = canvas_height/self.world_size
+        kx = int(canvas_width/self.world_size)
+        ky = int(canvas_height/self.world_size)
         shift_x = -self.start_x
         shift_y = -self.start_y
         for primitive in self.shape:
@@ -332,9 +332,9 @@ class Figure(QtCore.QObject):
         max_width = max_x - min_x + 2*SPACING
         max_height = max_y - min_y + 2*SPACING
         if max_width > max_height:
-            self.world_size = max_width
+            self.world_size = int(max_width)
         else:
-            self.world_size = max_height
+            self.world_size = int(max_height)
 
         self.update_status()
         self.parent_clear.emit()
