@@ -80,7 +80,7 @@ class MyWindow(QMainWindow):
         dx = (self.geometry().width() - 3*PADDING) / 2
         dy = self.geometry().height() - self.menubar.height() \
             - self.statusbar.height()
-        return dx, dy
+        return int(dx), int(dy)
 
     def paintEvent(self, event):
         p = QPainter(self)
@@ -94,6 +94,10 @@ class MyWindow(QMainWindow):
         self.canvas_figure.resize(dx, dy)
         self.canvas_mesh.resize(dx, dy)
         self.canvas_mesh.move(PADDING + dx + PADDING, 0)
+
+        if not (dx == dy and dx == 420):
+            msg = "Resizing... Canvases: " + str(dx) + "x" + str(dy)
+            self.figure.message = msg + " (square recommended)"
 
         self.draw_fig_x = self.canvas_figure.x() + OFFSET
         self.draw_mesh_x = self.canvas_mesh.x() + OFFSET
