@@ -7,15 +7,20 @@ import abc
 
 class Mesh:
     """ Auxiliary abstraction for finite-elemental grid """
-    def __init__(self, air, other=None):
+    def __init__(self, grid, other=None):
         """
             NAT, NAR, NAB, NAL: [count of] Nodes Air at Top/Right/Bottom/Left
             NFX, NFY: [count of] Nodes Figure Width/Height
         """
-        self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = air
+        self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = grid
         self.data = other
         if not other:
             self.data = {"type": "undefined"}
+
+    def __str__(self):
+        display = str(self.NAT) + " " + str(self.NAR) + " " + str(self.NAB) \
+            + " " + str(self.NAL) + " " + str(self.NFX) + " " + str(self.NFY)
+        return display + " " + str(self.data)
 
     def set_val_at(self, index, value):
         holder = [self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY]
@@ -262,6 +267,7 @@ class AbstractPrimitive:
     COL_AIR = QColor(0, 0, 255, 127)
     COL_FIG = QColor(0, 0, 0)
     COL_FIG_INNNER = QColor(0, 0, 0, 64)
+    EXPORT_DESCRIPTION = "type: "
 
     def __init__(self, fig, mesh):
         self.x, self.y, self.width, self.height = fig
@@ -320,3 +326,70 @@ class AbstractPrimitive:
     @abc.abstractmethod
     def draw_mesh(self, canvas):
         pass
+
+    def export_figure(self, to):
+        """
+        Save primitive to text file as (single line):
+            type: <type> [| <other data>: <data>, ...]
+            | x y w h | NAT NAR NAB NAL NFX NFY
+        """
+        txt = self.EXPORT_DESCRIPTION + "{}"
+        to.write(txt.format(self.mesh.data["type"]))
+        data_len = self.mesh.data
+        if len(data_len) > 1:
+            to.write(" | ")
+            for key, value in self.mesh.data.items():
+                if key != "type":
+                    if data_len > 2:
+                        to.write(", ")
+                    to.write("{}: {}".format(key, value))
+        x = self.x
+        y = self.y
+        w = self.width
+        h = self.height
+        to.write(" | {} {} {} {} | ".format(x, y, w, h))
+        NAT = self.mesh.NAT
+        NAR = self.mesh.NAR
+        NAB = self.mesh.NAB
+        NAL = self.mesh.NAL
+        NFX = self.mesh.NFX
+        NFY = self.mesh.NFY
+        to.write("{} {} {} {} {} {}\n".format(NAT, NAR, NAB, NAL, NFX, NFY))
+
+    def export_figure_connections(self, to):
+        for side in self.binds:
+            if side:
+                to.write("{} ".format(self.shape.index(side)))
+            else:
+                to.write("-1 ")
+        to.write("\n")
+
+    def parse(data_about_primitive):
+        """
+        Get list of strings:
+            [ 'type: <type>', '<other data>: <data>, ...', 'x y w h',
+              'NAT NAR NAB NAL NFX NFY' ]
+            <other data> is optional (use for Triangles to specify it's form)
+        """
+        offset = len(AbstractPrimitive.EXPORT_DESCRIPTION)
+        prim_type = data_about_primitive[0][offset:]
+        header = {'type': prim_type}
+        if len(data_about_primitive) > 3:  # is <other data> section
+            other_data = data_about_primitive[1].split(', ')
+            for info in other_data:
+                key, value = info.split(': ')
+                if value.isdigit():
+                    header[key] = int(value)  # Triangle's 'form' is integer
+                else:
+                    header[key] = value
+
+        raw_fig = data_about_primitive[-2].split(' ')
+        fig = tuple(float(value) for value in raw_fig[0:4])
+
+        raw_grid = data_about_primitive[-1].split(' ')
+        grid = tuple(int(value) for value in raw_grid[0:6])
+
+        prim_type_index = 0
+        if prim_type == "triangle":
+            prim_type_index = 1
+        return fig, Mesh(grid, header), prim_type_index

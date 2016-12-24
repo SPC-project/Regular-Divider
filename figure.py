@@ -2,7 +2,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from rectangle import Rectangle
 from triangle import Triangle
-from primitive import NewPrimitiveDialog
+from primitive import NewPrimitiveDialog, AbstractPrimitive
 
 SPACING = 5
 RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
@@ -71,14 +71,14 @@ class Figure(QtCore.QObject):
             self.parent_clear.emit()
             self.adopt_primitive(*self.prim_dialog.get_data())
 
-    def adopt_primitive(self, fig, mesh, prim_type, primitive_ind=-1):
+    def adopt_primitive(self, fig, mesh, prim_type_index, primitive_ind=-1):
         x, y, w, h = fig
 
         if primitive_ind == -1:
             primitive = None
-            if prim_type == RECT:
+            if prim_type_index == RECT:
                 primitive = Rectangle(fig, mesh)
-            elif prim_type == TRI:
+            elif prim_type_index == TRI:
                 primitive = Triangle(fig, mesh)
             self.shape.append(primitive)
         else:
@@ -110,8 +110,8 @@ class Figure(QtCore.QObject):
         dialog.exec_()
         if dialog.result() == 1:
             self.parent_clear.emit()
-            fig, mesh, prim_type = dialog.get_data()
-            self.adopt_primitive(fig, mesh, prim_type, ind)
+            fig, mesh, prim_type_index = dialog.get_data()
+            self.adopt_primitive(fig, mesh, prim_type_index, ind)
 
     def del_prim(self, ind):
         to_del = self.shape[ind]
@@ -266,39 +266,29 @@ class Figure(QtCore.QObject):
 
         with open(filename, 'w') as f:
             for prim in self.shape:
-                x = prim.x
-                y = prim.y
-                w = prim.width
-                h = prim.height
-                f.write("{} {} {} {} ".format(x, y, w, h))
-                f.write("{} {} {} {} {} {}\n".format(*prim.mesh))
+                prim.export_figure(f)
 
             f.write("# connections\n")
             for prim in self.shape:
-                for side in prim.binds:
-                    if side:
-                        f.write("{} ".format(self.shape.index(side)))
-                    else:
-                        f.write("-1 ")
-                f.write("\n")
+                prim.export_figure_connections(f)
 
     def importing(self, filename):
         self.shape.clear()
         with open(filename, 'r') as f:
-            rectangles_still = True
+            still_read_primitives = True
             shift = 0
             for i, line in enumerate(f.readlines()):
                 if line[0:1] == '#':
-                    rectangles_still = False
+                    still_read_primitives = False
                     shift = i+1
                     continue
 
-                data = line.split(' ')
-                if rectangles_still:
-                    fig = tuple(float(d) for d in data[0:4])
-                    mesh = list(int(i) for i in data[4:10])
-                    self.adopt_primitive(fig, mesh)
+                if still_read_primitives:
+                    data = line.split(' | ')
+                    fig, mesh, prim_type_index = AbstractPrimitive.parse(data)
+                    self.adopt_primitive(fig, mesh, prim_type_index)
                 else:
+                    data = line.split(' ')
                     for side, code in enumerate(data[:-1]):  # last is '\n'
                         code = int(code)
                         if code != -1:

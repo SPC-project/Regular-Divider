@@ -34,8 +34,7 @@ class Rectangle(AbstractPrimitive):
         if not neighbour:
             raise ValueError("Пропущен второй аргумент (neighbour)")
         self.binds[edge] = neighbour
-        fig = (self.x, self.y, self.width, self.height)
-        self.modify(fig, self.mesh)
+        self.modify()
 
     def draw_figure(self, canvas):
         canvas.setPen(self.COL_FIG)
