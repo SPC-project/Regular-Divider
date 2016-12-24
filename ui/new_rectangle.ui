@@ -380,9 +380,11 @@
   <tabstop>height</tabstop>
   <tabstop>Nx</tabstop>
   <tabstop>Ny</tabstop>
+  <tabstop>air_top</tabstop>
   <tabstop>manual_air</tabstop>
   <tabstop>air_left</tabstop>
   <tabstop>air_right</tabstop>
+  <tabstop>air_bottom</tabstop>
  </tabstops>
  <resources/>
  <connections/>
