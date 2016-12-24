@@ -1,5 +1,5 @@
 from primitive import AbstractPrimitive
-from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QPoint, QRect
 from PyQt5.QtGui import QPolygon, QBrush
 
 
@@ -60,20 +60,24 @@ class Triangle(AbstractPrimitive):
         canvas.drawLine(*convert_line(l3, l1))
 
     def draw_mesh(self, canvas):
-        canvas.setPen(self.COL_FIG)
+        # Make a rectangle with one diagonal (upper-left bottom-right)
+        tile_w = self.step_x * self.drawing_coefs['kx']
+        tile_h = self.step_y * self.drawing_coefs['ky']
+        dual_element = QPolygon(QRect(0, 0, tile_w, tile_h), True)
+        dual_element.putPoints(5, tile_w, tile_h)  # insert sixth vertex
+        canvas.drawPolygon(dual_element)
 
         # Fill the figure
-        canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
-        triangle = QPolygon()
+        the_figure = QPolygon()
         scale = self.generate_scaler()
         for vertex in self.vertexes:
             x, y = scale(vertex)
-            triangle.append(QPoint(x, y))
-        triangle.append(triangle.first())  # close the polygon
-        canvas.drawPolygon(triangle, 4)
+            the_figure.append(QPoint(x, y))
+        the_figure.append(the_figure.first())  # close the polygon
+        canvas.setPen(self.COL_FIG)
+        canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
+        canvas.drawPolygon(the_figure)
 
-    def draw_rectangular_region(self, canvas, node_start_x, node_start_y,
-                                node_end_x, node_end_y, color):
-        if not color:
-            color = self.COL_FIG
-        canvas.setPen(color)
+    def draw_rect_mesh(self, canvas, tile, dx, dy,
+                       node_start_x, node_start_y, node_end_x, node_end_y):
+        pass

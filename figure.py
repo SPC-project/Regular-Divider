@@ -3,10 +3,9 @@ from PyQt5.QtWidgets import QDialog, QMessageBox
 from rectangle import Rectangle
 from triangle import Triangle
 from primitive import NewPrimitiveDialog
-import math
 
 SPACING = 5
-RECT = 0
+RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
 TRI = 1
 
 

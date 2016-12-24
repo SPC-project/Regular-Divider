@@ -25,6 +25,7 @@ from figure_managing import PrimitivesListDialog
 BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
 RIGHT_BUTTON = 2
+PADDING = 10
 
 
 class MyWindow(QMainWindow):
@@ -76,7 +77,7 @@ class MyWindow(QMainWindow):
         self.repaint()
 
     def getCanvasSize(self):
-        dx = (self.geometry().width() - 3*self.canvas_figure.x()) / 2
+        dx = (self.geometry().width() - 3*PADDING) / 2
         dy = self.geometry().height() - self.menubar.height() \
             - self.statusbar.height()
         return dx, dy
@@ -92,7 +93,7 @@ class MyWindow(QMainWindow):
         dx, dy = self.getCanvasSize()
         self.canvas_figure.resize(dx, dy)
         self.canvas_mesh.resize(dx, dy)
-        self.canvas_mesh.move(2*self.canvas_figure.x()+dx, 0)
+        self.canvas_mesh.move(PADDING + dx + PADDING, 0)
 
         self.draw_fig_x = self.canvas_figure.x() + OFFSET
         self.draw_mesh_x = self.canvas_mesh.x() + OFFSET
@@ -275,8 +276,6 @@ def testing():
     """
     if os.system("git diff-index --quiet HEAD --") == 256:
         pass
-        #os.system("mk% python -m unittest discover --start-directory=./test")
-
 
 if __name__ == '__main__':
     log_format = '[%(asctime)s]  %(message)s'

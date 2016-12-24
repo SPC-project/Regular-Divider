@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>886</width>
-    <height>475</height>
+    <width>870</width>
+    <height>489</height>
    </rect>
   </property>
   <property name="contextMenuPolicy">
@@ -38,11 +38,12 @@
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
+    <zorder>canvas_mesh</zorder>
    </widget>
    <widget class="QFrame" name="canvas_mesh">
     <property name="geometry">
      <rect>
-      <x>450</x>
+      <x>440</x>
       <y>0</y>
       <width>420</width>
       <height>420</height>
@@ -61,7 +62,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>886</width>
+     <width>870</width>
      <height>30</height>
     </rect>
    </property>
