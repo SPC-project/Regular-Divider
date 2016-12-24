@@ -278,6 +278,9 @@
       </item>
       <item>
        <widget class="QSpinBox" name="air_top">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="maximum">
          <number>1000</number>
         </property>
@@ -306,7 +309,7 @@
       <item>
        <widget class="QSpinBox" name="air_left">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="maximum">
          <number>1000</number>
@@ -356,7 +359,7 @@
       <item>
        <widget class="QSpinBox" name="air_bottom">
         <property name="enabled">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
         <property name="maximum">
          <number>1000</number>
