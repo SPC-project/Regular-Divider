@@ -36,6 +36,9 @@ class Triangle(AbstractPrimitive):
         self.vertexes.append(most_right)
         self.vertexes.append(third)
 
+    def shave_air(self, edge, neighbour):
+        pass
+
     def generate_scaler(self):
         def scaler(point):
             x = point.x()

@@ -212,11 +212,10 @@ class MyWindow(QMainWindow):
             self.figure.save_mesh(fname)
 
     def shit_happens(self):
-        msg = QMessageBox(QMessageBox.Critical, "Крепитесь!", '')
-        msg.setText("Непоправимое произошло...\nПриложение будет закрыто.\n"
+        msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+        msg.setText("Непоправимое произошло...\n"
                     "Данные об ошибке записаны в errors.log")
         msg.exec_()
-        sys.exit()
 
     def propose_upgrade(self):
         self.msg = QLabel('Доступно <a href="https://github.com/SPC-project/'
