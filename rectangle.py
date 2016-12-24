@@ -37,30 +37,22 @@ class Rectangle(AbstractPrimitive):
         fig = (self.x, self.y, self.width, self.height)
         self.modify(fig, self.mesh)
 
-    def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
+    def draw_figure(self, canvas):
         canvas.setPen(self.COL_FIG)
-        x = int(round((shift_x + self.x)*kx))
-        y = int(round((shift_y + self.y)*ky))
-        w = int(round(self.width*kx))
-        h = int(round(self.height*ky))
+        x = self.scale_x(self.x)
+        y = self.scale_y(self.y)
+        w = int(round(self.width*self.drawing_coefs['kx']))
+        h = int(round(self.height*self.drawing_coefs['kx']))
         canvas.drawRect(x, y, w, h)
 
-    def draw_mesh(self, canvas, shift_x, shift_y, kx, ky):
+    def draw_mesh(self, canvas):
         """
         Split rectangle to smaller rectangles step_x*step_y,
         then for each draw diagonal
         """
-        def pixel_x(N):  # calculate coordinate of mesh's Nth node
-            val = shift_x + self.start_x + N*self.step_x
-            return int(round(val*kx))
-
-        def pixel_y(N):
-            val = shift_y + self.start_y + N*self.step_y
-            return int(round(val*ky))
-
         M = self.mesh
-        X1 = M.NAL
-        Y1 = M.NAT
+        X1 = M.NAL  # start of figure
+        Y1 = M.NAT  # start of figure
         X2 = M.NAL + M.NFX  # start of right air layer
         Y2 = M.NAT + M.NFY  # start of bottom air layer
         X_NLEN = X2 + M.NAR
@@ -69,12 +61,12 @@ class Rectangle(AbstractPrimitive):
         B = QPoint()
 
         # Horizontal lines (3 segments: air, figure, air)
-        x0 = pixel_x(0)
-        x1 = pixel_x(X1)
-        x2 = pixel_x(X2)
-        x3 = pixel_x(X_NLEN)
+        x0 = self.pixel_x(0)
+        x1 = self.pixel_x(X1)
+        x2 = self.pixel_x(X2)
+        x3 = self.pixel_x(X_NLEN)
         for j in range(Y_NLEN+1):  # +1 because N segments defined by N+1 dots
-            y = pixel_y(j)
+            y = self.pixel_y(j)
             A.setY(y)
             B.setY(y)
             B.setX(x0)
@@ -88,12 +80,12 @@ class Rectangle(AbstractPrimitive):
                 canvas.drawLine(A, B)
 
         # Vertical lines
-        y0 = pixel_y(0)
-        y1 = pixel_y(Y1)
-        y2 = pixel_y(Y2)
-        y3 = pixel_y(Y_NLEN)
+        y0 = self.pixel_y(0)
+        y1 = self.pixel_y(Y1)
+        y2 = self.pixel_y(Y2)
+        y3 = self.pixel_y(Y_NLEN)
         for i in range(X_NLEN+1):
-            x = pixel_x(i)
+            x = self.pixel_x(i)
             A.setX(x)
             B.setX(x)
             B.setY(y0)
@@ -108,14 +100,14 @@ class Rectangle(AbstractPrimitive):
 
         # Diagonal lines
         for i in range(X_NLEN):  # no need +1: one diagonal for every rectangle
-            x = pixel_x(i)
-            y = pixel_y(0)
+            x = self.pixel_x(i)
+            y = self.pixel_y(0)
             B.setY(y)
             A.setX(x)
             for j in range(Y_NLEN):
                 A.setY(B.y())
-                x = pixel_x(i+1)
-                y = pixel_y(j+1)
+                x = self.pixel_x(i+1)
+                y = self.pixel_y(j+1)
                 B.setX(x)
                 B.setY(y)
                 if X1 <= i and i < X2 and Y1 <= j and j < Y2:
@@ -125,10 +117,10 @@ class Rectangle(AbstractPrimitive):
                 canvas.drawLine(A, B)
 
         # Fill the figure
-        A.setX(pixel_x(X1))
-        A.setY(pixel_y(Y1))
-        B.setX(pixel_x(X2))
-        B.setY(pixel_y(Y2))
+        A.setX(self.pixel_x(X1))
+        A.setY(self.pixel_y(Y1))
+        B.setX(self.pixel_x(X2))
+        B.setY(self.pixel_y(Y2))
         canvas.fillRect(QRect(A, B), self.COL_FIG_INNNER)
 
     def save_indexes(self, f, index_start):

@@ -4,6 +4,7 @@ from PyQt5 import uic
 
 import abc
 
+
 class Mesh:
     """ Auxiliary abstraction for finite-elemental grid """
     def __init__(self, air, other=None):
@@ -286,13 +287,35 @@ class AbstractPrimitive:
         return (self.start_x, self.start_y, self.end_x, self.end_y)
 
     def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
-        self.draw_figure(canvas, shift_x, shift_y, kx, ky)
-        self.draw_mesh(mesh_canvas, shift_x, shift_y, kx, ky)
+        def sx(pos_x):
+            val = shift_x + pos_x
+            return int(round(val*kx))
+
+        def sy(pos_y):
+            val = shift_y + pos_y
+            return int(round(val*ky))
+
+        def tx(N):
+            val = shift_x + self.start_x + N*self.step_x
+            return int(round(val*kx))
+
+        def ty(N):
+            val = shift_y + self.start_y + N*self.step_y
+            return int(round(val*ky))
+
+        self.scale_x = sx
+        self.scale_y = sy
+        self.pixel_x = tx
+        self.pixel_y = ty
+        self.drawing_coefs = {'shift_x': shift_x, 'shift_y': shift_x,
+                              'kx': kx, 'ky': ky}
+        self.draw_figure(canvas)
+        self.draw_mesh(mesh_canvas)
 
     @abc.abstractmethod
-    def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
+    def draw_figure(self, canvas):
         pass
 
     @abc.abstractmethod
-    def draw_mesh(self, canvas, pixel_x, pixel_y):
+    def draw_mesh(self, canvas):
         pass

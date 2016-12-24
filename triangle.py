@@ -36,17 +36,16 @@ class Triangle(AbstractPrimitive):
         self.vertexes.append(most_right)
         self.vertexes.append(third)
 
-    def generate_scaler(self, shift_x, shift_y, kx, ky):
+    def generate_scaler(self):
         def scaler(point):
-            x = int(round(kx*(shift_x + point.x())))
-            y = int(round(ky*(shift_y + point.y())))
-            return x, y
+            x = point.x()
+            y = point.y()
+            return self.scale_x(x), self.scale_y(y)
         return scaler
 
-    def draw_figure(self, canvas, shift_x, shift_y, kx, ky):
+    def draw_figure(self, canvas):
         canvas.setPen(self.COL_FIG)
-
-        scale = self.generate_scaler(shift_x, shift_y, kx, ky)
+        scale = self.generate_scaler()
 
         def convert_line(A, B):
             start_x, start_y = scale(A)
@@ -60,15 +59,21 @@ class Triangle(AbstractPrimitive):
         canvas.drawLine(*convert_line(l2, l3))
         canvas.drawLine(*convert_line(l3, l1))
 
-    def draw_mesh(self, canvas, shift_x, shift_y, kx, ky):
+    def draw_mesh(self, canvas):
         canvas.setPen(self.COL_FIG)
 
         # Fill the figure
         canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
         triangle = QPolygon()
-        scale = self.generate_scaler(shift_x, shift_y, kx, ky)
+        scale = self.generate_scaler()
         for vertex in self.vertexes:
             x, y = scale(vertex)
             triangle.append(QPoint(x, y))
         triangle.append(triangle.first())  # close the polygon
         canvas.drawPolygon(triangle, 4)
+
+    def draw_rectangular_region(self, canvas, node_start_x, node_start_y,
+                                node_end_x, node_end_y, color):
+        if not color:
+            color = self.COL_FIG
+        canvas.setPen(color)
