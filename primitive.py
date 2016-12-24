@@ -39,6 +39,7 @@ class NewPrimitiveDialog(QDialog):
 
     def grab_focus(self):
         self.tabWidget.currentWidget().x.setFocus()
+        self.tabWidget.currentWidget().x.selectAll()
 
     def get_data(self):
         curr_tab_index = self.tabWidget.currentIndex()
