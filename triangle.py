@@ -64,13 +64,16 @@ class Triangle(AbstractPrimitive):
         canvas.drawLine(*convert_line(l3, l1))
 
     def draw_mesh(self, canvas):
+        """
+        Divide figure and it's air-rectangles by right triangles
+        """
         M = self.mesh
         # Make a rectangle with one diagonal (upper-left bottom-right)
         tile_w = self.step_x * self.drawing_coefs['kx']
         tile_h = self.step_y * self.drawing_coefs['ky']
 
-        # Draw air
-        #   Triangle has some at top/bottom(vertical) or left/right(horizontal)
+        # Draw air (draw rectangle tile_w*tile_h and split it by diagonal)
+        # Triangle has some at top/bottom (vertical) or left/right (horizontal)
         form = self.mesh.data["form"]
         canvas.setPen(self.COL_AIR)
         horizontal, hor_x = (M.NAL, 0) if form % 2 == 0 else (M.NAR, M.NFX)
@@ -84,28 +87,7 @@ class Triangle(AbstractPrimitive):
 
         # Draw the figure
         canvas.setPen(self.COL_FIG)
-        if self.width == self.height:
-            x, y = M.NAL, M.NAT + 1
-            h = M.NFY - 1
-            for i in range(M.NFX-1):
-                self.draw_rect_mesh(canvas, tile_w, tile_h, x+i, y+i, 1, h-i)
-        else:
-            # NY, NX - how many rectangles we can draw in the triangle
-            available_h = self.height - self.height*self.step_x / self.width
-            NY = math.floor(available_h / self.step_y)
-            if NY == 0:  # Нет места под элементы
-                pass
-            else:
-                # See explanation in 'doc/triangle draw_mesh.png'
-                tg_alpha = self.width / self.height
-                curr_w, curr_h = self.width, self.height
-                for j in range(NY):
-                    x, y = M.NAL, M.NFY - 1 - j
-                    available_w = curr_w - curr_w*self.step_y / curr_h
-                    NX = math.floor(available_w / self.step_x)
-                    self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, NX, 1)
-                    curr_h -= self.step_y
-                    curr_w = curr_h * tg_alpha
+        self.draw_figure_mesh(canvas, tile_w, tile_h, form)
 
         # Fill the figure
         the_figure = QPolygon()
@@ -117,3 +99,43 @@ class Triangle(AbstractPrimitive):
         canvas.setPen(self.COL_FIG)
         canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
         canvas.drawPolygon(the_figure)
+
+    def draw_figure_mesh(self, canvas, tile_w, tile_h, form):
+        """
+        Divide this triangle by right triangles (legs: tile_w, tile_h)
+        If it itself right - it was fully covered by them
+        If not - need irregular triangles to cover residual free space
+        """
+        M = self.mesh
+
+        if self.width == self.height:  # no need in irregular elements
+            x, modx = M.NAL, 1
+            if form % 2 != 0:
+                x, modx = M.NFX - 1, -1
+            y, mody = M.NAT, 0
+            if form < 2:
+                y, mody = M.NAT + 1, 1
+            w, h = 1, M.NFY - 1
+            for i in range(M.NFX-1):
+                self.draw_rect_mesh(canvas, tile_w, tile_h,
+                                    x+i*modx, y+i*mody, w, h - i)
+        else:  # See explanation in 'doc/triangle draw_mesh.png'
+            # NY, NX - how many rectangles we can draw in the triangle
+            available_h = self.height - self.height*self.step_x / self.width
+            NY = math.floor(available_h / self.step_y)
+            tg_alpha = self.width / self.height
+            curr_w, curr_h = self.width, self.height
+            for j in range(NY):
+                available_w = curr_w - curr_w*self.step_y / curr_h
+                NX = math.floor(available_w / self.step_x)
+                w, h = NX, 1
+                x, modx = M.NAL, 1
+                if form % 2 != 0:
+                    x, modx = M.NFX - NX, -1
+                y, mody = M.NAT + j, 0
+                if form < 2:
+                    y, mody = M.NAB - j, 1
+
+                self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, NX, 1)
+                curr_h -= self.step_y
+                curr_w = curr_h * tg_alpha
