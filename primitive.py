@@ -4,7 +4,6 @@ from PyQt5.QtCore import QPoint
 from PyQt5 import uic
 
 import abc
-import math
 
 
 class Mesh:
@@ -244,6 +243,8 @@ class NewTriangleWidget(QWidget):
 
         for i in range(0, 4):
             boxes[i].setEnabled(states[i])
+            if not states[i]:
+                boxes[i].setValue(0)
 
     def get_data(self):
         x = self.x.value()
@@ -298,19 +299,19 @@ class AbstractPrimitive:
     def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
         def sx(pos_x):
             val = shift_x + pos_x
-            return int(math.floor(val*kx))
+            return int(round(val*kx))
 
         def sy(pos_y):
             val = shift_y + pos_y
-            return int(math.floor(val*ky))
+            return int(round(val*ky))
 
         def tx(N):
             val = shift_x + self.start_x + N*self.step_x
-            return int(math.floor(val*kx))
+            return int(round(val*kx))
 
         def ty(N):
             val = shift_y + self.start_y + N*self.step_y
-            return int(math.floor(val*ky))
+            return int(round(val*ky))
 
         self.scale_x = sx  # Scale from world coordinates to canvas coordinates
         self.scale_y = sy
