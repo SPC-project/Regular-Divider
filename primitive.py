@@ -1,8 +1,10 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox, QWidget
 from PyQt5.QtGui import QColor
+from PyQt5.QtCore import QPoint
 from PyQt5 import uic
 
 import abc
+import math
 
 
 class Mesh:
@@ -296,19 +298,19 @@ class AbstractPrimitive:
     def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
         def sx(pos_x):
             val = shift_x + pos_x
-            return int(round(val*kx))
+            return int(math.floor(val*kx))
 
         def sy(pos_y):
             val = shift_y + pos_y
-            return int(round(val*ky))
+            return int(math.floor(val*ky))
 
         def tx(N):
             val = shift_x + self.start_x + N*self.step_x
-            return int(round(val*kx))
+            return int(math.floor(val*kx))
 
         def ty(N):
             val = shift_y + self.start_y + N*self.step_y
-            return int(round(val*ky))
+            return int(math.floor(val*ky))
 
         self.scale_x = sx  # Scale from world coordinates to canvas coordinates
         self.scale_y = sy
@@ -393,3 +395,51 @@ class AbstractPrimitive:
         if prim_type == "triangle":
             prim_type_index = 1
         return fig, Mesh(grid, header), prim_type_index
+
+    def draw_rect_mesh(self, canvas, dx, dy,
+                       grid_x, grid_y, grid_width, grid_height):
+        """
+        Draw rectangular region of mesh. First divide to squares,
+            then draw diagonal and transform them to triangles
+        'grid_*' arguments is numbers of nodes of the mesh
+        """
+        x0 = self.pixel_x(grid_x)
+        y0 = self.pixel_y(grid_y)
+        xn = self.pixel_x(grid_x + grid_width)
+        yn = self.pixel_y(grid_y + grid_height)
+        # Horizontal & diagonal lines
+        A = QPoint(x0, y0)
+        B = QPoint(xn, y0)
+        canvas.drawLine(A, B)  # first line
+        for j in range(1, grid_height+1):
+            y = self.pixel_y(grid_y+j)
+            A.setY(y)
+            B.setY(y)
+            canvas.drawLine(A, B)
+
+        # Vertical lines
+        A.setX(x0)
+        B.setX(x0)
+        A.setY(y0)
+        B.setY(yn)
+        canvas.drawLine(A, B)
+        for i in range(1, grid_width+1):
+            x = self.pixel_x(grid_x+i)
+            A.setX(x)
+            B.setX(x)
+            canvas.drawLine(A, B)
+
+        # Diagonal lines
+        A.setX(x0)
+        A.setY(y0)
+        B.setX(self.pixel_x(grid_x + 1))  # Diagonal
+        B.setY(self.pixel_y(grid_y + 1))
+        for j in range(1, grid_height+1):
+            for i in range(1, grid_width+1):
+                canvas.drawLine(A, B)
+                A.setX(self.pixel_x(grid_x + i))
+                B.setX(self.pixel_x(grid_x + i + 1))
+            A.setX(x0)
+            A.setY(self.pixel_y(grid_y + j))
+            B.setX(self.pixel_x(grid_x + 1))
+            B.setY(self.pixel_y(grid_y + j + 1))

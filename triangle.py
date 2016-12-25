@@ -1,5 +1,5 @@
 from primitive import AbstractPrimitive
-from PyQt5.QtCore import QPoint, QRect
+from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QPolygon, QBrush
 
 
@@ -74,8 +74,13 @@ class Triangle(AbstractPrimitive):
             x, y, w, h = 0, 0, M.NAL, M.NFY + M.NAB
             self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
         if M.NAB != 0:
-            x, y, w, h = M.NAL, M.NAT + M.NFY, M.NFX, M.NAB
+            x, y, w, h = M.NAL, M.NFY, M.NFX, M.NAB
             self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
+
+        # Draw the figure
+        canvas.setPen(self.COL_FIG)
+        x, y, w, h = M.NAL, M.NAT + M.NFY - 1, M.NFX-1, 1
+        self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
 
         # Fill the figure
         the_figure = QPolygon()
@@ -87,18 +92,3 @@ class Triangle(AbstractPrimitive):
         canvas.setPen(self.COL_FIG)
         canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
         canvas.drawPolygon(the_figure)
-
-    def draw_rect_mesh(self, canvas, dx, dy,
-                       grid_x, grid_y, grid_width, grid_height):
-        tile = QPolygon(QRect(0, 0, dx, dy), True)
-        tile.putPoints(5, dx, dy)  # insert sixth vertex, for diagonal
-        x0 = self.pixel_x(grid_x)
-        y0 = self.pixel_y(grid_y)
-        tile.translate(x0, y0)
-
-        backward_x = -grid_width*dx
-        for j in range(grid_height):
-            for i in range(grid_width):
-                canvas.drawPolygon(tile)
-                tile.translate(dx, 0)
-            tile.translate(backward_x, dy)
