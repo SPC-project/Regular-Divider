@@ -70,12 +70,16 @@ class Triangle(AbstractPrimitive):
         tile_h = self.step_y * self.drawing_coefs['ky']
 
         # Draw air
+        #   Triangle has some at top/bottom(vertical) or left/right(horizontal)
+        form = self.mesh.data["form"]
         canvas.setPen(self.COL_AIR)
-        if M.NAL != 0:
-            x, y, w, h = 0, 0, M.NAL, M.NFY + M.NAB
+        horizontal, hor_x = (M.NAL, 0) if form % 2 == 0 else (M.NAR, M.NFX)
+        vertical, vert_y = (M.NAT, 0) if form > 1 else (M.NAB, M.NFY)
+        if horizontal != 0:
+            x, y, w, h = hor_x, 0, horizontal, M.NAT + M.NFY + M.NAB
             self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
-        if M.NAB != 0:
-            x, y, w, h = M.NAL, M.NFY, M.NFX, M.NAB
+        if vertical != 0:
+            x, y, w, h = M.NAL, vert_y, M.NFX, vertical
             self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
 
         # Draw the figure
