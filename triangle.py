@@ -1,6 +1,7 @@
 from primitive import AbstractPrimitive
 from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QPolygon, QBrush
+import math
 
 
 class Triangle(AbstractPrimitive):
@@ -80,9 +81,27 @@ class Triangle(AbstractPrimitive):
         # Draw the figure
         canvas.setPen(self.COL_FIG)
         if self.width == self.height:
-            x, y, w, h = M.NAL, M.NAT + 1, 1, M.NFY - 1
-            for i in range(1, M.NFX-1):
-                self.draw_rect_mesh(canvas, tile_w, tile_h, x+i, y-i, w, h)
+            x, y = M.NAL, M.NAT + 1
+            h = M.NFY - 1
+            for i in range(M.NFX-1):
+                self.draw_rect_mesh(canvas, tile_w, tile_h, x+i, y+i, 1, h-i)
+        else:
+            # NY, NX - how many rectangles we can draw in the triangle
+            available_h = self.height - self.height*self.step_x / self.width
+            NY = math.floor(available_h / self.step_y)
+            if NY == 0:  # Нет места под элементы
+                pass
+            else:
+                # See explanation in 'doc/triangle draw_mesh.png'
+                tg_alpha = self.width / self.height
+                curr_w, curr_h = self.width, self.height
+                for j in range(NY):
+                    x, y = M.NAL, M.NFY - 1 - j
+                    available_w = curr_w - curr_w*self.step_y / curr_h
+                    NX = math.floor(available_w / self.step_x)
+                    self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, NX, 1)
+                    curr_h -= self.step_y
+                    curr_w = curr_h * tg_alpha
 
         # Fill the figure
         the_figure = QPolygon()
