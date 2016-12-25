@@ -79,8 +79,10 @@ class Triangle(AbstractPrimitive):
 
         # Draw the figure
         canvas.setPen(self.COL_FIG)
-        x, y, w, h = M.NAL, M.NAT + M.NFY - 1, M.NFX-1, 1
-        self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
+        if self.width == self.height:
+            x, y, w, h = M.NAL, M.NAT + 1, 1, M.NFY - 1
+            for i in range(1, M.NFX-1):
+                self.draw_rect_mesh(canvas, tile_w, tile_h, x+i, y-i, w, h)
 
         # Fill the figure
         the_figure = QPolygon()
