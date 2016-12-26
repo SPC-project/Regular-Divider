@@ -173,15 +173,13 @@ class MyWindow(QMainWindow):
                    s.prim_nl, s.wipe_world, s.add_primitive]
 
         dx, dy = self.getCanvasSize()
-        target_ind = self.figure.click_over(x, y, dx, dy)
+        target_ind, possible_dirs = self.figure.click_over(x, y, dx, dy)
         if target_ind != -1:
             menu.addAction(actions[0])
             menu.addAction(actions[1])
             expand = menu.addMenu("Добавить примитив")
-            expand.addAction(actions[2])
-            expand.addAction(actions[3])
-            expand.addAction(actions[4])
-            expand.addAction(actions[5])
+            for elem in possible_dirs:
+                expand.addAction(actions[elem])
             menu.addAction(actions[6])
         else:
             menu.addAction(actions[7])  # new rectangle

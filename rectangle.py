@@ -24,17 +24,11 @@ class Rectangle(AbstractPrimitive):
         self.binds = [None]*4
         super(Rectangle, self).__init__(fig, mesh)
 
-    def modify(self):
+    def update_me(self):
         # if has connection to another Rectangles, 'shave' that edge from air
         for i in range(4):
             if self.binds[i]:
                 self.mesh.set_val_at(i, 0)
-
-    def shave_air(self, edge, neighbour):
-        if not neighbour:
-            raise ValueError("Пропущен второй аргумент (neighbour)")
-        self.binds[edge] = neighbour
-        self.modify()
 
     def draw_figure(self, canvas):
         canvas.setPen(self.COL_FIG)

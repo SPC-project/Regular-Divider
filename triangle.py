@@ -14,7 +14,7 @@ class Triangle(AbstractPrimitive):
         self.binds = [None]*4
         super(Triangle, self).__init__(fig, mesh)
 
-    def modify(self):
+    def update_me(self):
         """
             Triangle types: :. | .: | ˸˙ | ˙˸
             Store vertexes as { most left, most rith, third };
@@ -37,8 +37,9 @@ class Triangle(AbstractPrimitive):
         self.vertexes.append(most_right)
         self.vertexes.append(third)
 
-    def shave_air(self, edge, neighbour):
-        pass
+        for i in range(4):
+            if self.binds[i]:
+                self.mesh.set_val_at(i, 0)
 
     def generate_scaler(self):
         def scaler(point):
@@ -134,8 +135,8 @@ class Triangle(AbstractPrimitive):
                     x, modx = M.NFX - NX, -1
                 y, mody = M.NAT + j, 0
                 if form < 2:
-                    y, mody = M.NAB - j, 1
+                    y, mody = M.NFY - 1 - j, 1
 
-                self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, NX, 1)
+                self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
                 curr_h -= self.step_y
                 curr_w = curr_h * tg_alpha

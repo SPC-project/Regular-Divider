@@ -26,6 +26,7 @@ class Mesh:
     def set_val_at(self, index, value):
         holder = [self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY]
         holder[index] = value
+        self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = holder
 
 
 class NewPrimitiveDialog(QDialog):
@@ -48,15 +49,23 @@ class NewPrimitiveDialog(QDialog):
         self.tabWidget.currentWidget().x.selectAll()
 
     def get_data(self):
-        curr_tab_index = self.tabWidget.currentIndex()
         fig = None
         mesh = None
+        curr_tab_index = self.tabWidget.currentIndex()
         if curr_tab_index == 0:
             fig, mesh = self.Rectangle_widget.get_data()
         elif curr_tab_index == 1:
             fig, mesh = self.Triangle_widget.get_data()
 
         return fig, mesh, curr_tab_index
+
+    def set_data(self, primitive):
+        if primitive.mesh.data['type'] == 'rectangle':
+            self.tabWidget.setCurrentIndex(0)
+            self.Rectangle_widget.set_data(primitive)
+        else:
+            self.tabWidget.setCurrentIndex(1)
+            self.Triangle_widget._data(primitive)
 
     def validate(self):
         curr = self.tabWidget.currentWidget()
@@ -67,11 +76,8 @@ class NewPrimitiveDialog(QDialog):
             self.done(0)
 
     def for_expanding(self, prim, side_code):
-        curr_tab_index = self.tabWidget.currentIndex()
-        if curr_tab_index == 0:
-            self.Rectangle_widget.for_expanding(prim, side_code)
-        elif curr_tab_index == 1:
-            return self.Triangle_widget.get_data(prim, side_code)
+        self.Rectangle_widget.for_expanding(prim, side_code)
+        self.Triangle_widget.for_expanding(prim, side_code)
 
 
 class NewRectangleWidget(QWidget):
@@ -98,7 +104,12 @@ class NewRectangleWidget(QWidget):
         self.width.setValue(rectangle.width)
         self.height.setValue(rectangle.height)
 
-        Ntop, Nright, Nbottom, Nleft, Nx, Ny = rectangle.mesh
+        Ntop = rectangle.mesh.NAT
+        Nright = rectangle.mesh.NAR
+        Nbottom = rectangle.mesh.NAB
+        Nleft = rectangle.mesh.NAL
+        Nx = rectangle.mesh.NFX
+        Ny = rectangle.mesh.NFY
         air = (Ntop, Nright, Nbottom, Nleft)
         self.Nx.setValue(Nx+1)  # convert back from blocks to nodes
         self.Ny.setValue(Ny+1)
@@ -166,7 +177,7 @@ class NewRectangleWidget(QWidget):
         prim_stp = [prim.step_x, prim.step_y]
         prim_bounds = [(prim.x, prim.x + prim.width),
                        (prim.y, prim.y + prim.height)]
-        nodes = [prim.mesh[4], prim.mesh[5]]  # mesh[4] is x
+        nodes = [prim.mesh.NFX, prim.mesh.NFY]  # mesh[4] is x
 
         free_axis = side_code % 2  # ось, по которой можно двигать примитив
         to_prim = (side_code+2) % 4  # сторона, с которой находится prim
@@ -230,21 +241,30 @@ class NewTriangleWidget(QWidget):
         uic.loadUi('ui/new_triangle.ui', self)
 
         self.comboBox.currentIndexChanged.connect(self.select_type)
+        self.expanding_index = -1
 
     def select_type(self, index):
-        boxes = [self.air_top, self.air_left, self.air_right, self.air_bottom]
-        states = [False, True, False, True]
-        if index == 1:
-            states = [False, False, True, True]
-        if index == 2:
+        boxes = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+        states = [False, False, True, True]
+        text = self.comboBox.itemText(index)
+        if text == ".:":
+            states = [False, True, True, False]
+        if text == "˸˙":
+            states = [True, False, False, True]
+        if text == "˙˸":
             states = [True, True, False, False]
-        if index == 3:
-            states = [True, False, True, False]
 
         for i in range(0, 4):
             boxes[i].setEnabled(states[i])
             if not states[i]:
                 boxes[i].setValue(0)
+
+        if self.expanding_index != -1:
+            connected_side = (self.expanding_index + 2) % 4
+            boxes[connected_side].setEnabled(False)
+
+    def set_data(self, triangle):
+        pass
 
     def get_data(self):
         x = self.x.value()
@@ -263,6 +283,27 @@ class NewTriangleWidget(QWidget):
 
         return (x, y, width, height), Mesh(mesh, other_data)
 
+    def for_expanding(self, triangle, side_code):
+        self.expanding_index = side_code
+        if side_code == 0:
+            # Index shift after removing => bigger first
+            self.comboBox.removeItem(3)
+            self.comboBox.removeItem(2)
+            self.select_type(0)
+        if side_code == 1:
+            self.comboBox.removeItem(3)
+            self.comboBox.removeItem(1)
+            self.select_type(2)
+        if side_code == 2:
+            self.comboBox.removeItem(1)
+            self.comboBox.removeItem(0)
+            self.select_type(2)
+            self.air_bottom.setEnabled(False)
+        if side_code == 3:
+            self.comboBox.removeItem(2)
+            self.comboBox.removeItem(0)
+            self.select_type(0)  # index moved because removeItem
+
 
 class AbstractPrimitive:
     __metaclass__ = abc.ABCMeta
@@ -273,25 +314,36 @@ class AbstractPrimitive:
     EXPORT_DESCRIPTION = "type: "
 
     def __init__(self, fig, mesh):
-        self.x, self.y, self.width, self.height = fig
-        self.mesh = mesh
+        self.modify(fig, mesh)
 
-        self.element_count_w = mesh.NAL + mesh.NFX + mesh.NAR
-        self.element_count_h = mesh.NAT + mesh.NFY + mesh.NAB
-        self.step_x = self.width/mesh.NFX
-        self.step_y = self.height/mesh.NFY
-        self.start_x = self.x - self.step_x*mesh.NAL  # where air start
-        self.start_y = self.y - self.step_y*mesh.NAT
+    def modify(self, fig=None, mesh=None):
+        if fig:
+            self.x, self.y, self.width, self.height = fig
+        if mesh:
+            self.mesh = mesh
+
+        self.update_me()
+
+        self.element_count_w = self.mesh.NAL + self.mesh.NFX + self.mesh.NAR
+        self.element_count_h = self.mesh.NAT + self.mesh.NFY + self.mesh.NAB
+        self.step_x = self.width/self.mesh.NFX
+        self.step_y = self.height/self.mesh.NFY
+        self.start_x = self.x - self.step_x*self.mesh.NAL  # where air start
+        self.start_y = self.y - self.step_y*self.mesh.NAT
         width = self.mesh.NFX + self.mesh.NAR
         height = self.mesh.NFY + self.mesh.NAB
         self.end_x = self.x + self.step_x*width
         self.end_y = self.y + self.step_y*(height)
 
-        self.modify()
-
     @abc.abstractmethod
-    def modify(self):
+    def update_me(self):
         pass
+
+    def shave_air(self, edge, neighbour):
+        if not neighbour:
+            raise ValueError("Пропущен второй аргумент (neighbour)")
+        self.binds[edge] = neighbour
+        self.modify()
 
     def get_box(self):
         return (self.start_x, self.start_y, self.end_x, self.end_y)
