@@ -1,9 +1,12 @@
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
-from rectangle import Rectangle, NewRectangleDialog
-import math
+from rectangle import Rectangle
+from triangle import Triangle
+from primitive import NewPrimitiveDialog, AbstractPrimitive
 
 SPACING = 5
+RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
+TRI = 1
 
 
 class Figure(QtCore.QObject):
@@ -24,7 +27,7 @@ class Figure(QtCore.QObject):
         self.primitive_deletion.connect(self.del_prim)
         self.primitive_modification.connect(self.mod_prim)
 
-        self.nf_dialog = NewRectangleDialog()
+        self.prim_dialog = NewPrimitiveDialog()
 
         self.update_status()
 
@@ -62,30 +65,30 @@ class Figure(QtCore.QObject):
             self.send_message("Рабочая область создана")
 
     def new_figure(self):
-        self.nf_dialog.x.setFocus()
-        self.nf_dialog.exec_()
-        if self.nf_dialog.result() == 1:
+        self.prim_dialog.grab_focus()
+        self.prim_dialog.exec_()
+        if self.prim_dialog.result() == 1:
             self.parent_clear.emit()
-            self.adopt_new_figure(*self.nf_dialog.get_data())
+            self.adopt_primitive(*self.prim_dialog.get_data())
 
-    def adopt_new_figure(self, fig, mesh, primitive_ind=-1):
-        resized = False
+    def adopt_primitive(self, fig, mesh, prim_type_index, primitive_ind=-1):
         x, y, w, h = fig
-        if x+w > self.world_size:
-            self.world_size = x+w + SPACING
-            resized = True
-        if y+h > self.world_size:
-            self.world_size = y+h + SPACING
-            resized = True
 
         if primitive_ind == -1:
-            r = Rectangle(fig, mesh)
-            self.shape.append(r)
+            primitive = None
+            if prim_type_index == RECT:
+                primitive = Rectangle(fig, mesh)
+            elif prim_type_index == TRI:
+                primitive = Triangle(fig, mesh)
+            self.shape.append(primitive)
         else:
             self.shape[primitive_ind].modify(fig, mesh)
 
-        if resized:
-            self.send_message("Рабочая область была расширена")
+        not_match_x = x+w > self.world_size or x <= self.start_x
+        not_match_y = y+h > self.world_size or y <= self.start_y
+        if not_match_x or not_match_y:
+            self.message = "Рабочая область была расширена"
+            self.adjust()
         else:
             self.parent_update.emit()
 
@@ -93,22 +96,22 @@ class Figure(QtCore.QObject):
         if self.world_size == 0:
             return
 
-        kx = canvas_width/self.world_size
-        ky = canvas_height/self.world_size
+        kx = int(canvas_width/self.world_size)
+        ky = int(canvas_height/self.world_size)
         shift_x = -self.start_x
         shift_y = -self.start_y
         for primitive in self.shape:
             primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
 
     def mod_prim(self, ind):
-        dialog = NewRectangleDialog()
+        dialog = NewPrimitiveDialog()
         dialog.set_data(self.shape[ind])
-        dialog.x.setFocus()
+        dialog.grab_focus()
         dialog.exec_()
         if dialog.result() == 1:
             self.parent_clear.emit()
-            fig, mesh = dialog.get_data()
-            self.adopt_new_figure(fig, mesh, ind)
+            fig, mesh, prim_type_index = dialog.get_data()
+            self.adopt_primitive(fig, mesh, prim_type_index, ind)
 
     def del_prim(self, ind):
         to_del = self.shape[ind]
@@ -162,10 +165,6 @@ class Figure(QtCore.QObject):
             for i in range(int(max_x/dk)):
                 x = min_x + i*dk
                 y = min_y + j*dk
-                horizontal = frame_x <= x and x <= frame_X
-
-            vertical = frame_y <= y and y <= frame_Y
-
 
     def irregular_mesh_saving(self, filename):
         '''
@@ -227,14 +226,26 @@ class Figure(QtCore.QObject):
         self.send_message("Фигура сохранена")
 
     def click_over(self, x, y, canvas_width, canvas_height):
+        possible_dirs = [2, 3, 4, 5]
         x = self.start_x + x * self.world_size/canvas_width
         y = self.start_y + y * self.world_size/canvas_height
         for i, prim in enumerate(self.shape):
             if prim.x < x and x < prim.x + prim.width:
                 if prim.y < y and y < prim.y + prim.height:
-                    return i
+                    possible_dirs = (2, 3, 4, 5)  # see MyWindow.mousePressEvent()
+                    if prim.mesh.data['type'] == 'triangle':
+                        form = prim.mesh.data['form']
+                        if form == 0:
+                            possible_dirs = (5, 4)
+                        elif form == 1:
+                            possible_dirs = (4, 3)
+                        elif form == 2:
+                            possible_dirs = (2, 5)
+                        else:
+                            possible_dirs = (3, 2)
+                    return i, possible_dirs
 
-        return -1
+        return -1, None
 
     def expand(self, ind, side_code):
         prim = self.shape[ind]
@@ -247,13 +258,13 @@ class Figure(QtCore.QObject):
             msg.exec_()
             return
 
-        dialog = NewRectangleDialog()
+        dialog = NewPrimitiveDialog()
         dialog.for_expanding(prim, side_code)
-        dialog.x.setFocus()
+        dialog.grab_focus()
         dialog.exec_()
 
         if dialog.result() == 1:
-            self.adopt_new_figure(*dialog.get_data())
+            self.adopt_primitive(*dialog.get_data())
             new_prim = self.shape[-1]
             prim.shave_air(side_code, new_prim)
             new_prim.shave_air((side_code+2) % 4, prim)  # shave opposite side
@@ -267,12 +278,7 @@ class Figure(QtCore.QObject):
 
         with open(filename, 'w') as f:
             for prim in self.shape:
-                x = prim.x
-                y = prim.y
-                w = prim.width
-                h = prim.height
-                f.write("{} {} {} {} ".format(x, y, w, h))
-                f.write("{} {} {} {} {} {}\n".format(*prim.mesh))
+                prim.export_figure(f)
 
             f.write("# connections\n")
             for prim in self.shape:
@@ -286,25 +292,26 @@ class Figure(QtCore.QObject):
     def importing(self, filename):
         self.shape.clear()
         with open(filename, 'r') as f:
-            rectangles_still = True
+            still_read_primitives = True
             shift = 0
             for i, line in enumerate(f.readlines()):
                 if line[0:1] == '#':
-                    rectangles_still = False
+                    still_read_primitives = False
                     shift = i+1
                     continue
 
-                data = line.split(' ')
-                if rectangles_still:
-                    fig = tuple(float(d) for d in data[0:4])
-                    mesh = list(int(i) for i in data[4:10])
-                    self.adopt_new_figure(fig, mesh)
+                if still_read_primitives:
+                    data = line.split(' | ')
+                    fig, mesh, prim_type_index = AbstractPrimitive.parse(data)
+                    self.adopt_primitive(fig, mesh, prim_type_index)
                 else:
+                    data = line.split(' ')
                     for side, code in enumerate(data[:-1]):  # last is '\n'
                         code = int(code)
                         if code != -1:
                             neighbour = self.shape[code]
                             self.shape[i-shift].shave_air(side, neighbour)
+        self.adjust()
         self.parent_clear.emit()
         self.parent_update.emit()
 
@@ -328,14 +335,14 @@ class Figure(QtCore.QObject):
             if y1 > max_y:
                 max_y = y1
 
-        self.start_x = min_x - 3
-        self.start_y = min_y - 3
-        max_width = math.ceil(max_x - min_x) + 6
-        max_height = math.ceil(max_y - max_y) + 6
+        self.start_x = min_x - SPACING
+        self.start_y = min_y - SPACING
+        max_width = max_x - min_x + 2*SPACING
+        max_height = max_y - min_y + 2*SPACING
         if max_width > max_height:
-            self.world_size = max_width
+            self.world_size = int(max_width)
         else:
-            self.world_size = max_height
+            self.world_size = int(max_height)
 
         self.update_status()
         self.parent_clear.emit()

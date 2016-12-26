@@ -23,9 +23,9 @@ from figure import Figure
 from figure_managing import PrimitivesListDialog
 
 BLANK = QColor(0, 0, 0, 0)
-OFFSET_X = 10
-OFFSET_Y = 30
+OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
 RIGHT_BUTTON = 2
+PADDING = 10
 
 
 class MyWindow(QMainWindow):
@@ -63,7 +63,7 @@ class MyWindow(QMainWindow):
         self.import_figure.triggered.connect(self.pre_import)
         self.export_figure.triggered.connect(self.pre_export)
 
-        self.add_rectangle.triggered.connect(self.figure.new_figure)
+        self.add_primitive.triggered.connect(self.figure.new_figure)
         self.edit_figure.triggered.connect(self.show_prims_dialog)
         self.create_world.triggered.connect(self.figure.create_space)
 
@@ -77,25 +77,34 @@ class MyWindow(QMainWindow):
         self.repaint()
 
     def getCanvasSize(self):
-        dx = (self.geometry().width() - 4*OFFSET_X)/2
-        dy = self.geometry().height() - OFFSET_Y - self.statusbar.height()
-        return dx, dy
+        dx = (self.geometry().width() - 3*PADDING) / 2
+        dy = self.geometry().height() - self.menubar.height() \
+            - self.statusbar.height()
+        return int(dx), int(dy)
 
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.HighQualityAntialiasing)
         # drawPixmap ignore action bar, need shift y-coordinate then
-        p.drawPixmap(OFFSET_X, OFFSET_Y, self.canvas_figure_buffer)
-        p.drawPixmap(self.canvas_mesh.x(), OFFSET_Y, self.canvas_mesh_buffer)
+        p.drawPixmap(self.draw_fig_x, self.draw_y, self.canvas_figure_buffer)
+        p.drawPixmap(self.draw_mesh_x, self.draw_y, self.canvas_mesh_buffer)
 
     def resizeEvent(self, event):
         dx, dy = self.getCanvasSize()
         self.canvas_figure.resize(dx, dy)
-        # Can't move onto action bar - no OFFSET_Y used then
-        self.canvas_figure.move(OFFSET_X, 0)
         self.canvas_mesh.resize(dx, dy)
-        self.canvas_mesh.move(3*OFFSET_X+dx, 0)
+        self.canvas_mesh.move(PADDING + dx + PADDING, 0)
 
+        if not (dx == dy and dx == 420):
+            msg = "Resizing... Canvases: " + str(dx) + "x" + str(dy)
+            self.figure.message = msg + " (square recommended)"
+
+        self.draw_fig_x = self.canvas_figure.x() + OFFSET
+        self.draw_mesh_x = self.canvas_mesh.x() + OFFSET
+        self.draw_y = self.canvas_figure.y() + self.menubar.height() + OFFSET
+
+        dx -= 2*OFFSET  # Prevent QPixmap from overlap QFrame's borders
+        dy -= 2*OFFSET
         self.canvas_mesh_buffer = QPixmap(dx, dy)
         self.canvas_figure_buffer = QPixmap(dx, dy)
         self.clearing()
@@ -111,6 +120,8 @@ class MyWindow(QMainWindow):
 
         canvas = QPainter(self.canvas_figure_buffer)
         mesh_canvas = QPainter(self.canvas_mesh_buffer)
+        canvas.setRenderHint(QPainter.HighQualityAntialiasing)
+        mesh_canvas.setRenderHint(QPainter.HighQualityAntialiasing)
         dx, dy = self.getCanvasSize()
         self.figure.redraw(canvas, dx, dy, mesh_canvas)
         self.repaint()
@@ -150,8 +161,8 @@ class MyWindow(QMainWindow):
         if e.button() != QtCore.Qt.RightButton:
             return
 
-        x = e.x() - OFFSET_X
-        y = e.y() - OFFSET_Y
+        x = e.x() - self.canvas_figure.x()
+        y = e.y() - self.menubar.height()
         canvas = self.canvas_figure.frameGeometry()
         min_x, min_y, max_x, max_y = canvas.getCoords()
         if not (min_x < x and x < max_x and min_y < y and y < max_y):
@@ -161,18 +172,16 @@ class MyWindow(QMainWindow):
         s = self
         # self.prim_n* defined in ui/main.ui
         actions = [s.prim_del, s.prim_edit, s.prim_nt, s.prim_nr, s.prim_nb,
-                   s.prim_nl, s.wipe_world, s.add_rectangle]
+                   s.prim_nl, s.wipe_world, s.add_primitive]
 
         dx, dy = self.getCanvasSize()
-        target_ind = self.figure.click_over(x, y, dx, dy)
+        target_ind, possible_dirs = self.figure.click_over(x, y, dx, dy)
         if target_ind != -1:
             menu.addAction(actions[0])
             menu.addAction(actions[1])
             expand = menu.addMenu("Добавить примитив")
-            expand.addAction(actions[2])
-            expand.addAction(actions[3])
-            expand.addAction(actions[4])
-            expand.addAction(actions[5])
+            for elem in possible_dirs:
+                expand.addAction(actions[elem])
             menu.addAction(actions[6])
         else:
             menu.addAction(actions[7])  # new rectangle
@@ -203,11 +212,10 @@ class MyWindow(QMainWindow):
             self.figure.save_mesh(fname)
 
     def shit_happens(self):
-        msg = QMessageBox(QMessageBox.Critical, "Крепитесь!", '')
-        msg.setText("Непоправимое произошло...\nПриложение будет закрыто.\n"
+        msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+        msg.setText("Непоправимое произошло...\n"
                     "Данные об ошибке записаны в errors.log")
         msg.exec_()
-        sys.exit()
 
     def propose_upgrade(self):
         self.msg = QLabel('Доступно <a href="https://github.com/SPC-project/'
@@ -271,8 +279,6 @@ def testing():
     """
     if os.system("git diff-index --quiet HEAD --") == 256:
         pass
-        #os.system("mk% python -m unittest discover --start-directory=./test")
-
 
 if __name__ == '__main__':
     log_format = '[%(asctime)s]  %(message)s'
