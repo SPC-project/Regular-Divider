@@ -62,10 +62,36 @@ class NewPrimitiveDialog(QDialog):
     def set_data(self, primitive):
         if primitive.mesh.data['type'] == 'rectangle':
             self.tabWidget.setCurrentIndex(0)
+            self.tabWidget.setTabEnabled(1, False)  # no need when redacted
+            self.basic_set_data(self.Rectangle_widget, primitive)
             self.Rectangle_widget.set_data(primitive)
         else:
             self.tabWidget.setCurrentIndex(1)
+            self.tabWidget.setTabEnabled(0, False)
+            self.basic_set_data(self.Triangle_widget, primitive)
             self.Triangle_widget.set_data(primitive)
+
+    def basic_set_data(self, tab, primitive):
+        tab.x.setValue(primitive.x)
+        tab.y.setValue(primitive.y)
+        tab.width.setValue(primitive.width)
+        tab.height.setValue(primitive.height)
+
+        Ntop = primitive.mesh.NAT
+        Nright = primitive.mesh.NAR
+        Nbottom = primitive.mesh.NAB
+        Nleft = primitive.mesh.NAL
+        Nx = primitive.mesh.NFX
+        Ny = primitive.mesh.NFY
+        air = (Ntop, Nright, Nbottom, Nleft)
+        tab.Nx.setValue(Nx+1)  # convert back from blocks to nodes
+        tab.Ny.setValue(Ny+1)
+
+        dlg = [tab.air_top, tab.air_right, tab.air_bottom, tab.air_left]
+        for i in range(4):
+            dlg[i].setValue(air[i])
+            if primitive.binds[i]:
+                dlg[i].hide()
 
     def validate(self):
         curr = self.tabWidget.currentWidget()
@@ -98,29 +124,12 @@ class NewRectangleWidget(QWidget):
         self.air_right.setEnabled(isEnabled)
         self.air_bottom.setEnabled(isEnabled)
 
-    def set_data(self, rectangle):
-        self.x.setValue(rectangle.x)
-        self.y.setValue(rectangle.y)
-        self.width.setValue(rectangle.width)
-        self.height.setValue(rectangle.height)
+    def set_data(self, primitive):
+        different = primitive.mesh.NAL != primitive.mesh.NAR
+        different = different or primitive.mesh.NAT != primitive.mesh.NAB
+        different = different or primitive.mesh.NAL != primitive.mesh.NAT
 
-        Ntop = rectangle.mesh.NAT
-        Nright = rectangle.mesh.NAR
-        Nbottom = rectangle.mesh.NAB
-        Nleft = rectangle.mesh.NAL
-        Nx = rectangle.mesh.NFX
-        Ny = rectangle.mesh.NFY
-        air = (Ntop, Nright, Nbottom, Nleft)
-        self.Nx.setValue(Nx+1)  # convert back from blocks to nodes
-        self.Ny.setValue(Ny+1)
-
-        dlg = [self.air_top, self.air_right, self.air_bottom, self.air_left]
-        for i in range(4):
-            dlg[i].setValue(air[i])
-            if rectangle.binds[i]:
-                dlg[i].hide()
-
-        if Nleft != Nright or Ntop != Nbottom or Nleft != Ntop:
+        if different:
             self.manual_air.setChecked(True)
 
     def get_data(self):
@@ -264,7 +273,7 @@ class NewTriangleWidget(QWidget):
             boxes[connected_side].setEnabled(False)
 
     def set_data(self, triangle):
-        pass
+        self.comboBox.setCurrentIndex(triangle.mesh.data['form'])
 
     def get_data(self):
         x = self.x.value()
