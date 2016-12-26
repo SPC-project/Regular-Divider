@@ -65,7 +65,7 @@ class NewPrimitiveDialog(QDialog):
             self.Rectangle_widget.set_data(primitive)
         else:
             self.tabWidget.setCurrentIndex(1)
-            self.Triangle_widget._data(primitive)
+            self.Triangle_widget.set_data(primitive)
 
     def validate(self):
         curr = self.tabWidget.currentWidget()
@@ -279,7 +279,9 @@ class NewTriangleWidget(QWidget):
         Nbottom = self.air_bottom.value()
         Nleft = self.air_left.value()
         mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
-        other_data = {'type': 'triangle', 'form': self.comboBox.currentIndex()}
+        forms = {":.": 0, ".:": 1, "˸˙": 2, "˙˸": 3}
+        form = forms[self.comboBox.itemText(self.comboBox.currentIndex())]
+        other_data = {'type': 'triangle', 'form': form}
 
         return (x, y, width, height), Mesh(mesh, other_data)
 
@@ -390,8 +392,8 @@ class AbstractPrimitive:
         """
         txt = self.EXPORT_DESCRIPTION + "{}"
         to.write(txt.format(self.mesh.data["type"]))
-        data_len = self.mesh.data
-        if len(data_len) > 1:
+        data_len = len(self.mesh.data)
+        if data_len > 1:
             to.write(" | ")
             for key, value in self.mesh.data.items():
                 if key != "type":
@@ -410,14 +412,6 @@ class AbstractPrimitive:
         NFX = self.mesh.NFX
         NFY = self.mesh.NFY
         to.write("{} {} {} {} {} {}\n".format(NAT, NAR, NAB, NAL, NFX, NFY))
-
-    def export_figure_connections(self, to):
-        for side in self.binds:
-            if side:
-                to.write("{} ".format(self.shape.index(side)))
-            else:
-                to.write("-1 ")
-        to.write("\n")
 
     def parse(data_about_primitive):
         """

@@ -82,7 +82,7 @@ class Figure(QtCore.QObject):
                 primitive = Triangle(fig, mesh)
             self.shape.append(primitive)
         else:
-            self.shape[primitive_ind].redifine(fig, mesh)
+            self.shape[primitive_ind].modify(fig, mesh)
 
         not_match_x = x+w > self.world_size or x <= self.start_x
         not_match_y = y+h > self.world_size or y <= self.start_y
@@ -282,7 +282,12 @@ class Figure(QtCore.QObject):
 
             f.write("# connections\n")
             for prim in self.shape:
-                prim.export_figure_connections(f)
+                for side in prim.binds:
+                    if side:
+                        f.write("{} ".format(self.shape.index(side)))
+                    else:
+                        f.write("-1 ")
+                f.write("\n")
 
     def importing(self, filename):
         self.shape.clear()
