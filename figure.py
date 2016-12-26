@@ -311,6 +311,7 @@ class Figure(QtCore.QObject):
                         if code != -1:
                             neighbour = self.shape[code]
                             self.shape[i-shift].shave_air(side, neighbour)
+        self.adjust()
         self.parent_clear.emit()
         self.parent_update.emit()
 

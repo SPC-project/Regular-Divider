@@ -120,6 +120,8 @@ class MyWindow(QMainWindow):
 
         canvas = QPainter(self.canvas_figure_buffer)
         mesh_canvas = QPainter(self.canvas_mesh_buffer)
+        canvas.setRenderHint(QPainter.HighQualityAntialiasing)
+        mesh_canvas.setRenderHint(QPainter.HighQualityAntialiasing)
         dx, dy = self.getCanvasSize()
         self.figure.redraw(canvas, dx, dy, mesh_canvas)
         self.repaint()
