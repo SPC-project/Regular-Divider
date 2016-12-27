@@ -6,7 +6,7 @@ Author: Mykolaj Konovalow
     for SPC department of NTU "KhPI"
 """
 
-VERSION = (0, 3, 1)
+VERSION = (0, 4, 0)
 
 import sys
 import os
