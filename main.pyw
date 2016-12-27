@@ -96,8 +96,8 @@ class MyWindow(QMainWindow):
         self.canvas_mesh.move(PADDING + dx + PADDING, 0)
 
         if not (dx == dy and dx == 420):
-            msg = "Resizing... Canvases: " + str(dx) + "x" + str(dy)
-            self.figure.message = msg + " (square recommended)"
+            msg = "Изменение размеров... Холсты: " + str(dx) + "x" + str(dy)
+            self.figure.message = msg + " (рекомендуются квадратные)"
 
         self.draw_fig_x = self.canvas_figure.x() + OFFSET
         self.draw_mesh_x = self.canvas_mesh.x() + OFFSET
