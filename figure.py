@@ -289,6 +289,8 @@ class Figure(QtCore.QObject):
                         f.write("-1 ")
                 f.write("\n")
 
+        self.send_message("Фигура экспортирована в " + filename)
+
     def importing(self, filename):
         self.shape.clear()
         with open(filename, 'r') as f:
