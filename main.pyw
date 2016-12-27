@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
-from figure_managing import PrimitivesListDialog
+from figure_managing import ManageFigureDialog
 
 BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
@@ -52,7 +52,7 @@ class MyWindow(QMainWindow):
         self.msg = None
         self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
-        self.prims_dialog = PrimitivesListDialog()
+        self.prims_dialog = ManageFigureDialog()
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
 
         size_tip.clicked.connect(self.figure.adjust)

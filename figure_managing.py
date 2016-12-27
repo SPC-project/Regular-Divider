@@ -2,9 +2,9 @@ from PyQt5.QtWidgets import QWidget, QDialog, QListWidgetItem
 from PyQt5 import uic
 
 
-class PrimitivesListDialog(QDialog):
+class ManageFigureDialog(QDialog):
     def __init__(self):
-        super(PrimitivesListDialog, self).__init__()
+        super(QDialog, self).__init__()
         uic.loadUi('ui/edit_figure.ui', self)
 
     def show(self, figure):
