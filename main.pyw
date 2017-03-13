@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
-from figure_managing import PrimitivesListDialog
+from figure_managing import ManageFigureDialog
 
 VERSION = (0, 4, 1)
 
@@ -52,7 +52,7 @@ class MyWindow(QMainWindow):
         self.msg = None
         self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
-        self.prims_dialog = PrimitivesListDialog()
+        self.prims_dialog = ManageFigureDialog()
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
 
         size_tip.clicked.connect(self.figure.adjust)
@@ -96,8 +96,8 @@ class MyWindow(QMainWindow):
         self.canvas_mesh.move(PADDING + dx + PADDING, 0)
 
         if not (dx == dy and dx == 420):
-            msg = "Resizing... Canvases: " + str(dx) + "x" + str(dy)
-            self.figure.message = msg + " (square recommended)"
+            msg = "Изменение размеров... Холсты: " + str(dx) + "x" + str(dy)
+            self.figure.message = msg + " (рекомендуются квадратные)"
 
         self.draw_fig_x = self.canvas_figure.x() + OFFSET
         self.draw_mesh_x = self.canvas_mesh.x() + OFFSET
