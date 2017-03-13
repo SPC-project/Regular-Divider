@@ -214,26 +214,6 @@
       <property name="styleSheet">
        <string notr="true"/>
       </property>
-      <item>
-       <property name="text">
-        <string>:.</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>.:</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>˸˙</string>
-       </property>
-      </item>
-      <item>
-       <property name="text">
-        <string>˙˸</string>
-       </property>
-      </item>
      </widget>
     </item>
    </layout>

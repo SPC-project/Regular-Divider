@@ -6,8 +6,6 @@ Author: Mykolaj Konovalow
     for SPC department of NTU "KhPI"
 """
 
-VERSION = (0, 4, 0)
-
 import sys
 import os
 import logging
@@ -21,6 +19,8 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from figure import Figure
 from figure_managing import PrimitivesListDialog
+
+VERSION = (0, 4, 1)
 
 BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
@@ -230,7 +230,7 @@ class MyWindow(QMainWindow):
             self.figure.importing(fname)
 
     def pre_export(self):
-        fname = QFileDialog.getSaveFileName(self, 'Открыть...', './samples',
+        fname = QFileDialog.getSaveFileName(self, 'Сохранить в...', './samples',
                                             "Text files (*.d42do)")[0]
         if fname != '':
             self.figure.exporting(fname)

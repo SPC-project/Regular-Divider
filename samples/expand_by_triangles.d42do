@@ -1,0 +1,11 @@
+type: rectangle | 0.0 0.0 4.0 4.0 | 0 0 0 0 2 2
+type: triangle | form: 0 | 0.0 -2.0 4.0 2.0 | 0 0 0 1 2 1
+type: triangle | form: 0 | 4.0 0.0 2.0 4.0 | 0 0 1 0 1 2
+type: triangle | form: 2 | 0.0 4.0 4.0 2.0 | 0 0 0 1 2 1
+type: triangle | form: 1 | -2.0 0.0 2.0 4.0 | 0 0 1 0 1 2
+# connections
+1 2 3 4 
+-1 -1 0 -1 
+-1 -1 -1 0 
+0 -1 -1 -1 
+-1 0 -1 -1 

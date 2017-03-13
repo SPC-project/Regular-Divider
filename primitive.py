@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QMessageBox, QWidget
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QIcon, QPixmap
 from PyQt5.QtCore import QPoint
 from PyQt5 import uic
 
@@ -63,35 +63,11 @@ class NewPrimitiveDialog(QDialog):
         if primitive.mesh.data['type'] == 'rectangle':
             self.tabWidget.setCurrentIndex(0)
             self.tabWidget.setTabEnabled(1, False)  # no need when redacted
-            self.basic_set_data(self.Rectangle_widget, primitive)
             self.Rectangle_widget.set_data(primitive)
         else:
             self.tabWidget.setCurrentIndex(1)
             self.tabWidget.setTabEnabled(0, False)
-            self.basic_set_data(self.Triangle_widget, primitive)
             self.Triangle_widget.set_data(primitive)
-
-    def basic_set_data(self, tab, primitive):
-        tab.x.setValue(primitive.x)
-        tab.y.setValue(primitive.y)
-        tab.width.setValue(primitive.width)
-        tab.height.setValue(primitive.height)
-
-        Ntop = primitive.mesh.NAT
-        Nright = primitive.mesh.NAR
-        Nbottom = primitive.mesh.NAB
-        Nleft = primitive.mesh.NAL
-        Nx = primitive.mesh.NFX
-        Ny = primitive.mesh.NFY
-        air = (Ntop, Nright, Nbottom, Nleft)
-        tab.Nx.setValue(Nx+1)  # convert back from blocks to nodes
-        tab.Ny.setValue(Ny+1)
-
-        dlg = [tab.air_top, tab.air_right, tab.air_bottom, tab.air_left]
-        for i in range(4):
-            dlg[i].setValue(air[i])
-            if primitive.binds[i]:
-                dlg[i].hide()
 
     def validate(self):
         curr = self.tabWidget.currentWidget()
@@ -106,69 +82,71 @@ class NewPrimitiveDialog(QDialog):
         self.Triangle_widget.for_expanding(prim, side_code)
 
 
-class NewRectangleWidget(QWidget):
-    """
-    Важно: пользователь вводит количество узлов, но программе работать удобнее
-    с "квадратами" (по диагонали которого впоследствии образуется два элемента)
-    Так что при переходе туда-обратно придется прибавлять\отнимать единицу
-    """
+class AbstractNewWidget(QWidget):
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self):
         QWidget.__init__(self)
-        uic.loadUi('ui/new_rectangle.ui', self)
-        self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
         self.connection_side = -1
 
-    def upd_air_spinboxes(self, value):
-        isEnabled = value == 2
-        self.air_left.setEnabled(isEnabled)
-        self.air_right.setEnabled(isEnabled)
-        self.air_bottom.setEnabled(isEnabled)
-
     def set_data(self, primitive):
-        different = primitive.mesh.NAL != primitive.mesh.NAR
-        different = different or primitive.mesh.NAT != primitive.mesh.NAB
-        different = different or primitive.mesh.NAL != primitive.mesh.NAT
+        self.basic_set_data(primitive)
+        self.specific_set_data(primitive)
 
-        if different:
-            self.manual_air.setChecked(True)
+    def basic_set_data(self, primitive):
+        self.x.setValue(primitive.x)
+        self.y.setValue(primitive.y)
+        self.width.setValue(primitive.width)
+        self.height.setValue(primitive.height)
+
+        Ntop = primitive.mesh.NAT
+        Nright = primitive.mesh.NAR
+        Nbottom = primitive.mesh.NAB
+        Nleft = primitive.mesh.NAL
+        Nx = primitive.mesh.NFX
+        Ny = primitive.mesh.NFY
+        air = (Ntop, Nright, Nbottom, Nleft)
+        self.Nx.setValue(Nx+1)  # convert back from blocks to nodes
+        self.Ny.setValue(Ny+1)
+
+        dlg = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+        for i in range(4):
+            dlg[i].setValue(air[i])
+            if primitive.binds[i]:
+                dlg[i].hide()
+
+    @abc.abstractmethod
+    def specific_set_data(primitive):
+        pass
 
     def get_data(self):
         x = self.x.value()
         y = self.y.value()
         width = self.width.value()
         height = self.height.value()
-        Nx = self.Nx.value() - 1  # '-1': proceed in blocks, not nodes
-        Ny = self.Ny.value() - 1
-        Ntop = self.air_top.value()  # no '-1' because 1 node belong to figure
-        Nright = self.air_right.value()
-        Nbottom = self.air_bottom.value()
-        Nleft = self.air_left.value()
-        if not self.manual_air.isChecked():  # use same air for all edges
-            if self.connection_side == 2:
-                hold = Nleft
-            else:
-                hold = Ntop
-            Ntop = hold
-            Nright = hold
-            Nbottom = hold
-            Nleft = hold
-
-        mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
-        if self.connection_side != -1:
-            mesh[(self.connection_side+2) % 4] = 0
 
         if self.connection_side == 0:
             y -= height
         elif self.connection_side == 3:
             x -= width
 
-        other_data = {'type': 'rectangle'}
-        return (x, y, width, height), Mesh(mesh, other_data)
+        Nx = self.Nx.value() - 1  # '-1': proceed in blocks, not nodes
+        Ny = self.Ny.value() - 1
+        Ntop = self.air_top.value()  # no '-1' because 1 node belong to figure
+        Nright = self.air_right.value()
+        Nbottom = self.air_bottom.value()
+        Nleft = self.air_left.value()
+
+        mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
+        box, mesh, data = self.specific_get_data(x, y, width, height, mesh)
+        return box, Mesh(mesh, data)
+
+    @abc.abstractmethod
+    def specific_get_data():
+        pass
 
     def for_expanding(self, prim, side_code):
-        """
-        Расширяем фигуру, пристраивая прямоугольник со стороны side_code к prim
-
+        """ Расширяем фигуру, пристраивая idxkxbxe со стороны side_code к prim
         side_code:
             0 - вверх
             1 - справа
@@ -176,9 +154,16 @@ class NewRectangleWidget(QWidget):
             3 - слева
         """
         self.connection_side = side_code
+        self.prepare_air_for_expanding(prim, side_code)
+        self.adjust_spinboxes_for_expanding(prim, side_code)
+
+    @abc.abstractmethod
+    def prepare_air_for_expanding(self, prim, side_code):
+        pass
+
+    def adjust_spinboxes_for_expanding(self, prim, side_code):
         pos = [self.x, self.y]
         dim = [self.width, self.height]
-        air = [self.air_top, self.air_right, self.air_bottom, self.air_left]
         fig = [self.Nx, self.Ny]
         prim_pos = [prim.x, prim.y]
         fixed_pos = [prim.y, prim.x + prim.width, prim.y + prim.height, prim.x]
@@ -189,14 +174,10 @@ class NewRectangleWidget(QWidget):
         nodes = [prim.mesh.NFX, prim.mesh.NFY]  # mesh[4] is x
 
         free_axis = side_code % 2  # ось, по которой можно двигать примитив
-        to_prim = (side_code+2) % 4  # сторона, с которой находится prim
-
         pos[free_axis].setValue(prim_pos[free_axis])
         pos[free_axis].setSingleStep(prim_stp[free_axis])
         pos[not free_axis].setValue(fixed_pos[side_code])
         pos[not free_axis].setEnabled(False)
-
-        air[to_prim].hide()
 
         dim[free_axis].setValue(prim_dim[free_axis])
         dim[free_axis].setSingleStep(prim_stp[free_axis])  # help with scale
@@ -208,9 +189,6 @@ class NewRectangleWidget(QWidget):
         self.wath_node(fig[free_axis], prim_stp[free_axis])
         con_min, con_max = prim_bounds[free_axis]
         self.wath_connection(pos[free_axis], con_min, con_max, free_axis == 1)
-
-        if side_code == 2:  # air_top was default, but now it disabled
-            self.air_left.setEnabled(True)
 
     def wath_node(self, nodes, dk):
         self.dezired_step = dk
@@ -244,23 +222,76 @@ class NewRectangleWidget(QWidget):
         coor.setMinimum(self.allowed_min - length)
 
 
-class NewTriangleWidget(QWidget):
+class NewRectangleWidget(AbstractNewWidget):
+    """
+    Важно: пользователь вводит количество узлов, но программе работать удобнее
+    с "квадратами" (по диагонали которого впоследствии образуется два элемента)
+    Так что при переходе туда-обратно придется прибавлять\отнимать единицу
+    """
     def __init__(self):
-        QWidget.__init__(self)
+        super(NewRectangleWidget, self).__init__()
+        uic.loadUi('ui/new_rectangle.ui', self)
+        self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
+
+    def upd_air_spinboxes(self, value):
+        isEnabled = value == 2
+        self.air_left.setEnabled(isEnabled)
+        self.air_right.setEnabled(isEnabled)
+        self.air_bottom.setEnabled(isEnabled)
+
+    def specific_set_data(self, primitive):
+        different = primitive.mesh.NAL != primitive.mesh.NAR
+        different = different or primitive.mesh.NAT != primitive.mesh.NAB
+        different = different or primitive.mesh.NAL != primitive.mesh.NAT
+
+        if different:
+            self.manual_air.setChecked(True)
+
+    def specific_get_data(self, x, y, width, height, mesh):
+        if not self.manual_air.isChecked():  # use same air for all edges
+            if self.connection_side == 2:
+                hold = mesh[3]
+            else:
+                hold = mesh[0]
+            for i in range(0, 4):
+                mesh[i] = hold
+        if self.connection_side != -1:
+            mesh[(self.connection_side+2) % 4] = 0
+
+        other_data = {'type': 'rectangle'}
+        return (x, y, width, height), mesh, other_data
+
+    def prepare_air_for_expanding(self, prim, side_code):
+        air = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+
+        to_prim = (side_code+2) % 4  # сторона, с которой находится prim
+        air[to_prim].hide()
+
+        if side_code == 2:  # air_top was default, but now it disabled
+            self.air_left.setEnabled(True)
+
+
+class NewTriangleWidget(AbstractNewWidget):
+    def __init__(self):
+        super(NewTriangleWidget, self).__init__()
         uic.loadUi('ui/new_triangle.ui', self)
 
+        # Order for creating comboBox's items is significant
+        self.comboBox.addItem(QIcon(QPixmap("ui/ld_triangle.png")), "0")
+        self.comboBox.addItem(QIcon(QPixmap("ui/rd_triangle.png")), "1")
+        self.comboBox.addItem(QIcon(QPixmap("ui/lu_triangle.png")), "2")
+        self.comboBox.addItem(QIcon(QPixmap("ui/ru_triangle.png")), "3")
         self.comboBox.currentIndexChanged.connect(self.select_type)
-        self.expanding_index = -1
 
     def select_type(self, index):
         boxes = [self.air_top, self.air_right, self.air_bottom, self.air_left]
         states = [False, False, True, True]
-        text = self.comboBox.itemText(index)
-        if text == ".:":
+        index = int(self.comboBox.itemText(index))
+        if index == 1:
             states = [False, True, True, False]
-        if text == "˸˙":
+        if index == 2:
             states = [True, False, False, True]
-        if text == "˙˸":
+        if index == 3:
             states = [True, True, False, False]
 
         for i in range(0, 4):
@@ -268,52 +299,37 @@ class NewTriangleWidget(QWidget):
             if not states[i]:
                 boxes[i].setValue(0)
 
-        if self.expanding_index != -1:
-            connected_side = (self.expanding_index + 2) % 4
+        if self.connection_side != -1:
+            connected_side = (self.connection_side + 2) % 4
             boxes[connected_side].setEnabled(False)
 
-    def set_data(self, triangle):
+    def specific_set_data(self, triangle):
         self.comboBox.setCurrentIndex(triangle.mesh.data['form'])
 
-    def get_data(self):
-        x = self.x.value()
-        y = self.y.value()
-        width = self.width.value()
-        height = self.height.value()
-
-        Nx = self.Nx.value() - 1  # '-1': proceed in blocks, not nodes
-        Ny = self.Ny.value() - 1
-        Ntop = self.air_top.value()  # no '-1' because 1 node belong to figure
-        Nright = self.air_right.value()
-        Nbottom = self.air_bottom.value()
-        Nleft = self.air_left.value()
-        mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
-        forms = {":.": 0, ".:": 1, "˸˙": 2, "˙˸": 3}
-        form = forms[self.comboBox.itemText(self.comboBox.currentIndex())]
+    def specific_get_data(self, x, y, width, height, mesh):
+        form = int(self.comboBox.itemText(self.comboBox.currentIndex()))
         other_data = {'type': 'triangle', 'form': form}
+        return (x, y, width, height), mesh, other_data
 
-        return (x, y, width, height), Mesh(mesh, other_data)
+    def prepare_air_for_expanding(self, triangle, side_code):
+        if side_code < 2:  # use upper-left triangle when expand from top or left
+            self.select_type(0)
+        else:
+            self.select_type(3)
 
-    def for_expanding(self, triangle, side_code):
-        self.expanding_index = side_code
         if side_code == 0:
             # Index shift after removing => bigger first
             self.comboBox.removeItem(3)
             self.comboBox.removeItem(2)
-            self.select_type(0)
         if side_code == 1:
             self.comboBox.removeItem(3)
             self.comboBox.removeItem(1)
-            self.select_type(2)
         if side_code == 2:
             self.comboBox.removeItem(1)
             self.comboBox.removeItem(0)
-            self.select_type(2)
-            self.air_bottom.setEnabled(False)
         if side_code == 3:
             self.comboBox.removeItem(2)
             self.comboBox.removeItem(0)
-            self.select_type(0)  # index moved because removeItem
 
 
 class AbstractPrimitive:
@@ -395,7 +411,7 @@ class AbstractPrimitive:
 
     def export_figure(self, to):
         """
-        Save primitive to text file as (single line):
+        Save primitive to curr_text file as (single line):
             type: <type> [| <other data>: <data>, ...]
             | x y w h | NAT NAR NAB NAL NFX NFY
         """
