@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QPoint, QRect
-from primitive import AbstractPrimitive
+from src.primitive import AbstractPrimitive
 
 air_nodes_top = 0
 air_nodes_right = 1

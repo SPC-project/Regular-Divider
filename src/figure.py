@@ -1,8 +1,8 @@
 from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
-from rectangle import Rectangle
-from triangle import Triangle
-from primitive import NewPrimitiveDialog, AbstractPrimitive
+from src.rectangle import Rectangle
+from src.triangle import Triangle
+from src.primitive import NewPrimitiveDialog, AbstractPrimitive
 
 SPACING = 5
 RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog

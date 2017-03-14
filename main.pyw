@@ -17,8 +17,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
-from figure import Figure
-from figure_managing import ManageFigureDialog
+from src.figure import Figure
+from src.figure_managing import ManageFigureDialog
 
 VERSION = (0, 4, 1)
 

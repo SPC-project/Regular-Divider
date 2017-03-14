@@ -1,7 +1,7 @@
-from primitive import AbstractPrimitive
 from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QPolygon, QBrush
 import math
+from src.primitive import AbstractPrimitive
 
 
 class Triangle(AbstractPrimitive):
