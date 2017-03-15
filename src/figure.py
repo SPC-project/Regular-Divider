@@ -2,7 +2,8 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from src.rectangle import Rectangle
 from src.triangle import Triangle
-from src.primitive import NewPrimitiveDialog, AbstractPrimitive
+from src.primitive import AbstractPrimitive
+from src.gui_primitive import NewPrimitiveDialog
 
 SPACING = 5
 RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
@@ -15,19 +16,18 @@ class Figure(QtCore.QObject):
 
     def __init__(self, status, parent_update, parent_clear):
         super(Figure, self).__init__()
-        self.status = status
-        self.parent_update = parent_update
-        self.parent_clear = parent_clear
         self.world_size = 0
         self.start_x = 0
         self.start_y = 0
         self.message = ""
         self.shape = list()
+        self.prim_dialog = False  # wait for NewPrimitiveDialog creation
 
+        self.status = status
+        self.parent_update = parent_update
+        self.parent_clear = parent_clear
         self.primitive_deletion.connect(self.del_prim)
         self.primitive_modification.connect(self.mod_prim)
-
-        self.prim_dialog = NewPrimitiveDialog()
 
         self.update_status()
 
@@ -65,6 +65,9 @@ class Figure(QtCore.QObject):
             self.send_message("Рабочая область создана")
 
     def new_figure(self):
+        if not self.prim_dialog:
+            self.prim_dialog = NewPrimitiveDialog()
+
         self.prim_dialog.grab_focus()
         self.prim_dialog.exec_()
         if self.prim_dialog.result() == 1:
