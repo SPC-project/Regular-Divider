@@ -254,10 +254,10 @@ class NewTriangleWidget(AbstractNewWidget):
         uic.loadUi('ui/new_triangle.ui', self)
 
         # Order for creating comboBox's items is significant
-        self.comboBox.addItem(QIcon(QPixmap("ui/ld_triangle.png")), "0")
-        self.comboBox.addItem(QIcon(QPixmap("ui/rd_triangle.png")), "1")
-        self.comboBox.addItem(QIcon(QPixmap("ui/lu_triangle.png")), "2")
-        self.comboBox.addItem(QIcon(QPixmap("ui/ru_triangle.png")), "3")
+        self.comboBox.addItem(QIcon(QPixmap("ui/triangle_type_0.png")), "0")
+        self.comboBox.addItem(QIcon(QPixmap("ui/triangle_type_1.png")), "1")
+        self.comboBox.addItem(QIcon(QPixmap("ui/triangle_type_2.png")), "2")
+        self.comboBox.addItem(QIcon(QPixmap("ui/triangle_type_3.png")), "3")
         self.comboBox.currentIndexChanged.connect(self.select_type)
 
     def select_type(self, index):
