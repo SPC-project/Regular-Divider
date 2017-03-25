@@ -352,3 +352,15 @@ class Rectangle(AbstractPrimitive):
                 else:
                     f.write("0\n")  # Air
                     f.write("0\n")  # Air
+
+    def save_mesh(self, output):
+        """
+        See primitive.py/AbstractPrimitive/save_mesh for description
+        index — индекс, с которого начнём нумерацию узлов
+        """
+        w = self.mesh.NAL + self.mesh.NFX + self.mesh.NAR
+        h = self.mesh.NAT + self.mesh.NFY + self.mesh.NAB
+        x0, y0 = self.start_x, self.start_y
+        dx, dy = self.step_x, self.step_y
+
+        self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy)

@@ -14,7 +14,7 @@ class Figure(QtCore.QObject):
     primitive_deletion = QtCore.pyqtSignal(int)
     primitive_modification = QtCore.pyqtSignal(int)
 
-    def __init__(self, status, parent_update, parent_clear):
+    def __init__(self, status, parent_update, parent_clear, parent_message):
         super(Figure, self).__init__()
         self.world_size = 0
         self.start_x = 0
@@ -26,6 +26,7 @@ class Figure(QtCore.QObject):
         self.status = status
         self.parent_update = parent_update
         self.parent_clear = parent_clear
+        self.parent_message = parent_message
         self.primitive_deletion.connect(self.del_prim)
         self.primitive_modification.connect(self.mod_prim)
 
@@ -46,7 +47,7 @@ class Figure(QtCore.QObject):
 
     def send_message(self, text):
         self.message = text
-        self.parent_update.emit()
+        self.parent_message.emit()
         self.update_status()
 
     def create_space(self):
@@ -90,7 +91,7 @@ class Figure(QtCore.QObject):
         not_match_x = x+w > self.world_size or x <= self.start_x
         not_match_y = y+h > self.world_size or y <= self.start_y
         if not_match_x or not_match_y:
-            self.message = "Рабочая область была расширена"
+            self.send_message("Рабочая область была расширена")
             self.adjust()
         else:
             self.parent_update.emit()
@@ -129,47 +130,13 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def save_mesh(self, filename="temp.pmd"):
-        self.shape.sort(key=lambda prim: prim.start_x)
-        self.shape.sort(key=lambda prim: prim.start_y)
+        with Output() as output:
+            for prim in self.shape:
+                prim.save_mesh(output)
 
-        isRegular = True
-        stp_x = self.shape[0].step_x
-        stp_y = self.shape[0].step_y
-        for prim in self.shape:
-            if stp_x != prim.step_x and stp_y != prim.step_y:
-                isRegular = False
-                break
+        self.send_message("Фигура сохранена")
 
-        if isRegular:
-            self.regular_mesh_saving(filename)
-        else:
-            self.irregular_mesh_saving(filename)
-
-    def regular_mesh_saving(self, filename):
-        min_x = float("inf")
-        min_y = float("inf")
-        max_x = float("-inf")
-        max_y = float("-inf")
-        for prim in self.shape:
-            x, y, X, Y = prim.get_box()
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if X > max_x:
-                max_x = X
-            if Y > max_y:
-                max_y = Y
-
-        dk = self.shape[0].step_x
-        curr = 0
-        frame_x, frame_y, frame_X, frame_Y = self.shape[curr].get_box()
-        for j in range(int(max_y/dk)):
-            for i in range(int(max_x/dk)):
-                x = min_x + i*dk
-                y = min_y + j*dk
-
-    def irregular_mesh_saving(self, filename):
+    def old_save_mesh(self, filename="temp.pmd"):
         '''
         Владельцем узлов на стыке двух примитивов считают правый/нижний сосед
         '''
@@ -275,7 +242,7 @@ class Figure(QtCore.QObject):
             self.parent_update.emit()
 
     def exporting(self, filename):
-        if len(self.shape) == 1:
+        if len(self.shape) == 0:
             self.send_message("Экспортировать нечего: фигура пуста")
             return
 
@@ -352,3 +319,31 @@ class Figure(QtCore.QObject):
         self.update_status()
         self.parent_clear.emit()
         self.parent_update.emit()
+
+
+class Output:
+    """
+    Вспомогательный класс для записи данных разбиения в промежуточные файлы
+    """
+    TEMP_DIR = ".temp/"
+    FILENAMES = ["vertex_indexes", "coordinates", "elements_material", "nodes_material"]
+
+    def __init__(self):
+        self.f = {}
+        self.last_index = 0
+
+    def __enter__(self):
+        for tmp_name in self.FILENAMES:
+            self.f[tmp_name] = open(self.TEMP_DIR + tmp_name + ".tmp", "w")  # TODO: should be "x"
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        for tmp_name in self.FILENAMES:
+            self.f[tmp_name].close()
+
+    def element(self, index_A, index_B, index_C):
+        self.f["vertex_indexes"].write("{} {} {}\n".format(index_A, index_B, index_C))
+
+    def coordinates(self, x, y):
+        self.f["coordinates"].write("{} {} {}\n".format(x, y, self.last_index))
+        self.last_index += 1

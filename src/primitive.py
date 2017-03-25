@@ -6,10 +6,10 @@ import abc
 class Mesh:
     """ Auxiliary abstraction for finite-elemental grid """
     def __init__(self, grid, other=None):
-        """
-            NAT, NAR, NAB, NAL: [count of] Nodes Air at Top/Right/Bottom/Left
-            NFX, NFY: [count of] Nodes Figure Width/Height
-        """
+        # NAT, NAR, NAB, NAL: amount of air blocks at Top/Right/Bottom/Left
+        # NFX, NFY: amount of figure blocks for width and height
+        # 'Block' — two combined in square elements (::).
+        #   top-left bottom-right diagonal is connection between them
         self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = grid
         self.data = other
         if not other:
@@ -68,40 +68,6 @@ class AbstractPrimitive:
 
     def get_box(self):
         return (self.start_x, self.start_y, self.end_x, self.end_y)
-
-    def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
-        def sx(pos_x):
-            val = shift_x + pos_x
-            return int(round(val*kx))
-
-        def sy(pos_y):
-            val = shift_y + pos_y
-            return int(round(val*ky))
-
-        def tx(N):
-            val = shift_x + self.start_x + N*self.step_x
-            return int(round(val*kx))
-
-        def ty(N):
-            val = shift_y + self.start_y + N*self.step_y
-            return int(round(val*ky))
-
-        self.scale_x = sx  # Scale from world coordinates to canvas coordinates
-        self.scale_y = sy
-        self.pixel_x = tx  # Get the coordinate of Nth node
-        self.pixel_y = ty
-        self.drawing_coefs = {'shift_x': shift_x, 'shift_y': shift_x,
-                              'kx': kx, 'ky': ky}
-        self.draw_figure(canvas)
-        self.draw_mesh(mesh_canvas)
-
-    @abc.abstractmethod
-    def draw_figure(self, canvas):
-        pass
-
-    @abc.abstractmethod
-    def draw_mesh(self, canvas):
-        pass
 
     def export_figure(self, to):
         """
@@ -162,6 +128,40 @@ class AbstractPrimitive:
             prim_type_index = 1
         return fig, Mesh(grid, header), prim_type_index
 
+    def draw(self, canvas, mesh_canvas, shift_x, shift_y, kx, ky):
+        def sx(pos_x):
+            val = shift_x + pos_x
+            return int(round(val*kx))
+
+        def sy(pos_y):
+            val = shift_y + pos_y
+            return int(round(val*ky))
+
+        def tx(N):
+            val = shift_x + self.start_x + N*self.step_x
+            return int(round(val*kx))
+
+        def ty(N):
+            val = shift_y + self.start_y + N*self.step_y
+            return int(round(val*ky))
+
+        self.scale_x = sx  # Scale from world coordinates to canvas coordinates
+        self.scale_y = sy
+        self.pixel_x = tx  # Get the coordinate of Nth node
+        self.pixel_y = ty
+        self.drawing_coefs = {'shift_x': shift_x, 'shift_y': shift_x,
+                              'kx': kx, 'ky': ky}
+        self.draw_figure(canvas)
+        self.draw_mesh(mesh_canvas)
+
+    @abc.abstractmethod
+    def draw_figure(self, canvas):
+        pass
+
+    @abc.abstractmethod
+    def draw_mesh(self, canvas):
+        pass
+
     def draw_rect_mesh(self, canvas, dx, dy,
                        grid_x, grid_y, grid_width, grid_height):
         """
@@ -209,3 +209,38 @@ class AbstractPrimitive:
             A.setY(self.pixel_y(grid_y + j))
             B.setX(self.pixel_x(grid_x + 1))
             B.setY(self.pixel_y(grid_y + j + 1))
+
+    @abc.abstractmethod
+    def save_mesh(self, output):
+        """
+        output.element(A, B, C) — записать индексы вершин, образующих элемент
+        output.coordinates — абсцисса и ордината вершин (номер строки = индекс вершины).
+            Два действительных числа в ряд
+        output.elements_material — код для материала элемента (0 — воздух, 1 — фигура)
+            Номер строки в этом файле соответствует номеру строки элемента в ind_f
+        output.nodes_material — код для материала узла
+            Номер строки в этом файле соответствует номеру строки узла в coor_f
+
+        output.last_index — индекс последнего существующего узла сетки разбиения
+        """
+        pass
+
+    def save_rectangle_mesh(self, nwidth, nheight, output, x0, y0, dx, dy):
+        """
+        nwidth, nheight — количество квадратов в ширину\высоту
+           Квадрат делится диагональю на элементы. Узлов на один больше чем квадратов
+        output — словарь с текстовыми дескрипторами (см. save_mesh)
+        """
+        index = output.last_index
+        # Записываем тройки индексов узлов, образующих треугольники
+        for j in range(nheight):
+            shift = nwidth + 1  # shift to next layer of mesh's grid
+            for i in range(nwidth):
+                current = index + i + shift*j
+                output.element(current, current + shift, current + shift + 1)
+                output.element(current, current + 1, current + shift + 1)
+
+        # Координаты узлов
+        for j in range(nheight+1):  # Узлов на один больше чем квадратов
+            for i in range(nwidth+1):
+                output.coordinates(x0 + dx*i, y0 + dy*j)
