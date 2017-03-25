@@ -34,6 +34,7 @@ class MyWindow(QMainWindow):
     """
     sig_update = QtCore.pyqtSignal()
     sig_clear = QtCore.pyqtSignal()
+    sig_message = QtCore.pyqtSignal()
     sig_mayUpdate = QtCore.pyqtSignal()
 
     def __init__(self):
@@ -53,7 +54,7 @@ class MyWindow(QMainWindow):
         self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
         self.prims_dialog = ManageFigureDialog()
-        self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
+        self.figure = Figure(size_tip, self.sig_update, self.sig_clear, self.sig_message)
 
         size_tip.clicked.connect(self.figure.adjust)
         self.wipe_world.triggered.connect(self.clean)
@@ -69,6 +70,7 @@ class MyWindow(QMainWindow):
 
         self.sig_update.connect(self.updating)
         self.sig_clear.connect(self.clearing)
+        self.sig_message.connect(self.messaging)
         self.sig_mayUpdate.connect(self.propose_upgrade)
         self.show()
 
@@ -110,7 +112,7 @@ class MyWindow(QMainWindow):
         self.clearing()
         self.updating()
 
-    def updating(self):
+    def messaging(self):
         if self.msg:
             self.statusbar.removeWidget(self.msg)
             self.msg = None
@@ -118,6 +120,7 @@ class MyWindow(QMainWindow):
             self.statusbar.showMessage(self.figure.message, 4000)
             self.figure.message = ""
 
+    def updating(self):
         canvas = QPainter(self.canvas_figure_buffer)
         mesh_canvas = QPainter(self.canvas_mesh_buffer)
         canvas.setRenderHint(QPainter.HighQualityAntialiasing)
