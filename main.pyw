@@ -7,7 +7,6 @@ Author: Mykolaj Konovalow
 """
 
 import sys
-import os
 import logging
 import _thread
 import urllib.request
@@ -276,13 +275,6 @@ def check_updates(recall):
         recall.emit()
 
 
-def testing():
-    """
-    Запускает вложенные тесты для всех .py-файлов в директории
-    """
-    if os.system("git diff-index --quiet HEAD --") == 256:
-        pass
-
 if __name__ == '__main__':
     log_format = '[%(asctime)s]  %(message)s'
     logging.basicConfig(format=log_format, level=logging.ERROR,
@@ -291,7 +283,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MyWindow()
 
-    _thread.start_new_thread(testing, ())
     _thread.start_new_thread(check_updates, (window.sig_mayUpdate,))
 
     sys.excepthook = my_excepthook

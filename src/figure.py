@@ -4,6 +4,7 @@ from src.rectangle import Rectangle
 from src.triangle import Triangle
 from src.primitive import AbstractPrimitive
 from src.gui_primitive import NewPrimitiveDialog
+import subprocess
 
 SPACING = 5
 RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
@@ -130,70 +131,21 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def save_mesh(self, filename="temp.pmd"):
+        if len(self.shape) == 0:
+            self.send_message("Фигура пуста, нечего сохранять")
+            return
+
+        last_index = 0
         with Output() as output:
             for prim in self.shape:
                 prim.save_mesh(output)
+            last_index = output.last_index - 1  # cause point on next element
 
-        self.send_message("Фигура сохранена")
-
-    def old_save_mesh(self, filename="temp.pmd"):
-        '''
-        Владельцем узлов на стыке двух примитивов считают правый/нижний сосед
-        '''
-        node_index = 0
-
-        f = open(filename, 'w')
-        f.write("[settings]\n")
-        f.write("n_nodes=")
-        pNumNodes = f.tell()
-        f.write("     \n")  # to secure our text from overwriting
-        f.write("n_elements=")
-        pNumElements = f.tell()
-        f.write("     \n")  # to secure our text from overwriting
-        f.write("n_forces=0\n")
-        f.write("n_contacts=0\n")
-
-        sewing_nodes = list()
-        material = list()
-
-        f.write("[inds]\n")
-        for prim in self.shape:
-            node_index = prim.save_indexes(f, node_index)
-        for prim in self.shape:
-            node_index = prim.deal_with_horizontal_contact_regions(f, node_index, sewing_nodes, material)
-            node_index = prim.deal_with_vertical_contact_regions(f, node_index, sewing_nodes, material)
-
-        f.write("[coor]\n")
-        for prim in self.shape:
-            prim.save_coor(f)
-
-        unique_sewing_nodes = set(sewing_nodes)
-        sewing_nodes = list(unique_sewing_nodes)
-        sewing_nodes.sort(key=lambda node: node[0])
-        for node in sewing_nodes:
-            f.write("{} {}\n".format(node[1], node[2]))
-
-        f.write("[contact]\n")
-        f.write("[force]\n")
-        f.write("[material]\n")
-        for prim in self.shape:
-            prim.save_material(f)
-        for node_mat in material:
-            f.write("{}\n".format(node_mat))
-        f.write("[material for elements]\n")
-        for prim in self.shape:
-            prim.save_material_of_element(f)
-
-        nElements = 0
-        for prim in self.shape:
-            nElements += prim.element_count_w*prim.element_count_h*2
-        f.seek(pNumElements)
-        f.write("{}".format(nElements))
-        f.seek(pNumNodes)
-        f.write("{}".format(node_index))
-        f.close()
-
-        self.send_message("Фигура сохранена")
+        res = subprocess.run(["./Sorter.py", filename, str(last_index)])
+        if res == 0:
+            self.send_message("Фигура сохранена в " + filename)
+        else:
+            self.send_message("Не удалось сохранить фигуру. Подробности в errors.log")
 
     def click_over(self, x, y, canvas_width, canvas_height):
         possible_dirs = [2, 3, 4, 5]
@@ -326,7 +278,7 @@ class Output:
     Вспомогательный класс для записи данных разбиения в промежуточные файлы
     """
     TEMP_DIR = ".temp/"
-    FILENAMES = ["vertex_indexes", "coordinates", "elements_material", "nodes_material"]
+    FILENAMES = ["elements", "nodes", "elements_material", "nodes_material"]
 
     def __init__(self):
         self.f = {}
@@ -342,8 +294,8 @@ class Output:
             self.f[tmp_name].close()
 
     def element(self, index_A, index_B, index_C):
-        self.f["vertex_indexes"].write("{} {} {}\n".format(index_A, index_B, index_C))
+        self.f[self.FILENAMES[0]].write("{} {} {}\n".format(index_A, index_B, index_C))
 
     def coordinates(self, x, y):
-        self.f["coordinates"].write("{} {} {}\n".format(x, y, self.last_index))
+        self.f[self.FILENAMES[1]].write("{} {} {}\n".format(x, y, self.last_index))
         self.last_index += 1
