@@ -80,6 +80,7 @@ class TestSoloTriangleMesh(unittest.TestCase):
                 self.assertEqual(line[2], counter, "Numeration break for: " + name)
                 del line[2]
                 counter += 1
+            print(coords)
             self.assertEqual(coords, coords_test, "Wrong coordinates for: " + name)
 
         # os.remove(filename)
@@ -107,6 +108,12 @@ class TestSoloTriangleMesh(unittest.TestCase):
         elements_test = ['0 2 3\n', '0 1 3\n', '4 0 2\n', '2 3 5\n']
         coords_test = [[1, 0], [2, 0], [1, 1], [2, 1], [0, 0], [2, 2]]
         self.check_mesh(tri, elements_test, coords_test, "3x3 type 3")
+
+    def test_3x3TriangleType0_withSingleAirLayer(self):
+        tri = self.get_triangle(0, 3, 3, 1, 1, 2, 2)
+        elements_test = ['0 2 3\n', '0 1 3\n', '2 4 5\n', '2 3 5\n', '4 6 7\n', '4 5 7\n', '8 11 12\n', '8 9 12\n', '9 12 13\n', '9 10 13\n', '15 17 18\n', '15 16 18\n', '14 15 16\n', '16 18 19\n']
+        coords_test = [[-1, 0], [0, 0], [-1, 1], [0, 1], [-1, 2], [0, 2], [-1, 3], [0, 3], [0, 2], [1, 2], [2, 2], [0, 3], [1, 3], [2, 3], [0, 0], [0, 1], [1, 1], [0, 2], [1, 2], [2, 2]]
+        self.check_mesh(tri, elements_test, coords_test, "3x3 type 0 with air")
 
     def test_4x4TriangleType0_noAir(self):
         tri = self.get_triangle(0, 4, 4, 0, 0, 3, 3)
