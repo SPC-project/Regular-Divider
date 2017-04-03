@@ -37,10 +37,6 @@ class Triangle(AbstractPrimitive):
         self.vertexes.append(most_right)
         self.vertexes.append(third)
 
-        for i in range(4):
-            if self.binds[i]:
-                self.mesh.set_val_at(i, 0)
-
     def generate_scaler(self):
         def scaler(point):
             x = point.x()
@@ -76,13 +72,13 @@ class Triangle(AbstractPrimitive):
         # Triangle has some air at top/bottom (horizontal) or left/right (vertical)
         form = self.mesh.data["form"]
         canvas.setPen(self.COL_AIR)
-        vertical, hor_x = (M.NAL, 0) if form % 2 == 0 else (M.NAR, M.NFX)
-        horizontal, vert_y = (M.NAT, 0) if form > 1 else (M.NAB, M.NFY)
-        if vertical != 0:
-            x, y, w, h = hor_x, 0, vertical, M.NAT + M.NFY + M.NAB
+        sides, side_x = (M.NAL, 0) if form % 2 == 0 else (M.NAR, M.NFX)
+        botop, botop_y = (M.NAT, 0) if form > 1 else (M.NAB, M.NFY)
+        if sides != 0:
+            x, y, w, h = side_x, 0, sides, M.NAT + M.NFY + M.NAB
             self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
-        if horizontal != 0:
-            x, y, w, h = M.NAL, vert_y, M.NFX, horizontal
+        if botop != 0:
+            x, y, w, h = M.NAL, botop_y, M.NFX, botop
             self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
 
         # Draw the figure
@@ -187,15 +183,15 @@ class Triangle(AbstractPrimitive):
         if type_ == 0:
             offset_x, mod_x = M.NAL, 1
             offset_y, mod_y = 1, 1  # if start at 0, rectangle will penetrate figure's boundaries
-            output.coordinates(x0 + M.NAL*dx, y0)  # create node top-left node
+            output.save_node(x0 + M.NAL*dx, y0, self.FIGURE_CODE)  # create save_node top-left save_node
         elif type_ == 1:
             offset_x, mod_x = M.NFX-1, -1
             offset_y, mod_y = 1, 1
-            output.coordinates(x0 + M.NFX*dx, y0)
+            output.save_node(x0 + M.NFX*dx, y0, self.FIGURE_CODE)
         elif type_ == 2:
             offset_x, mod_x = M.NAL, 1
             offset_y, mod_y = M.NAT, 0
-            # Use 'output.coordinates' after create main figure,
+            # Use 'output.save_node' after create main figure,
             #   hypotenuse is at bottom-right of it
         elif type_ == 3:
             offset_x, mod_x = M.NFX-1, -1
@@ -208,27 +204,27 @@ class Triangle(AbstractPrimitive):
             self.save_rectangle_mesh(w, h-i, output, x, y, dx, dy)
 
         if type_ == 0:
-            output.coordinates(x0 + (M.NAL + M.NFX)*dx, y0 + M.NFY*dy)
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NFY*dy, self.FIGURE_CODE)
             self.fill_gaps_on_type0_hypotenuse(output, start)
         elif type_ == 1:
-            output.coordinates(x0, y0 + M.NFY*dy)
+            output.save_node(x0, y0 + M.NFY*dy, self.FIGURE_CODE)
             self.fill_gaps_on_type1_hypotenuse(output, start)
         if type_ == 2:
             bottom = output.last_index
-            output.coordinates(x0 + M.NAL*dx, y0 + (M.NAT + M.NFY)*dy)
-            output.coordinates(x0 + (M.NAL + M.NFX)*dx, y0)
-            self.fill_gaps_on_type2_hypotenuse(output, bottom)
+            output.save_node(x0 + M.NAL*dx, y0 + (M.NAT + M.NFY)*dy, self.FIGURE_CODE)
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NAT*dy, self.FIGURE_CODE)
+            self.fill_gaps_on_type2_hypotenuse(output, start, bottom)
         if type_ == 3:
-            output.coordinates(x0, y0 + M.NAT*dy)
+            output.save_node(x0, y0 + M.NAT*dy, self.FIGURE_CODE)
             last = output.last_index
-            output.coordinates(x0 + M.NFX*dx, y0 + (M.NAT + M.NFY)*dy)
-            self.fill_gaps_on_type3_hypotenuse(output, last)
+            output.save_node(x0 + M.NFX*dx, y0 + (M.NAT + M.NFY)*dy, self.FIGURE_CODE)
+            self.fill_gaps_on_type3_hypotenuse(output, start, last)
 
     def fill_gaps_on_type0_hypotenuse(self, output, start):
         next_left = start + 1
         next_right = start + 2
         for k in range(self.mesh.NFX, 0, -1):  # fill gaps on hypotenuse
-            output.element(start, next_left, next_right)
+            output.save_element(start, next_left, next_right, self.FIGURE_CODE)
             start = next_right
             next_left = next_right + 2
             next_right = next_right + k*2
@@ -239,37 +235,36 @@ class Triangle(AbstractPrimitive):
         next_right = start + 2
         next_left = start + 1
         for k in range(self.mesh.NFX, 0, -1):  # fill gaps on hypotenuse
-            output.element(start, next_right, next_left)
+            output.save_element(start, next_right, next_left, self.FIGURE_CODE)
             start = next_left
             next_right = next_left + 2
             next_left = next_left + k*2
 
-    def fill_gaps_on_type2_hypotenuse(self, output, start):
-        bottom = start
-        next_right = self.mesh.NFY*2 - 1
+    def fill_gaps_on_type2_hypotenuse(self, output, start, bottom):
+        next_right = start + self.mesh.NFY*2 - 1
         next_left = next_right - 1
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.element(next_left, bottom, next_right)
+            output.save_element(next_left, bottom, next_right, self.FIGURE_CODE)
             bottom = next_right
             next_right = next_right + (k-1)*2
             next_left = next_right - 1
         next_right = output.last_index - 1
         next_left = output.last_index - 5
-        output.element(next_left, bottom, next_right)
+        output.save_element(next_left, bottom, next_right, self.FIGURE_CODE)
 
-    def fill_gaps_on_type3_hypotenuse(self, output, last):
-        start = last - 1  # left vertex of the triangle
-        next_up = last - 5  # index of upper-left node of created mesh
+    def fill_gaps_on_type3_hypotenuse(self, output, start, last):
+        left = last - 1  # left vertex of the triangle
+        next_up = last - 5  # index of upper-left save_node of created mesh
         next_down = last - 3
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.element(start, next_up, next_down)
-            start = next_down
+            output.save_element(left, next_up, next_down, self.FIGURE_CODE)
+            left = next_down
             next_up = next_down + 1
             next_down = next_down - 4
-        start = self.mesh.NFY*2 - 2
-        next_up = start + 1
+        left = start + self.mesh.NFY*2 - 2
+        next_up = left + 1
         next_down = last
-        output.element(start, next_up, next_down)
+        output.save_element(left, next_up, next_down, self.FIGURE_CODE)
 
     def save_nonisosceles_figure_mesh(self, output, form):
         # See doc/create_triangle_mesh.png for some explanation
