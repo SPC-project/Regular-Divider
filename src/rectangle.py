@@ -25,10 +25,7 @@ class Rectangle(AbstractPrimitive):
         super(Rectangle, self).__init__(fig, mesh)
 
     def update_me(self):
-        # if has connection to another Rectangles, 'shave' that edge from air
-        for i in range(4):
-            if self.binds[i]:
-                self.mesh.set_val_at(i, 0)
+        pass
 
     def draw_figure(self, canvas):
         canvas.setPen(self.COL_FIG)
@@ -121,9 +118,33 @@ class Rectangle(AbstractPrimitive):
         See primitive.py/AbstractPrimitive/save_mesh for description
         index — индекс, с которого начнём нумерацию узлов
         """
-        w = self.mesh.NAL + self.mesh.NFX + self.mesh.NAR
-        h = self.mesh.NAT + self.mesh.NFY + self.mesh.NAB
+        M = self.mesh
+        width_height = [
+            [M.NAL + M.NFX + M.NAR, M.NAT],
+            [M.NAL, M.NFY],
+            [M.NAL + M.NFX + M.NAR, M.NAB],
+            [M.NAR, M.NFY],
+            [M.NFX, M.NFY]
+        ]
+
         x0, y0 = self.start_x, self.start_y
         dx, dy = self.step_x, self.step_y
+        x_y = [
+            [x0, y0],
+            [x0, y0 + M.NAT*dy],
+            [x0, y0 + (M.NAT+M.NFY)*dy],
+            [x0 + (M.NAL+M.NFX)*dx, y0 + M.NAT*dy],
+            [x0 + M.NAL*dx, y0 + M.NAT*dy]
+        ]
 
-        self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy)
+        air = self.AIR_CODE
+        fig = self.FIGURE_CODE
+        material = [air, air, air, air, fig]
+
+        for i in range(5):
+            w, h = width_height[i]
+            if w == 0 or h == 0:
+                continue
+            x, y = x_y[i]
+            mtrl = material[i]
+            self.save_rectangle_mesh(w, h, output, x, y, dx, dy, mtrl)
