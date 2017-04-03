@@ -33,6 +33,8 @@ class AbstractPrimitive:
     COL_FIG = QColor(0, 0, 0)
     COL_FIG_INNNER = QColor(0, 0, 0, 64)
     EXPORT_DESCRIPTION = "type: "
+    AIR_CODE = 0
+    FIGURE_CODE = 1
 
     def __init__(self, fig, mesh):
         self.modify(fig, mesh)
@@ -60,10 +62,15 @@ class AbstractPrimitive:
     def update_me(self):
         pass
 
-    def shave_air(self, edge, neighbour):
+    def connect(self, edge, neighbour):
         if not neighbour:
             raise ValueError("Пропущен второй аргумент (neighbour)")
+
         self.binds[edge] = neighbour
+        for i in range(4):
+            if self.binds[i]:
+                self.mesh.set_val_at(i, 0)
+
         self.modify()
 
     def get_box(self):
@@ -225,22 +232,28 @@ class AbstractPrimitive:
         """
         pass
 
-    def save_rectangle_mesh(self, nwidth, nheight, output, x0, y0, dx, dy):
+    def save_rectangle_mesh(self, nwidth, nheight, output, x0, y0, dx, dy, m=None):
         """
         nwidth, nheight — количество квадратов в ширину\высоту
            Квадрат делится диагональю на элементы. Узлов на один больше чем квадратов
         output — словарь с текстовыми дескрипторами (см. save_mesh)
         """
         index = output.last_index
+        if m is None:
+            m = self.FIGURE_CODE
+
         # Записываем тройки индексов узлов, образующих треугольники
         for j in range(nheight):
             shift = nwidth + 1  # shift to next layer of mesh's grid
             for i in range(nwidth):
                 current = index + i + shift*j
-                output.element(current, current + shift, current + shift + 1)
-                output.element(current, current + 1, current + shift + 1)
+                output.save_element(current, current + shift, current + shift + 1, m)
+                output.save_element(current, current + 1, current + shift + 1, m)
 
         # Координаты узлов
         for j in range(nheight+1):  # Узлов на один больше чем квадратов
             for i in range(nwidth+1):
-                output.coordinates(x0 + dx*i, y0 + dy*j)
+                output.save_node(x0 + dx*i, y0 + dy*j, m)
+
+    def __str__(self):
+        return "{}, {} | {}".format(self.start_x, self.start_y, self.mesh)

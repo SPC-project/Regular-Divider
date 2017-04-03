@@ -135,13 +135,15 @@ class Figure(QtCore.QObject):
             self.send_message("Фигура пуста, нечего сохранять")
             return
 
-        last_index = 0
+        self.shape.sort(key=lambda prim: (prim.start_x, prim.start_y))
+
+        elem_num = 0
         with Output() as output:
             for prim in self.shape:
                 prim.save_mesh(output)
-            last_index = output.last_index - 1  # cause point on next element
+            elem_num = output.elements_amount
 
-        res = subprocess.run(["./Sorter.py", filename, str(last_index)])
+        res = subprocess.run(["./Combiner.py", filename, str(elem_num)]).returncode
         if res == 0:
             self.send_message("Фигура сохранена в " + filename)
         else:
@@ -188,8 +190,8 @@ class Figure(QtCore.QObject):
         if dialog.result() == 1:
             self.adopt_primitive(*dialog.get_data())
             new_prim = self.shape[-1]
-            prim.shave_air(side_code, new_prim)
-            new_prim.shave_air((side_code+2) % 4, prim)  # shave opposite side
+            prim.connect(side_code, new_prim)
+            new_prim.connect((side_code+2) % 4, prim)  # shave opposite side
             self.parent_clear.emit()
             self.parent_update.emit()
 
@@ -234,7 +236,7 @@ class Figure(QtCore.QObject):
                         code = int(code)
                         if code != -1:
                             neighbour = self.shape[code]
-                            self.shape[i-shift].shave_air(side, neighbour)
+                            self.shape[i-shift].connect(side, neighbour)
         self.adjust()
         self.parent_clear.emit()
         self.parent_update.emit()
@@ -283,6 +285,7 @@ class Output:
     def __init__(self):
         self.f = {}
         self.last_index = 0
+        self.elements_amount = 0
 
     def __enter__(self):
         for tmp_name in self.FILENAMES:
@@ -293,9 +296,12 @@ class Output:
         for tmp_name in self.FILENAMES:
             self.f[tmp_name].close()
 
-    def element(self, index_A, index_B, index_C):
+    def save_element(self, index_A, index_B, index_C, material):
         self.f[self.FILENAMES[0]].write("{} {} {}\n".format(index_A, index_B, index_C))
+        self.f[self.FILENAMES[2]].write("{}\n".format(material))
+        self.elements_amount += 1
 
-    def coordinates(self, x, y):
+    def save_node(self, x, y, material):
         self.f[self.FILENAMES[1]].write("{} {} {}\n".format(x, y, self.last_index))
+        self.f[self.FILENAMES[3]].write("{}\n".format(material))
         self.last_index += 1
