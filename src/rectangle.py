@@ -116,6 +116,7 @@ class Rectangle(AbstractPrimitive):
     def save_mesh(self, output):
         """
         See primitive.py/AbstractPrimitive/save_mesh for description
+        See doc/rectangular_mesh_creating.png for visualization
         index — индекс, с которого начнём нумерацию узлов
         """
         M = self.mesh
