@@ -3,7 +3,8 @@
 
 """
 Author: Mykolaj Konovalow
-    for SPC department of NTU "KhPI"
+    for CMPS department of NTU "KhPI"
+    http://web.kpi.kharkov.ua/cmps/ru/kafedra-cmps/
 """
 
 import sys
