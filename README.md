@@ -1,6 +1,6 @@
 Regular-Divider
 ===============
-#####(проект разрабатывается студентами кафедры [КМПС](http://web.kpi.kharkov.ua/cmps/ru/kafedra-cmps/) [НТУ "ХПИ"](http://www.kpi.kharkov.ua/ru/))
+##### (проект разрабатывается студентами кафедры [КМПС](http://web.kpi.kharkov.ua/cmps/ru/kafedra-cmps/) [НТУ "ХПИ"](http://www.kpi.kharkov.ua/ru/))
 
 Для запуска необходимы (в скобках - версии ПО, которые используются при отладке):
 - Интерпретатор для Python 3 (3.5)
