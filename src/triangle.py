@@ -64,8 +64,8 @@ class Triangle(AbstractPrimitive):
         """
         Divide figure and it's air-rectangles by right triangles
         """
-        self.canvas = canvas
         M = self.mesh
+        scale = self.generate_scaler()
 
         # Triangle has some air at top/bottom (horizontal) or left/right (vertical)
         form = self.mesh.data["form"]
@@ -74,18 +74,34 @@ class Triangle(AbstractPrimitive):
         botop, botop_y = (M.NAT, 0) if form > 1 else (M.NAB, M.NFY)
         if sides != 0:
             x, y, w, h = side_x, 0, sides, M.NAT + M.NFY + M.NAB
-            self.draw_rect_mesh(x, y, w, h)
+            self.draw_rect_mesh(canvas, x, y, w, h)
         if botop != 0:
             x, y, w, h = M.NAL, botop_y, M.NFX, botop
-            self.draw_rect_mesh(x, y, w, h)
+            self.draw_rect_mesh(canvas, x, y, w, h)
 
-        # Draw the figure
+        # Draw contour of mirrored air part
+        most_left_x, most_left_y = scale(self.vertexes[0])
+        most_right_x, most_right_y = scale(self.vertexes[1])
+        third_x, third_y = scale(self.vertexes[2])
+        if form == 0:
+            canvas.drawLine(most_left_x, most_left_y, most_right_x, most_left_y)
+            canvas.drawLine(most_right_x, most_right_y, most_right_x, most_left_y)
+        elif form == 1:
+            canvas.drawLine(most_left_x, most_right_y, most_right_x, most_right_y)
+            canvas.drawLine(most_left_x, most_right_y, most_left_x, most_left_y)
+        elif form == 2:
+            canvas.drawLine(most_left_x, third_y, most_right_x, third_y)
+            canvas.drawLine(most_right_x, most_right_y, most_right_x, third_y)
+        elif form == 3:
+            canvas.drawLine(most_left_x, third_y, most_right_x, third_y)
+            canvas.drawLine(most_left_x, most_left_y, most_left_x, third_y)
+
+        # Draw the figure and complete it to rectangle with air
         canvas.setPen(self.COL_FIG)
-        self.draw_figure_mesh(form)
+        self.draw_figure_mesh(canvas, form)
 
         # Fill the figure
         the_figure = QPolygon()
-        scale = self.generate_scaler()
         for vertex in self.vertexes:
             x, y = scale(vertex)
             the_figure.append(QPoint(x, y))
@@ -94,25 +110,33 @@ class Triangle(AbstractPrimitive):
         canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
         canvas.drawPolygon(the_figure)
 
-    def draw_figure_mesh(self, form):
+    def draw_figure_mesh(self, canvas, form):
         """
         Divide this triangle by right triangles
         If it itself right - it was fully covered by them
         If not - need irregular triangles to cover residual free space
+
+        Build mirrored air copy of the figure — so they combined form rectangle
         """
         M = self.mesh
 
         if self.width == self.height:  # no need in irregular elements
-            x, modx = M.NAL, 1
+            x, modx, = M.NAL, 1
+            a_x, a_modx = M.NAL + M.NFX - 1, -1  # air copies
             if form % 2 != 0:  # hypotenuse face left
-                x, modx = M.NFX - 1, -1
+                x, modx, a_x, a_modx = a_x, a_modx, x, modx
+
             y, mody = M.NAT, 0
+            a_y, a_mody = M.NAT + 1, 1
             if form < 2:  # hypotenuse face up
-                y, mody = M.NAT + 1, 1
+                y, mody, a_y, a_mody = a_y, a_mody, y, mody
+
             w, h = 1, M.NFY - 1
             for i in range(M.NFX-1):
-                self.canvas.setPen(self.COL_FIG)
-                self.draw_rect_mesh(x+i*modx, y+i*mody, w, h - i)
+                canvas.setPen(self.COL_FIG)
+                self.draw_rect_mesh(canvas, x+i*modx, y+i*mody, w, h - i)
+                canvas.setPen(self.COL_AIR)
+                self.draw_rect_mesh(canvas, a_x+i*a_modx, a_y+i*a_mody, w, h - i)
         else:  # See explanation in 'doc/triangle draw_mesh.png'
             # NY, NX - how many rectangles we can draw in the triangle
             available_h = self.height - self.height*self.step_x / self.width
@@ -130,7 +154,7 @@ class Triangle(AbstractPrimitive):
                 if form < 2:
                     y, mody = M.NFY - 1 - j, 1
 
-                self.draw_rect_mesh(x, y, w, h)
+                self.draw_rect_mesh(canvas, x, y, w, h)
                 curr_h -= self.step_y
                 curr_w = curr_h * tg_alpha
 
