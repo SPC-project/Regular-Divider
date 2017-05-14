@@ -14,8 +14,11 @@ class NewPrimitiveDialog(QDialog):
         self.tabWidget.clear()  # Очистим пустые страницы
         self.Rectangle_widget = NewRectangleWidget()
         self.Triangle_widget = NewTriangleWidget()
-        self.tabWidget.addTab(self.Rectangle_widget, "Прямоугольник")
-        self.tabWidget.addTab(self.Triangle_widget, "Треугольник")
+
+        rect = QIcon(QPixmap("resources/icons/rectangle.png"))
+        tri = QIcon(QPixmap("resources/icons/triangle_type_0.png"))
+        self.tabWidget.addTab(self.Rectangle_widget, rect, "Прямоугольник")
+        self.tabWidget.addTab(self.Triangle_widget, tri, "Треугольник")
 
         self.accepted.connect(self.validate)
 
