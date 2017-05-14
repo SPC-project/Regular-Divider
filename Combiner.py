@@ -99,7 +99,7 @@ def adjust_node_index(min_duplicate, max_duplicate, excessive_indexes, index):
     return index
 
 
-def write_elements(output, elements, excessive_indexes):
+def write_elements(output, elems, excessive_indexes):
     min_duplicate, max_duplicate = -1, -1
     if len(excessive_indexes) != 0:
         excessive_indexes.sort(key=lambda x: x[0])
