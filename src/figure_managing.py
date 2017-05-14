@@ -5,7 +5,7 @@ from PyQt5 import uic
 class ManageFigureDialog(QDialog):
     def __init__(self):
         super(QDialog, self).__init__()
-        uic.loadUi('ui/edit_figure.ui', self)
+        uic.loadUi('resources/ui/edit_figure.ui', self)
 
     def show(self, figure):
         self.figure = figure
@@ -37,7 +37,7 @@ class ManageFigureDialog(QDialog):
 class ListItem(QWidget):
     def __init__(self, parent, primitive):
         super(ListItem, self).__init__(parent)
-        uic.loadUi('ui/list_item.ui', self)
+        uic.loadUi('resources/ui/list_item.ui', self)
 
         x = primitive.x
         y = primitive.y

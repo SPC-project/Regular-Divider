@@ -53,7 +53,7 @@ class Figure(QtCore.QObject):
 
     def create_space(self):
         dialog = QDialog()
-        uic.loadUi('ui/create_space.ui', dialog)
+        uic.loadUi('resources/ui/create_space.ui', dialog)
         dialog.size.setFocus()
         dialog.start_x.setValue(self.start_x)
         dialog.start_y.setValue(self.start_y)

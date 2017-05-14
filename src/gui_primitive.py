@@ -9,7 +9,7 @@ import abc
 class NewPrimitiveDialog(QDialog):
     def __init__(self):
         super(NewPrimitiveDialog, self).__init__()
-        uic.loadUi('ui/new_primitive.ui', self)
+        uic.loadUi('resources/ui/new_primitive.ui', self)
 
         self.tabWidget.clear()  # Очистим пустые страницы
         self.Rectangle_widget = NewRectangleWidget()
@@ -207,7 +207,7 @@ class NewRectangleWidget(AbstractNewWidget):
     """
     def __init__(self):
         super(NewRectangleWidget, self).__init__()
-        uic.loadUi('ui/new_rectangle.ui', self)
+        uic.loadUi('resources/ui/new_rectangle.ui', self)
         self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
 
     def upd_air_spinboxes(self, value):
@@ -251,7 +251,7 @@ class NewRectangleWidget(AbstractNewWidget):
 class NewTriangleWidget(AbstractNewWidget):
     def __init__(self):
         super(NewTriangleWidget, self).__init__()
-        uic.loadUi('ui/new_triangle.ui', self)
+        uic.loadUi('resources/ui/new_triangle.ui', self)
 
         # Order for creating comboBox's items is significant
         self.comboBox.addItem(QIcon(QPixmap("ui/triangle_type_0.png")), "0")

@@ -39,7 +39,7 @@ class MyWindow(QMainWindow):
 
     def __init__(self):
         super(MyWindow, self).__init__()
-        uic.loadUi('ui/main.ui', self)
+        uic.loadUi('resources/ui/main.ui', self)
 
         # First call of resizeEvent (call when window create)
         # will initialize a 2 QPixmap buffer
