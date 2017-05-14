@@ -169,8 +169,7 @@ class AbstractPrimitive:
     def draw_mesh(self, canvas):
         pass
 
-    def draw_rect_mesh(self, canvas, dx, dy,
-                       grid_x, grid_y, grid_width, grid_height):
+    def draw_rect_mesh(self, grid_x, grid_y, grid_width, grid_height):
         """
         Draw rectangular region of mesh. First divide to squares,
             then draw diagonal and transform them to triangles
@@ -183,24 +182,24 @@ class AbstractPrimitive:
         # Horizontal & diagonal lines
         A = QPoint(x0, y0)
         B = QPoint(xn, y0)
-        canvas.drawLine(A, B)  # first line
+        self.canvas.drawLine(A, B)  # first line
         for j in range(1, grid_height+1):
             y = self.pixel_y(grid_y+j)
             A.setY(y)
             B.setY(y)
-            canvas.drawLine(A, B)
+            self.canvas.drawLine(A, B)
 
         # Vertical lines
         A.setX(x0)
         B.setX(x0)
         A.setY(y0)
         B.setY(yn)
-        canvas.drawLine(A, B)
+        self.canvas.drawLine(A, B)
         for i in range(1, grid_width+1):
             x = self.pixel_x(grid_x+i)
             A.setX(x)
             B.setX(x)
-            canvas.drawLine(A, B)
+            self.canvas.drawLine(A, B)
 
         # Diagonal lines
         A.setX(x0)
@@ -209,7 +208,7 @@ class AbstractPrimitive:
         B.setY(self.pixel_y(grid_y + 1))
         for j in range(1, grid_height+1):
             for i in range(1, grid_width+1):
-                canvas.drawLine(A, B)
+                self.canvas.drawLine(A, B)
                 A.setX(self.pixel_x(grid_x + i))
                 B.setX(self.pixel_x(grid_x + i + 1))
             A.setX(x0)

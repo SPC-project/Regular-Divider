@@ -64,10 +64,8 @@ class Triangle(AbstractPrimitive):
         """
         Divide figure and it's air-rectangles by right triangles
         """
+        self.canvas = canvas
         M = self.mesh
-        # Make a rectangle with one diagonal (upper-left bottom-right)
-        tile_w = self.step_x * self.drawing_coefs['kx']
-        tile_h = self.step_y * self.drawing_coefs['ky']
 
         # Triangle has some air at top/bottom (horizontal) or left/right (vertical)
         form = self.mesh.data["form"]
@@ -76,14 +74,14 @@ class Triangle(AbstractPrimitive):
         botop, botop_y = (M.NAT, 0) if form > 1 else (M.NAB, M.NFY)
         if sides != 0:
             x, y, w, h = side_x, 0, sides, M.NAT + M.NFY + M.NAB
-            self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
+            self.draw_rect_mesh(x, y, w, h)
         if botop != 0:
             x, y, w, h = M.NAL, botop_y, M.NFX, botop
-            self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
+            self.draw_rect_mesh(x, y, w, h)
 
         # Draw the figure
         canvas.setPen(self.COL_FIG)
-        self.draw_figure_mesh(canvas, tile_w, tile_h, form)
+        self.draw_figure_mesh(form)
 
         # Fill the figure
         the_figure = QPolygon()
@@ -96,9 +94,9 @@ class Triangle(AbstractPrimitive):
         canvas.setBrush(QBrush(self.COL_FIG_INNNER))  # drawPolygon() use it
         canvas.drawPolygon(the_figure)
 
-    def draw_figure_mesh(self, canvas, tile_w, tile_h, form):
+    def draw_figure_mesh(self, form):
         """
-        Divide this triangle by right triangles (legs: tile_w, tile_h)
+        Divide this triangle by right triangles
         If it itself right - it was fully covered by them
         If not - need irregular triangles to cover residual free space
         """
@@ -106,15 +104,15 @@ class Triangle(AbstractPrimitive):
 
         if self.width == self.height:  # no need in irregular elements
             x, modx = M.NAL, 1
-            if form % 2 != 0:
+            if form % 2 != 0:  # hypotenuse face left
                 x, modx = M.NFX - 1, -1
             y, mody = M.NAT, 0
-            if form < 2:
+            if form < 2:  # hypotenuse face up
                 y, mody = M.NAT + 1, 1
             w, h = 1, M.NFY - 1
             for i in range(M.NFX-1):
-                self.draw_rect_mesh(canvas, tile_w, tile_h,
-                                    x+i*modx, y+i*mody, w, h - i)
+                self.canvas.setPen(self.COL_FIG)
+                self.draw_rect_mesh(x+i*modx, y+i*mody, w, h - i)
         else:  # See explanation in 'doc/triangle draw_mesh.png'
             # NY, NX - how many rectangles we can draw in the triangle
             available_h = self.height - self.height*self.step_x / self.width
@@ -132,7 +130,7 @@ class Triangle(AbstractPrimitive):
                 if form < 2:
                     y, mody = M.NFY - 1 - j, 1
 
-                self.draw_rect_mesh(canvas, tile_w, tile_h, x, y, w, h)
+                self.draw_rect_mesh(x, y, w, h)
                 curr_h -= self.step_y
                 curr_w = curr_h * tg_alpha
 
