@@ -47,7 +47,7 @@ class MyWindow(QMainWindow):
         size_tip = QPushButton()
         size_tip.setStyleSheet("QPushButton{ font-weight: bold; }")
         size_tip.setFocusPolicy(QtCore.Qt.NoFocus)  # instead mess with arrows
-        txt = "Размеры рабочей области.\nПо нажатию масштабирует область"
+        txt = "Размерность рабочей области.\nПо нажатию масштабируется чтобы вместить всё"
         size_tip.setToolTip(txt)
 
         self.msg = None
@@ -241,7 +241,7 @@ class MyWindow(QMainWindow):
 
 def my_excepthook(type_, value, tback):
     """
-    Перехватывает исключения, логгирует их и позволяет уронить програму
+    Перехватывает исключения, логгирует их и позволяет уронить программу
     """
     logging.error(''.join(format_exception(type_, value, tback)))
     sys.__excepthook__(type_, value, tback)

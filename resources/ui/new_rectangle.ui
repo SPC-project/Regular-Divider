@@ -81,6 +81,9 @@
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="x">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Координата левого верхнего угла прямоугольника&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
@@ -139,6 +142,9 @@
       </item>
       <item>
        <widget class="QSpinBox" name="Ny">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Количество узлов по вертикали у даного прямоугольника&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
@@ -191,6 +197,9 @@
       </item>
       <item>
        <widget class="QSpinBox" name="Nx">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Количество узлов по горизонтали у даного прямоугольника&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
@@ -218,6 +227,9 @@
       </item>
       <item>
        <widget class="QDoubleSpinBox" name="width">
+        <property name="toolTip">
+         <string/>
+        </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
@@ -257,6 +269,9 @@
       </item>
       <item>
        <widget class="QSpinBox" name="air_top">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ширина воздушного слоя сверху, в узлах&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="maximum">
          <number>1000</number>
         </property>
@@ -287,6 +302,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ширина воздушного слоя слева, в узлах&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="maximum">
          <number>1000</number>
         </property>
@@ -309,6 +327,9 @@
        <widget class="QSpinBox" name="air_right">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ширина воздушного слоя справа, в узлах&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="maximum">
          <number>1000</number>
@@ -336,6 +357,9 @@
        <widget class="QSpinBox" name="air_bottom">
         <property name="enabled">
          <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ширина воздушного слоя снизу, в узлах&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="maximum">
          <number>1000</number>

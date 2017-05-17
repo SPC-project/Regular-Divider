@@ -64,7 +64,9 @@ class Figure(QtCore.QObject):
             self.start_x = dialog.start_x.value()
             self.start_y = dialog.start_y.value()
             self.parent_clear.emit()
-            self.send_message("Рабочая область создана")
+            self.send_message("Рабочая область изменена")
+            self.parent_clear.emit()
+            self.parent_update.emit()
 
     def new_figure(self):
         if not self.prim_dialog:

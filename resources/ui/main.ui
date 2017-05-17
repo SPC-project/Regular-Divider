@@ -38,7 +38,6 @@
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <zorder>canvas_mesh</zorder>
    </widget>
    <widget class="QFrame" name="canvas_mesh">
     <property name="geometry">
@@ -110,7 +109,10 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Задать рабочее пространство</string>
+    <string>Рабочая область</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Установить размер и положение видимой рабочей области&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="save_world">
