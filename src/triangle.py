@@ -185,19 +185,21 @@ class Triangle(AbstractPrimitive):
             w, h = hor_layer_w, M.NAT + M.NFY + M.NAB
             x0 = self.start_x + hor_offset_nodes*dx
             y0 = self.start_y
-            self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy)
+            self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy, self.AIR_CODE)
         if vert_layer_h != 0:
             w, h = M.NFX, vert_layer_h
             x0 = self.start_x + M.NAL*dx
             y0 = self.start_y + vert_offset_nodes*dy
-            self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy)
+            self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy, self.AIR_CODE)
 
         if self.width == self.height:  # no need in irregular elements
-            self.save_isosceles_figure_mesh(output, form)
+            self.save_isosceles_figure_mesh(output, form, self.FIGURE_CODE)
+            mirrored = (form+3) % 4 if form % 2 == 0 else (form+1) % 4
+            self.save_isosceles_figure_mesh(output, mirrored, self.AIR_CODE)
         else:
             self.save_nonisosceles_figure_mesh(output, form)
 
-    def save_isosceles_figure_mesh(self, output, type_):
+    def save_isosceles_figure_mesh(self, output, type_, material):
         """
          Create mesh for isosceles triangle
          Create rectanglar mesh near vertical cathetus
@@ -212,11 +214,11 @@ class Triangle(AbstractPrimitive):
         if type_ == 0:
             offset_x, mod_x = M.NAL, 1
             offset_y, mod_y = 1, 1  # if start at 0, rectangle will penetrate figure's boundaries
-            output.save_node(x0 + M.NAL*dx, y0, self.FIGURE_CODE)  # create save_node top-left save_node
+            output.save_node(x0 + M.NAL*dx, y0, material)  # create save_node top-left save_node
         elif type_ == 1:
             offset_x, mod_x = M.NFX-1, -1
             offset_y, mod_y = 1, 1
-            output.save_node(x0 + M.NFX*dx, y0, self.FIGURE_CODE)
+            output.save_node(x0 + M.NFX*dx, y0, material)
         elif type_ == 2:
             offset_x, mod_x = M.NAL, 1
             offset_y, mod_y = M.NAT, 0
@@ -230,70 +232,70 @@ class Triangle(AbstractPrimitive):
         for i in range(M.NFX-1):
             x = x0 + (offset_x + mod_x*i)*dx
             y = y0 + (offset_y + mod_y*i)*dy
-            self.save_rectangle_mesh(w, h-i, output, x, y, dx, dy)
+            self.save_rectangle_mesh(w, h-i, output, x, y, dx, dy, material)
 
         if type_ == 0:
-            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NFY*dy, self.FIGURE_CODE)
-            self.fill_gaps_on_type0_hypotenuse(output, start)
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NFY*dy, material)
+            self.fill_gaps_on_type0_hypotenuse(output, material, start)
         elif type_ == 1:
-            output.save_node(x0, y0 + M.NFY*dy, self.FIGURE_CODE)
-            self.fill_gaps_on_type1_hypotenuse(output, start)
+            output.save_node(x0, y0 + M.NFY*dy, material)
+            self.fill_gaps_on_type1_hypotenuse(output, material, start)
         if type_ == 2:
             bottom = output.last_index
-            output.save_node(x0 + M.NAL*dx, y0 + (M.NAT + M.NFY)*dy, self.FIGURE_CODE)
-            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NAT*dy, self.FIGURE_CODE)
-            self.fill_gaps_on_type2_hypotenuse(output, start, bottom)
+            output.save_node(x0 + M.NAL*dx, y0 + (M.NAT + M.NFY)*dy, material)
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NAT*dy, material)
+            self.fill_gaps_on_type2_hypotenuse(output, material, start, bottom)
         if type_ == 3:
-            output.save_node(x0, y0 + M.NAT*dy, self.FIGURE_CODE)
+            output.save_node(x0, y0 + M.NAT*dy, material)
             last = output.last_index
-            output.save_node(x0 + M.NFX*dx, y0 + (M.NAT + M.NFY)*dy, self.FIGURE_CODE)
-            self.fill_gaps_on_type3_hypotenuse(output, start, last)
+            output.save_node(x0 + M.NFX*dx, y0 + (M.NAT + M.NFY)*dy, material)
+            self.fill_gaps_on_type3_hypotenuse(output, material, start, last)
 
-    def fill_gaps_on_type0_hypotenuse(self, output, start):
+    def fill_gaps_on_type0_hypotenuse(self, output, material, start):
         next_left = start + 1
         next_right = start + 2
         for k in range(self.mesh.NFX, 0, -1):  # fill gaps on hypotenuse
-            output.save_element(start, next_left, next_right, self.FIGURE_CODE)
+            output.save_element(start, next_left, next_right, material)
             start = next_right
             next_left = next_right + 2
             next_right = next_right + k*2
             if k == 2:
                 next_right -= 1
 
-    def fill_gaps_on_type1_hypotenuse(self, output, start):
+    def fill_gaps_on_type1_hypotenuse(self, output, material, start):
         next_right = start + 2
         next_left = start + 1
         for k in range(self.mesh.NFX, 0, -1):  # fill gaps on hypotenuse
-            output.save_element(start, next_right, next_left, self.FIGURE_CODE)
+            output.save_element(start, next_right, next_left, material)
             start = next_left
             next_right = next_left + 2
             next_left = next_left + k*2
 
-    def fill_gaps_on_type2_hypotenuse(self, output, start, bottom):
+    def fill_gaps_on_type2_hypotenuse(self, output, material, start, bottom):
         next_right = start + self.mesh.NFY*2 - 1
         next_left = next_right - 1
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.save_element(next_left, bottom, next_right, self.FIGURE_CODE)
+            output.save_element(next_left, bottom, next_right, material)
             bottom = next_right
             next_right = next_right + (k-1)*2
             next_left = next_right - 1
         next_right = output.last_index - 1
         next_left = output.last_index - 5
-        output.save_element(next_left, bottom, next_right, self.FIGURE_CODE)
+        output.save_element(next_left, bottom, next_right, material)
 
-    def fill_gaps_on_type3_hypotenuse(self, output, start, last):
+    def fill_gaps_on_type3_hypotenuse(self, output, material, start, last):
         left = last - 1  # left vertex of the triangle
         next_up = last - 5  # index of upper-left save_node of created mesh
         next_down = last - 3
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.save_element(left, next_up, next_down, self.FIGURE_CODE)
+            output.save_element(left, next_up, next_down, material)
             left = next_down
             next_up = next_down + 1
             next_down = next_down - 4
         left = start + self.mesh.NFY*2 - 2
         next_up = left + 1
         next_down = last
-        output.save_element(left, next_up, next_down, self.FIGURE_CODE)
+        output.save_element(left, next_up, next_down, material)
 
     def save_nonisosceles_figure_mesh(self, output, form):
         # See doc/create_triangle_mesh.png for some explanation
