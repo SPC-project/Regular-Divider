@@ -58,7 +58,7 @@ with open(FILENAME, 'r') as In, open(FILENAME + "1", 'w') as Out:
                 nodes_material.append(int(line.strip()))
             else:
                 is_material = False
-        else:  #
+        else:
             elements_material.append(int(line.strip()))
 
     nodes_renames = [-1] * len(nodes)
@@ -76,8 +76,8 @@ with open(FILENAME, 'r') as In, open(FILENAME + "1", 'w') as Out:
     Out.write(SECTIONS_NAMES[3])
     Out.write(SECTIONS_NAMES[4])
     Out.write(SECTIONS_NAMES[5])
-    for index in nodes_material:
-        Out.write("{}\n".format(nodes_renames[index]))
+    for i in range(len(nodes_material)):
+        Out.write("{}\n".format(nodes_material[nodes_renames.index(i)]))
     Out.write(SECTIONS_NAMES[6])
     for index in elements_material:
         Out.write("{}\n".format(index))  # cause we do not change order in elements
