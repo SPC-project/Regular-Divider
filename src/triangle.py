@@ -147,14 +147,21 @@ class Triangle(AbstractPrimitive):
                 available_w = curr_w - curr_w*self.step_y / curr_h
                 NX = math.floor(available_w / self.step_x)
                 w, h = NX, 1
-                x, modx = M.NAL, 1
-                if form % 2 != 0:
-                    x, modx = M.NFX - NX, -1
-                y, mody = M.NAT + j, 0
-                if form < 2:
-                    y, mody = M.NFY - 1 - j, 1
 
+                x, modx = M.NAL, 1
+                a_x, a_modx = M.NAL + M.NFX - NX, -1
+                if form % 2 != 0:
+                    x, modx, a_x, a_modx = a_x, a_modx, x, modx
+
+                y, mody = M.NAT + j, 0
+                a_y, a_mody = M.NAT + M.NFY - 1 - j, 1
+                if form < 2:
+                    y, mody, a_y, a_mody = a_y, a_mody, y, mody
+
+                canvas.setPen(self.COL_FIG)
                 self.draw_rect_mesh(canvas, x, y, w, h)
+                canvas.setPen(self.COL_AIR)
+                self.draw_rect_mesh(canvas, a_x, a_y, w, h)
                 curr_h -= self.step_y
                 curr_w = curr_h * tg_alpha
 
