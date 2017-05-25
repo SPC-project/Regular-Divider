@@ -14,7 +14,7 @@
    <enum>Qt::ActionsContextMenu</enum>
   </property>
   <property name="windowTitle">
-   <string>d42do</string>
+   <string>Regular Divider</string>
   </property>
   <property name="accessibleName">
    <string>Hi</string>

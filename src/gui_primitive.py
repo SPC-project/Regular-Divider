@@ -21,8 +21,37 @@ class NewPrimitiveDialog(QDialog):
         self.tabWidget.addTab(self.Triangle_widget, tri, "Треугольник")
 
         self.accepted.connect(self.validate)
+        self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
+        self.upd_air_spinboxes(2)  # '2' mean 'checked'
 
         self.tabWidget.currentChanged.connect(self.grab_focus)
+
+    def upd_air_spinboxes(self, value):
+        """
+        If 'self.manual_air' flag is on, use one spinbox to set them all. Update others when the one is changed.
+        """
+        isEnabled = value == 0  # '0' = unchecked, '2' = checked
+        rect = self.Rectangle_widget
+        tri = self.Triangle_widget
+
+        r_leader = rect.air_top
+        t_leader = tri.air_top
+        if not isEnabled:
+            rect.update_connected_airboxes(r_leader.value())
+            tri.update_connected_airboxes(t_leader.value())
+            r_leader.valueChanged.connect(rect.update_connected_airboxes)
+            t_leader.valueChanged.connect(tri.update_connected_airboxes)
+        else:
+            r_leader.valueChanged.disconnect(rect.update_connected_airboxes)
+            t_leader.valueChanged.disconnect(tri.update_connected_airboxes)
+
+        rect.air_left.setEnabled(isEnabled)
+        rect.air_right.setEnabled(isEnabled)
+        rect.air_bottom.setEnabled(isEnabled)
+
+        tri.air_left.setEnabled(isEnabled)
+        tri.air_right.setEnabled(isEnabled)
+        tri.air_bottom.setEnabled(isEnabled)
 
     def grab_focus(self):
         self.tabWidget.currentWidget().x.setFocus()
@@ -32,14 +61,21 @@ class NewPrimitiveDialog(QDialog):
         fig = None
         mesh = None
         curr_tab_index = self.tabWidget.currentIndex()
+        do_use_same_air = self.manual_air.isChecked()
         if curr_tab_index == 0:
-            fig, mesh = self.Rectangle_widget.get_data()
+            fig, mesh = self.Rectangle_widget.get_data(do_use_same_air)
         elif curr_tab_index == 1:
-            fig, mesh = self.Triangle_widget.get_data()
+            fig, mesh = self.Triangle_widget.get_data(do_use_same_air)
 
         return fig, mesh, curr_tab_index
 
     def set_data(self, primitive):
+        different = primitive.mesh.NAL != primitive.mesh.NAR
+        different = different and primitive.mesh.NAT != primitive.mesh.NAB
+        different = different and primitive.mesh.NAL != primitive.mesh.NAT
+        if different:
+            self.manual_air.setChecked(False)
+
         if primitive.mesh.data['type'] == 'rectangle':
             self.tabWidget.setCurrentIndex(0)
             self.tabWidget.setTabEnabled(1, False)  # no need when redacted
@@ -99,7 +135,7 @@ class AbstractNewWidget(QWidget):
     def specific_set_data(primitive):
         pass
 
-    def get_data(self):
+    def get_data(self, USE_SAME_AIR):
         x = self.x.value()
         y = self.y.value()
         width = self.width.value()
@@ -119,6 +155,17 @@ class AbstractNewWidget(QWidget):
 
         mesh = [Ntop, Nright, Nbottom, Nleft, Nx, Ny]
         box, mesh, data = self.specific_get_data(x, y, width, height, mesh)
+
+        if USE_SAME_AIR:
+            if self.connection_side == 2:
+                hold = mesh[3]
+            else:
+                hold = mesh[0]
+            for i in range(0, 4):
+                mesh[i] = hold
+        if self.connection_side != -1:
+            mesh[(self.connection_side+2) % 4] = 0
+
         return box, Mesh(mesh, data)
 
     @abc.abstractmethod
@@ -201,6 +248,12 @@ class AbstractNewWidget(QWidget):
             coor = self.x
         coor.setMinimum(self.allowed_min - length)
 
+    def update_connected_airboxes(self, value):
+        self.air_top.setValue(value)
+        self.air_left.setValue(value)
+        self.air_bottom.setValue(value)
+        self.air_right.setValue(value)
+
 
 class NewRectangleWidget(AbstractNewWidget):
     """
@@ -211,33 +264,11 @@ class NewRectangleWidget(AbstractNewWidget):
     def __init__(self):
         super(NewRectangleWidget, self).__init__()
         uic.loadUi('resources/ui/new_rectangle.ui', self)
-        self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
-
-    def upd_air_spinboxes(self, value):
-        isEnabled = value == 2
-        self.air_left.setEnabled(isEnabled)
-        self.air_right.setEnabled(isEnabled)
-        self.air_bottom.setEnabled(isEnabled)
 
     def specific_set_data(self, primitive):
-        different = primitive.mesh.NAL != primitive.mesh.NAR
-        different = different or primitive.mesh.NAT != primitive.mesh.NAB
-        different = different or primitive.mesh.NAL != primitive.mesh.NAT
-
-        if different:
-            self.manual_air.setChecked(True)
+        pass
 
     def specific_get_data(self, x, y, width, height, mesh):
-        if not self.manual_air.isChecked():  # use same air for all edges
-            if self.connection_side == 2:
-                hold = mesh[3]
-            else:
-                hold = mesh[0]
-            for i in range(0, 4):
-                mesh[i] = hold
-        if self.connection_side != -1:
-            mesh[(self.connection_side+2) % 4] = 0
-
         other_data = {'type': 'rectangle'}
         return (x, y, width, height), mesh, other_data
 
@@ -261,27 +292,6 @@ class NewTriangleWidget(AbstractNewWidget):
         self.comboBox.addItem(QIcon(QPixmap("resources/icons/triangle_type_1.png")), "1")
         self.comboBox.addItem(QIcon(QPixmap("resources/icons/triangle_type_2.png")), "2")
         self.comboBox.addItem(QIcon(QPixmap("resources/icons/triangle_type_3.png")), "3")
-        self.comboBox.currentIndexChanged.connect(self.select_type)
-
-    def select_type(self, index):
-        boxes = [self.air_top, self.air_right, self.air_bottom, self.air_left]
-        states = [False, False, True, True]
-        index = int(self.comboBox.itemText(index))
-        if index == 1:
-            states = [False, True, True, False]
-        if index == 2:
-            states = [True, False, False, True]
-        if index == 3:
-            states = [True, True, False, False]
-
-        for i in range(0, 4):
-            boxes[i].setEnabled(states[i])
-            if not states[i]:
-                boxes[i].setValue(0)
-
-        if self.connection_side != -1:
-            connected_side = (self.connection_side + 2) % 4
-            boxes[connected_side].setEnabled(False)
 
     def specific_set_data(self, triangle):
         self.comboBox.setCurrentIndex(triangle.mesh.data['form'])
@@ -292,11 +302,6 @@ class NewTriangleWidget(AbstractNewWidget):
         return (x, y, width, height), mesh, other_data
 
     def prepare_air_for_expanding(self, triangle, side_code):
-        if side_code < 2:  # use upper-left triangle when expand from top or left
-            self.select_type(0)
-        else:
-            self.select_type(3)
-
         if side_code == 0:
             # Index shift after removing => bigger first
             self.comboBox.removeItem(3)
