@@ -68,12 +68,16 @@ class Triangle(AbstractPrimitive):
         scale = self.generate_scaler()
         form = self.mesh.data["form"]
 
-        # Draw air surroundings. Order: top, bottom, left, right
+        # Draw air surroundings
         canvas.setPen(self.COL_AIR)
-        self.draw_rect_mesh(canvas, 0, 0, M.NAL + M.NFX + M.NAR, M.NAT)
-        self.draw_rect_mesh(canvas, 0, M.NAT + M.NFY, M.NAL + M.NFX + M.NAR, M.NAB)
-        self.draw_rect_mesh(canvas, 0, M.NAT, M.NAL, M.NFY)
-        self.draw_rect_mesh(canvas, M.NAL + M.NFX, M.NAT, M.NAR, M.NFY)
+        if M.NAT != 0:
+            self.draw_rect_mesh(canvas, 0, 0, M.NAL + M.NFX + M.NAR, M.NAT)
+        if M.NAB != 0:
+            self.draw_rect_mesh(canvas, 0, M.NAT + M.NFY, M.NAL + M.NFX + M.NAR, M.NAB)
+        if M.NAL != 0:
+            self.draw_rect_mesh(canvas, 0, M.NAT, M.NAL, M.NFY)
+        if M.NAR != 0:
+            self.draw_rect_mesh(canvas, M.NAL + M.NFX, M.NAT, M.NAR, M.NFY)
 
         # Draw contour of mirrored air part
         most_left_x, most_left_y = scale(self.vertexes[0])
@@ -172,22 +176,27 @@ class Triangle(AbstractPrimitive):
         dx = self.step_x
         dy = self.step_y
 
-        # Create mesh for air layers: left/right(vertical) and top/bottom (horizontal)
-        #  see doc/forms_of_triangles.png for context
-        #  Horizontal boxes get excessive corner's part of air layout
-        hor_layer_w, hor_offset_nodes = (M.NAL, 0) if form % 2 == 0 else (M.NAR, M.NFX)
-        vert_layer_h, vert_offset_nodes = (M.NAT, 0) if form > 1 else (M.NAB, M.NFY)
-        if hor_layer_w != 0:
-            w, h = hor_layer_w, M.NAT + M.NFY + M.NAB
-            x0 = self.start_x + hor_offset_nodes*dx
-            y0 = self.start_y
-            self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy, self.AIR_CODE)
-        if vert_layer_h != 0:
-            w, h = M.NFX, vert_layer_h
-            x0 = self.start_x + M.NAL*dx
-            y0 = self.start_y + vert_offset_nodes*dy
-            self.save_rectangle_mesh(w, h, output, x0, y0, dx, dy, self.AIR_CODE)
+        # Create mesh for air layers: top, bottom, left, right
+        #   See doc/forms_of_triangles.png for context
+        #   Horizontal boxes get excessive corner's part of air layout
+        h_w = M.NAL + M.NFX + M.NAR
+        h_x = self.start_x
+        y1 = self.start_y
+        y2 = self.start_y + (M.NAT + M.NFY)*dy
+        if M.NAT != 0:
+            self.save_rectangle_mesh(h_w, M.NAT, output, h_x, y1, dx, dy, self.AIR_CODE)
+        if M.NAB != 0:
+            self.save_rectangle_mesh(h_w, M.NAB, output, h_x, y2, dx, dy, self.AIR_CODE)
+        v_h = M.NFY
+        v_y = self.start_y + M.NAL*dy
+        x3 = self.start_x
+        x4 = self.start_x + (M.NAL + M.NFX)*dx
+        if M.NAL != 0:
+            self.save_rectangle_mesh(M.NAL, v_h, output, x3, v_y, dx, dy, self.AIR_CODE)
+        if M.NAR != 0:
+            self.save_rectangle_mesh(M.NAR, v_h, output, x4, v_y, dx, dy, self.AIR_CODE)
 
+        # Create mesh for figure
         if self.width == self.height:  # no need in irregular elements
             self.save_isosceles_figure_mesh(output, form, self.FIGURE_CODE)
             mirrored = (form+3) % 4 if form % 2 == 0 else (form+1) % 4
@@ -197,8 +206,8 @@ class Triangle(AbstractPrimitive):
 
     def save_isosceles_figure_mesh(self, output, type_, material):
         """
-         Create mesh for isosceles triangle
-         Create rectanglar mesh near vertical cathetus
+         Create mesh for isosceles triangle.
+         See 'doc/create_triangle_mesh.png' for details
         """
         M = self.mesh
         offset_x, offset_y = 0, 0  # offset in nodes to where start first rectangle
@@ -229,6 +238,12 @@ class Triangle(AbstractPrimitive):
             x = x0 + (offset_x + mod_x*i)*dx
             y = y0 + (offset_y + mod_y*i)*dy
             self.save_rectangle_mesh(w, h-i, output, x, y, dx, dy, material)
+
+        # Special case for one-element figures:
+        if M.NFX == 1:
+            x = x0 if type_ % 2 == 0 else x0 + dx
+            y = y0 if type_ >= 2 else y0 + dy
+            output.save_node(x, y, material)
 
         if type_ == 0:
             output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NFY*dy, material)
@@ -277,6 +292,10 @@ class Triangle(AbstractPrimitive):
             next_left = next_right - 1
         next_right = output.last_index - 1
         next_left = output.last_index - 5
+
+        if self.mesh.NFX == 1:  # special case, one-element figure
+            next_left = output.last_index - 3
+
         output.save_element(next_left, bottom, next_right, material)
 
     def fill_gaps_on_type3_hypotenuse(self, output, material, start, last):
