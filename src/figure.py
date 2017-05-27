@@ -5,6 +5,7 @@ from src.triangle import Triangle
 from src.primitive import AbstractPrimitive
 from src.gui_primitive import NewPrimitiveDialog
 import subprocess
+import os
 
 SPACING = 5
 RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
@@ -290,6 +291,9 @@ class Output:
         self.elements_amount = 0
 
     def __enter__(self):
+        if not os.path.isdir(self.TEMP_DIR):
+            os.mkdir(self.TEMP_DIR)
+
         for tmp_name in self.FILENAMES:
             self.f[tmp_name] = open(self.TEMP_DIR + tmp_name + ".tmp", "w")  # TODO: should be "x"
         return self
