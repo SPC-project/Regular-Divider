@@ -173,6 +173,7 @@ class AbstractPrimitive:
         """
         Draw rectangular region of mesh. First divide to squares,
             then draw diagonal and transform them to triangles
+
         'grid_*' arguments is numbers of nodes of the mesh
         """
         x0 = self.pixel_x(grid_x)

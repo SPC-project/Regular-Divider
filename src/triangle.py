@@ -66,18 +66,14 @@ class Triangle(AbstractPrimitive):
         """
         M = self.mesh
         scale = self.generate_scaler()
-
-        # Triangle has some air at top/bottom (horizontal) or left/right (vertical)
         form = self.mesh.data["form"]
+
+        # Draw air surroundings. Order: top, bottom, left, right
         canvas.setPen(self.COL_AIR)
-        sides, side_x = (M.NAL, 0) if form % 2 == 0 else (M.NAR, M.NFX)
-        botop, botop_y = (M.NAT, 0) if form > 1 else (M.NAB, M.NFY)
-        if sides != 0:
-            x, y, w, h = side_x, 0, sides, M.NAT + M.NFY + M.NAB
-            self.draw_rect_mesh(canvas, x, y, w, h)
-        if botop != 0:
-            x, y, w, h = M.NAL, botop_y, M.NFX, botop
-            self.draw_rect_mesh(canvas, x, y, w, h)
+        self.draw_rect_mesh(canvas, 0, 0, M.NAL + M.NFX + M.NAR, M.NAT)
+        self.draw_rect_mesh(canvas, 0, M.NAT + M.NFY, M.NAL + M.NFX + M.NAR, M.NAB)
+        self.draw_rect_mesh(canvas, 0, M.NAT, M.NAL, M.NFY)
+        self.draw_rect_mesh(canvas, M.NAL + M.NFX, M.NAT, M.NAR, M.NFY)
 
         # Draw contour of mirrored air part
         most_left_x, most_left_y = scale(self.vertexes[0])
