@@ -18,7 +18,7 @@ class Figure(QtCore.QObject):
     primitive_modification = QtCore.pyqtSignal(int)
 
     def __init__(self, status, parent_update, parent_clear, parent_message):
-        super(Figure, self).__init__()
+        super().__init__()
         self.world_size = 0
         self.start_x = 0
         self.start_y = 0
@@ -276,6 +276,16 @@ class Figure(QtCore.QObject):
 
         self.update_status()
         self.parent_clear.emit()
+        self.parent_update.emit()
+
+    def set_air(self, thickness):
+        for primitive in self.shape:
+            for i in range(4):
+                if not primitive.binds[i]:
+                    primitive.mesh.set_val_at(i, thickness)
+                    primitive.modify()
+
+            self.parent_clear.emit()
         self.parent_update.emit()
 
 

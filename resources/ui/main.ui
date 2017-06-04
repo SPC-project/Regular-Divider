@@ -86,6 +86,7 @@
     <addaction name="separator"/>
     <addaction name="add_primitive"/>
     <addaction name="create_world"/>
+    <addaction name="set_air"/>
    </widget>
    <addaction name="File"/>
    <addaction name="Figure"/>
@@ -252,6 +253,11 @@
   <action name="action">
    <property name="text">
     <string>Задать воздушный слой фигуре</string>
+   </property>
+  </action>
+  <action name="set_air">
+   <property name="text">
+    <string>Задать воздух для всей фигуры</string>
    </property>
   </action>
  </widget>

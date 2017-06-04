@@ -63,6 +63,7 @@ class MyWindow(QMainWindow):
         self.import_figure.triggered.connect(self.pre_import)
         self.export_figure.triggered.connect(self.pre_export)
         self.sort_pmd.triggered.connect(self.do_sort)
+        self.set_air.triggered.connect(self.do_set_air)
 
         self.add_primitive.triggered.connect(self.figure.new_figure)
         self.create_world.triggered.connect(self.figure.create_space)
@@ -255,10 +256,18 @@ class MyWindow(QMainWindow):
                 self.msg = QLabel("Не удалось отсортировать файл. Подробности в errors.log")
                 self.statusbar.addWidget(self.msg)
 
+    def do_set_air(self):
+        dialog = QDialog()
+        uic.loadUi('resources/ui/set_air.ui', dialog)
+        dialog.exec_()
+        if dialog.result() == 1:
+            thickness = dialog.thickness.value()
+            self.figure.set_air(thickness)
+
 
 class SplitPMDDialog(QDialog):
     def __init__(self):
-        super(SplitPMDDialog, self).__init__()
+        super().__init__()
         uic.loadUi('resources/ui/sort_pmd.ui', self)
 
         self.pmd_select_file.clicked.connect(self.open_select_file_dialogue)
