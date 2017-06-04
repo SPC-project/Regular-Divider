@@ -22,7 +22,7 @@ class NewPrimitiveDialog(QDialog):
 
         self.accepted.connect(self.validate)
         self.manual_air.stateChanged.connect(self.upd_air_spinboxes)
-        self.upd_air_spinboxes(2)  # '2' mean 'checked'
+        self.upd_air_spinboxes(2)  # '2' mean 'checked' (use one spinbox for all)
 
         self.tabWidget.currentChanged.connect(self.grab_focus)
 
@@ -34,8 +34,8 @@ class NewPrimitiveDialog(QDialog):
         rect = self.Rectangle_widget
         tri = self.Triangle_widget
 
-        r_leader = rect.air_top
-        t_leader = tri.air_top
+        r_leader = rect.air_top if not rect.air_top.isHidden() else rect.air_left
+        t_leader = tri.air_top if not tri.air_top.isHidden() else tri.air_left
         if not isEnabled:
             rect.update_connected_airboxes(r_leader.value())
             tri.update_connected_airboxes(t_leader.value())
@@ -45,13 +45,17 @@ class NewPrimitiveDialog(QDialog):
             r_leader.valueChanged.disconnect(rect.update_connected_airboxes)
             t_leader.valueChanged.disconnect(tri.update_connected_airboxes)
 
-        rect.air_left.setEnabled(isEnabled)
+        rect.air_top.setEnabled(isEnabled)
         rect.air_right.setEnabled(isEnabled)
         rect.air_bottom.setEnabled(isEnabled)
+        rect.air_left.setEnabled(isEnabled)
+        r_leader.setEnabled(True)
 
-        tri.air_left.setEnabled(isEnabled)
+        tri.air_top.setEnabled(isEnabled)
         tri.air_right.setEnabled(isEnabled)
         tri.air_bottom.setEnabled(isEnabled)
+        tri.air_left.setEnabled(isEnabled)
+        t_leader.setEnabled(True)
 
     def grab_focus(self):
         self.tabWidget.currentWidget().x.setFocus()
@@ -78,12 +82,14 @@ class NewPrimitiveDialog(QDialog):
 
         if primitive.mesh.data['type'] == 'rectangle':
             self.tabWidget.setCurrentIndex(0)
-            self.tabWidget.setTabEnabled(1, False)  # no need when redacted
+            self.tabWidget.setTabEnabled(1, False)  # no need other type when redacted
             self.Rectangle_widget.set_data(primitive)
         else:
             self.tabWidget.setCurrentIndex(1)
             self.tabWidget.setTabEnabled(0, False)
             self.Triangle_widget.set_data(primitive)
+
+        self.upd_air_spinboxes(2)  # '2' mean 'checked' (use one spinbox for all air)
 
     def validate(self):
         curr = self.tabWidget.currentWidget()
@@ -157,12 +163,18 @@ class AbstractNewWidget(QWidget):
         box, mesh, data = self.specific_get_data(x, y, width, height, mesh)
 
         if USE_SAME_AIR:
-            if self.connection_side == 2:
+            if self.air_top.isHidden():
                 hold = mesh[3]
             else:
                 hold = mesh[0]
-            for i in range(0, 4):
-                mesh[i] = hold
+
+            boxes = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+            for i in range(4):
+                if not boxes[i].isHidden():
+                    mesh[i] = hold
+                else:
+                    mesh[i] = 0
+
         if self.connection_side != -1:
             mesh[(self.connection_side+2) % 4] = 0
 
@@ -181,12 +193,25 @@ class AbstractNewWidget(QWidget):
             3 - слева
         """
         self.connection_side = side_code
+        self.prepare_air_boxes(prim, side_code)
         self.prepare_air_for_expanding(prim, side_code)
         self.adjust_spinboxes_for_expanding(prim, side_code)
 
     @abc.abstractmethod
     def prepare_air_for_expanding(self, prim, side_code):
         pass
+
+    def prepare_air_boxes(self, prim, side_code):
+        """
+        Remove spinboxes for air at connected sides
+        """
+        air = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+
+        to_prim = (side_code+2) % 4  # сторона, с которой находится prim
+        air[to_prim].hide()
+
+        if side_code == 2:  # air_top was default, but now it disabled
+            self.air_left.setEnabled(True)
 
     def adjust_spinboxes_for_expanding(self, prim, side_code):
         pos = [self.x, self.y]
@@ -249,10 +274,13 @@ class AbstractNewWidget(QWidget):
         coor.setMinimum(self.allowed_min - length)
 
     def update_connected_airboxes(self, value):
-        self.air_top.setValue(value)
-        self.air_left.setValue(value)
-        self.air_bottom.setValue(value)
-        self.air_right.setValue(value)
+        boxes = [self.air_top, self.air_right, self.air_bottom, self.air_left]
+
+        for box in boxes:
+            if box.isHidden():
+                box.setValue(0)
+            else:
+                box.setValue(value)
 
 
 class NewRectangleWidget(AbstractNewWidget):
@@ -273,13 +301,7 @@ class NewRectangleWidget(AbstractNewWidget):
         return (x, y, width, height), mesh, other_data
 
     def prepare_air_for_expanding(self, prim, side_code):
-        air = [self.air_top, self.air_right, self.air_bottom, self.air_left]
-
-        to_prim = (side_code+2) % 4  # сторона, с которой находится prim
-        air[to_prim].hide()
-
-        if side_code == 2:  # air_top was default, but now it disabled
-            self.air_left.setEnabled(True)
+        pass
 
 
 class NewTriangleWidget(AbstractNewWidget):
