@@ -19,14 +19,15 @@ from Combiner import SECTIONS_NAMES
 
 FILENAME = sys.argv[1] if len(sys.argv) > 1 else "temp.pmd"
 RESULT = FILENAME + "_sorted"
-WANT_SPLIT = len(sys.argv) > 2
+WANT_SPLIT = len(sys.argv) > 2 and sys.argv[2] == "True"
 
 In = open(FILENAME, 'r')
 Out = open(RESULT, 'w')
-Out_nodes = open(RESULT + "_nodes", 'w')
-Out_elements = open(RESULT + "_elements", 'w')
-Out_nodes_material = open(RESULT + "_nodes-material", 'w')
-Out_elements_material = open(RESULT + "_elements-material", 'w')
+if WANT_SPLIT:
+    Out_nodes = open(RESULT + "_nodes", 'w')
+    Out_elements = open(RESULT + "_elements", 'w')
+    Out_nodes_material = open(RESULT + "_nodes-material", 'w')
+    Out_elements_material = open(RESULT + "_elements-material", 'w')
 
 # Read .pmd
 is_header = True
@@ -111,7 +112,8 @@ for index in elements_material:
 # Done
 In.close()
 Out.close()
-Out_nodes.close()
-Out_elements.close()
-Out_nodes_material.close()
-Out_elements_material.close()
+if WANT_SPLIT:
+    Out_nodes.close()
+    Out_elements.close()
+    Out_nodes_material.close()
+    Out_elements_material.close()

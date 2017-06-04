@@ -8,6 +8,7 @@ Author: Mykolaj Konovalow
 """
 
 import sys
+import os
 import logging
 import _thread
 import subprocess
@@ -245,6 +246,11 @@ class MyWindow(QMainWindow):
             if filename == "":
                 msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
                 msg.setText("Файл для сортировки не задан")
+                msg.exec_()
+                return
+            elif not os.path.isfile(filename):
+                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+                msg.setText("Файла с таким именем не существует")
                 msg.exec_()
                 return
 
