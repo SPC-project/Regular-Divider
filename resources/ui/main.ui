@@ -72,6 +72,7 @@
     <addaction name="wipe_world"/>
     <addaction name="save_world"/>
     <addaction name="save_world_as"/>
+    <addaction name="sort_pmd"/>
     <addaction name="separator"/>
     <addaction name="shut_app_down"/>
    </widget>
@@ -242,6 +243,11 @@
    </property>
    <property name="text">
     <string>Экспортировать фигуру</string>
+   </property>
+  </action>
+  <action name="sort_pmd">
+   <property name="text">
+    <string>Сортировать pmd-файл</string>
    </property>
   </action>
  </widget>

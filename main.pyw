@@ -10,10 +10,11 @@ Author: Mykolaj Konovalow
 import sys
 import logging
 import _thread
+import subprocess
 import urllib.request
 import urllib.error
 from traceback import format_exception
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QDialog
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
@@ -63,6 +64,7 @@ class MyWindow(QMainWindow):
         self.shut_app_down.triggered.connect(self.close)
         self.import_figure.triggered.connect(self.pre_import)
         self.export_figure.triggered.connect(self.pre_export)
+        self.sort_pmd.triggered.connect(self.do_sort)
 
         self.add_primitive.triggered.connect(self.figure.new_figure)
         self.edit_figure.triggered.connect(self.show_prims_dialog)
@@ -237,6 +239,40 @@ class MyWindow(QMainWindow):
                                             "Text files (*.d42do)")[0]
         if fname != '':
             self.figure.exporting(fname)
+
+    def do_sort(self):
+        dialog = SplitPMDDialog()
+        dialog.exec_()
+        if dialog.result() == 1:
+            filename = dialog.pmd_filepath.text()
+            divide = dialog.do_split.isChecked()
+
+            if filename == "":
+                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+                msg.setText("Файл для сортировки не задан")
+                msg.exec_()
+                return
+
+            res = subprocess.run([sys.executable, "./Sorter.py", filename, str(divide)]).returncode
+            if res == 0:
+                self.msg = QLabel('Файл отсортирован успешно')
+                self.statusbar.addWidget(self.msg)
+            else:
+                self.msg = QLabel("Не удалось отсортировать файл. Подробности в errors.log")
+                self.statusbar.addWidget(self.msg)
+
+
+class SplitPMDDialog(QDialog):
+    def __init__(self):
+        super(SplitPMDDialog, self).__init__()
+        uic.loadUi('resources/ui/sort_pmd.ui', self)
+
+        self.pmd_select_file.clicked.connect(self.open_select_file_dialogue)
+
+    def open_select_file_dialogue(self):
+        fname = QFileDialog.getOpenFileName(self, 'Открыть...', '.',
+                                            "Text files (*.pmd)")[0]
+        self.pmd_filepath.setText(fname)
 
 
 def my_excepthook(type_, value, tback):
