@@ -318,6 +318,19 @@ class NewTriangleWidget(AbstractNewWidget):
     def specific_set_data(self, triangle):
         self.comboBox.setCurrentIndex(triangle.mesh.data['form'])
 
+        if triangle.binds[0]:
+            self.comboBox.removeItem(1)
+            self.comboBox.removeItem(0)
+        elif triangle.binds[1]:
+            self.comboBox.removeItem(2)
+            self.comboBox.removeItem(0)
+        elif triangle.binds[2]:
+            self.comboBox.removeItem(3)
+            self.comboBox.removeItem(2)
+        elif triangle.binds[3]:
+            self.comboBox.removeItem(3)
+            self.comboBox.removeItem(1)
+
     def specific_get_data(self, x, y, width, height, mesh):
         form = int(self.comboBox.itemText(self.comboBox.currentIndex()))
         other_data = {'type': 'triangle', 'form': form}
