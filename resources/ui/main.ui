@@ -80,12 +80,11 @@
     <property name="title">
      <string>Фигура</string>
     </property>
-    <addaction name="add_primitive"/>
-    <addaction name="edit_figure"/>
     <addaction name="separator"/>
     <addaction name="import_figure"/>
     <addaction name="export_figure"/>
     <addaction name="separator"/>
+    <addaction name="add_primitive"/>
     <addaction name="create_world"/>
    </widget>
    <addaction name="File"/>
@@ -247,7 +246,12 @@
   </action>
   <action name="sort_pmd">
    <property name="text">
-    <string>Сортировать pmd-файл</string>
+    <string>Сортировать &amp;pmd-файл</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>Задать воздушный слой фигуре</string>
    </property>
   </action>
  </widget>

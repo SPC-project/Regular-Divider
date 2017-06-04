@@ -19,7 +19,6 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
 from src.figure import Figure
-from src.figure_managing import ManageFigureDialog
 
 VERSION = (0, 4, 1)
 
@@ -54,7 +53,6 @@ class MyWindow(QMainWindow):
         self.msg = None
         self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
-        self.prims_dialog = ManageFigureDialog()
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear, self.sig_message)
 
         size_tip.clicked.connect(self.figure.adjust)
@@ -67,7 +65,6 @@ class MyWindow(QMainWindow):
         self.sort_pmd.triggered.connect(self.do_sort)
 
         self.add_primitive.triggered.connect(self.figure.new_figure)
-        self.edit_figure.triggered.connect(self.show_prims_dialog)
         self.create_world.triggered.connect(self.figure.create_space)
 
         self.sig_update.connect(self.updating)
@@ -203,9 +200,6 @@ class MyWindow(QMainWindow):
                 self.figure.mod_prim(target_ind)
             elif act_ind > 1 and act_ind < 6:
                 self.figure.expand(target_ind, act_ind-2)
-
-    def show_prims_dialog(self):
-        self.prims_dialog.show(self.figure)
 
     def save(self):
         self.figure.save_mesh()
