@@ -6,6 +6,7 @@ from src.primitive import AbstractPrimitive
 from src.gui_primitive import NewPrimitiveDialog
 import subprocess
 import os
+import sys
 
 SPACING = 5
 RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
@@ -146,7 +147,7 @@ class Figure(QtCore.QObject):
                 prim.save_mesh(output)
             elem_num = output.elements_amount
 
-        res = subprocess.run(["./Combiner.py", filename, str(elem_num)]).returncode
+        res = subprocess.run([sys.executable, "./Combiner.py", filename, str(elem_num)]).returncode
         if res == 0:
             self.send_message("Фигура сохранена в " + filename)
         else:
