@@ -181,7 +181,7 @@ class Figure(QtCore.QObject):
         if alreadyExpand:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
-            msg.setText("Пока нельзя достраивать"
+            msg.setText("Нельзя достраивать"
                         " два примитива с одной стороны")
             msg.exec_()
             return

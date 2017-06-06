@@ -237,6 +237,8 @@ class AbstractPrimitive:
         nwidth, nheight — количество квадратов в ширину\высоту
            Квадрат делится диагональю на элементы. Узлов на один больше чем квадратов
         output — словарь с текстовыми дескрипторами (см. save_mesh)
+        x0, y0 — координаты начала элемента
+        dx, dy — self.step_x, self.step_y
         """
         index = output.last_index
         if m is None:
