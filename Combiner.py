@@ -8,6 +8,7 @@ Author: Mykolaj Konovalow
 
 Unite results of dividing (.tmp files) into singular .pmd file
    Remove duplicate nodes and fix created gaps in indexing
+   Remove overlaying elements (material ones have priority)
 
 Input:
     OUTPUT_FILENAME - destination for combined mesh file
@@ -19,6 +20,7 @@ import sys
 import logging
 from traceback import format_exception
 from src.figure import Output
+from collections import OrderedDict
 
 DIR = ".temp/"
 EXTENSION = ".tmp"
@@ -99,20 +101,34 @@ def adjust_node_index(min_duplicate, max_duplicate, excessive_indexes, index):
     return index
 
 
-def write_elements(output, elems, excessive_indexes):
+def excessive_elements(excessive_indexes, old_elems, old_elems_material, output):
     min_duplicate, max_duplicate = -1, -1
     if len(excessive_indexes) != 0:
-        excessive_indexes.sort(key=lambda x: x[0])
+        excessive_indexes.sort(key=lambda coord: coord[0])
         min_duplicate = excessive_indexes[0][0]
         max_duplicate = excessive_indexes[-1][0]
 
+    # Remove excessive nodes and adjust indexing
+    pre_output = OrderedDict()  # OrderedDict will remove duplicate elements
     for line in elems.readlines():
-        A, B, C = [int(ind) for ind in line.split(' ')]
+        element = line.split(' ')
+        A, B, C = [int(element[0]), int(element[1]), int(element[2])]
         if min_duplicate != -1:
             A = adjust_node_index(min_duplicate, max_duplicate, excessive_indexes, A)
             B = adjust_node_index(min_duplicate, max_duplicate, excessive_indexes, B)
             C = adjust_node_index(min_duplicate, max_duplicate, excessive_indexes, C)
-        output.write("{} {} {}\n".format(A, B, C))
+
+        material = int(old_elems_material.readline())
+        key = "{} {} {}\n".format(A, B, C)
+        if key not in pre_output:
+            pre_output[key] = material
+        else:
+            pre_output[key] += material
+
+    for elem in pre_output.keys():
+        output.write(elem)
+
+    return pre_output.values()
 
 
 def write_nodes(output, nodes, excessive_indexes):
@@ -151,7 +167,7 @@ def combine_output(elems, nodes, nodes_material, elems_material, output):
     output.write("n_contacts=0\n")
 
     output.write(SECTIONS_NAMES[1])  # elements
-    write_elements(output, elems, excessive_indexes)
+    materials = excessive_elements(excessive_indexes, elems, elems_material, output)
 
     output.write(SECTIONS_NAMES[2])  # nodes
     write_nodes(output, nodes, excessive_indexes)
@@ -162,8 +178,11 @@ def combine_output(elems, nodes, nodes_material, elems_material, output):
     write_nodesMaterial(output, nodes_material, excessive_indexes)
 
     output.write(SECTIONS_NAMES[6])  # elements' material
-    for line in elems_material.readlines():
-        output.write(line)
+    for mat in materials:
+        if mat > 0:
+            output.write("1\n")
+        else:
+            output.write("0\n")
 
 
 def my_excepthook(type_, value, tback):
