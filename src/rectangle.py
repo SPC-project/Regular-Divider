@@ -29,11 +29,11 @@ class Rectangle(AbstractPrimitive):
 
     def draw_figure(self, canvas):
         canvas.setPen(self.COL_FIG)
-        x = self.scale_x(self.x)
-        y = self.scale_y(self.y)
-        w = int(round(self.width*self.drawing_coefs['kx']))
-        h = int(round(self.height*self.drawing_coefs['kx']))
-        canvas.drawRect(x, y, w, h)
+        x0 = self.pixel_x(self.mesh.NAL)
+        y0 = self.pixel_y(self.mesh.NAT)
+        x1 = self.pixel_x(self.mesh.NAL + self.mesh.NFX)
+        y1 = self.pixel_y(self.mesh.NAT + self.mesh.NFY)
+        canvas.drawRect(x0, y0, x1-x0, y1-y0)
 
     def draw_mesh(self, canvas):
         """
