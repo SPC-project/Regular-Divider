@@ -15,6 +15,7 @@ import subprocess
 import urllib.request
 import urllib.error
 from traceback import format_exception
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QDialog
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
@@ -27,6 +28,7 @@ BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
 RIGHT_BUTTON = 2
 PADDING = 10
+SIZE_TIP_EXPLENATION = "Размерность рабочей области.\nПо нажатию масштабируется чтобы вместить всё"
 
 
 class MyWindow(QMainWindow):
@@ -42,20 +44,19 @@ class MyWindow(QMainWindow):
         super(MyWindow, self).__init__()
         uic.loadUi('resources/ui/main.ui', self)
 
-        # First call of resizeEvent (call when window create)
-        # will initialize a 2 QPixmap buffer
-
+        # Setup statusbar
         size_tip = QPushButton()
         size_tip.setStyleSheet("QPushButton{ font-weight: bold; }")
-        size_tip.setFocusPolicy(QtCore.Qt.NoFocus)  # instead mess with arrows
-        txt = "Размерность рабочей области.\nПо нажатию масштабируется чтобы вместить всё"
-        size_tip.setToolTip(txt)
-
-        self.msg = None
+        size_tip.setFocusPolicy(QtCore.Qt.NoFocus)
+        size_tip.setToolTip(SIZE_TIP_EXPLENATION)
         self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
+
+        # Initiate Figure
+        self.msg = None
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear, self.sig_message)
 
+        # Qt
         size_tip.clicked.connect(self.figure.adjust)
         self.wipe_world.triggered.connect(self.clean)
         self.save_world.triggered.connect(self.save)
@@ -65,19 +66,82 @@ class MyWindow(QMainWindow):
         self.export_figure.triggered.connect(self.pre_export)
         self.sort_pmd.triggered.connect(self.do_sort)
         self.set_air.triggered.connect(self.do_set_air)
-
         self.add_primitive.triggered.connect(self.figure.new_figure)
         self.create_world.triggered.connect(self.figure.create_space)
+        self.show_coordinates.triggered.connect(self.switch_grid)
 
         self.sig_update.connect(self.updating)
         self.sig_clear.connect(self.clearing)
         self.sig_message.connect(self.messaging)
         self.sig_mayUpdate.connect(self.propose_upgrade)
+
+        # First call of resizeEvent (call when window create)
+        # will initialize a 2 QPixmap buffer
         self.show()
 
     def clean(self):
         self.figure.clean()
         self.repaint()
+
+    def save(self):
+        self.figure.save_mesh()
+
+    def save_as(self):
+        fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
+                                            '', "Text files (*.pmd)")[0]
+        if fname != '':
+            self.figure.save_mesh(fname)
+
+    def pre_import(self):
+        fname = QFileDialog.getOpenFileName(self, 'Открыть...', './samples',
+                                            "Text files (*.d42do)")[0]
+        if fname != '':
+            self.figure.importing(fname)
+
+    def pre_export(self):
+        fname = QFileDialog.getSaveFileName(self, 'Сохранить в...', './samples',
+                                            "Text files (*.d42do)")[0]
+        if fname != '':
+            self.figure.exporting(fname)
+
+    def do_sort(self):
+        dialog = SplitPMDDialog()
+        dialog.exec_()
+        if dialog.result() == 1:
+            filename = dialog.pmd_filepath.text()
+            divide = dialog.do_split.isChecked()
+
+            if filename == "":
+                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+                msg.setText("Файл для сортировки не задан")
+                msg.exec_()
+                return
+            elif not os.path.isfile(filename):
+                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+                msg.setText("Файла с таким именем не существует")
+                msg.exec_()
+                return
+
+            res = subprocess.run([sys.executable, "./Sorter.py", filename, str(divide)]).returncode
+            if res == 0:
+                self.msg = QLabel('Файл отсортирован успешно')
+                self.statusbar.addWidget(self.msg)
+            else:
+                self.msg = QLabel("Не удалось отсортировать файл. Подробности в errors.log")
+                self.statusbar.addWidget(self.msg)
+
+    def do_set_air(self):
+        dialog = QDialog()
+        uic.loadUi('resources/ui/set_air.ui', dialog)
+        dialog.exec_()
+        if dialog.result() == 1:
+            thickness = dialog.thickness.value()
+            self.figure.set_air(thickness)
+
+    def switch_grid(self, state):
+        self.figure.show_coordinate_grid = state
+        self.clearing()
+        self.updating()
 
     def getCanvasSize(self):
         dx = (self.geometry().width() - 3*PADDING) / 2
@@ -121,6 +185,10 @@ class MyWindow(QMainWindow):
             self.statusbar.showMessage(self.figure.message, 4000)
             self.figure.message = ""
 
+    def clearing(self):
+        self.canvas_figure_buffer.fill(BLANK)
+        self.canvas_mesh_buffer.fill(BLANK)
+
     def updating(self):
         canvas = QPainter(self.canvas_figure_buffer)
         mesh_canvas = QPainter(self.canvas_mesh_buffer)
@@ -129,10 +197,6 @@ class MyWindow(QMainWindow):
         dx, dy = self.getCanvasSize()
         self.figure.redraw(canvas, dx, dy, mesh_canvas)
         self.repaint()
-
-    def clearing(self):
-        self.canvas_figure_buffer.fill(BLANK)
-        self.canvas_mesh_buffer.fill(BLANK)
 
     def keyPressEvent(self, e):
         needRefresh = False
@@ -203,15 +267,6 @@ class MyWindow(QMainWindow):
             elif act_ind > 1 and act_ind < 6:
                 self.figure.expand(target_ind, act_ind-2)
 
-    def save(self):
-        self.figure.save_mesh()
-
-    def save_as(self):
-        fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
-                                            '', "Text files (*.pmd)")[0]
-        if fname != '':
-            self.figure.save_mesh(fname)
-
     def shit_happens(self):
         msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
         msg.setText("Непоправимое произошло...\n"
@@ -223,52 +278,6 @@ class MyWindow(QMainWindow):
                           'Regular-Divider">обновление!</a>')
         self.msg.setOpenExternalLinks(True)
         self.statusbar.addWidget(self.msg)
-
-    def pre_import(self):
-        fname = QFileDialog.getOpenFileName(self, 'Открыть...', './samples',
-                                            "Text files (*.d42do)")[0]
-        if fname != '':
-            self.figure.importing(fname)
-
-    def pre_export(self):
-        fname = QFileDialog.getSaveFileName(self, 'Сохранить в...', './samples',
-                                            "Text files (*.d42do)")[0]
-        if fname != '':
-            self.figure.exporting(fname)
-
-    def do_sort(self):
-        dialog = SplitPMDDialog()
-        dialog.exec_()
-        if dialog.result() == 1:
-            filename = dialog.pmd_filepath.text()
-            divide = dialog.do_split.isChecked()
-
-            if filename == "":
-                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
-                msg.setText("Файл для сортировки не задан")
-                msg.exec_()
-                return
-            elif not os.path.isfile(filename):
-                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
-                msg.setText("Файла с таким именем не существует")
-                msg.exec_()
-                return
-
-            res = subprocess.run([sys.executable, "./Sorter.py", filename, str(divide)]).returncode
-            if res == 0:
-                self.msg = QLabel('Файл отсортирован успешно')
-                self.statusbar.addWidget(self.msg)
-            else:
-                self.msg = QLabel("Не удалось отсортировать файл. Подробности в errors.log")
-                self.statusbar.addWidget(self.msg)
-
-    def do_set_air(self):
-        dialog = QDialog()
-        uic.loadUi('resources/ui/set_air.ui', dialog)
-        dialog.exec_()
-        if dialog.result() == 1:
-            thickness = dialog.thickness.value()
-            self.figure.set_air(thickness)
 
 
 class SplitPMDDialog(QDialog):

@@ -1,4 +1,5 @@
 from PyQt5 import uic, QtCore
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from src.rectangle import Rectangle
 from src.triangle import Triangle
@@ -16,15 +17,18 @@ TRI = 1
 class Figure(QtCore.QObject):
     primitive_deletion = QtCore.pyqtSignal(int)
     primitive_modification = QtCore.pyqtSignal(int)
+    COL_GRID = QColor(0, 0, 0, 24)
 
     def __init__(self, status, parent_update, parent_clear, parent_message):
         super().__init__()
         self.world_size = 0
+        self.grid_step = 0
         self.start_x = 0
         self.start_y = 0
         self.message = ""
         self.shape = list()
         self.prim_dialog = False  # wait for NewPrimitiveDialog creation
+        self.show_coordinate_grid = False
 
         self.status = status
         self.parent_update = parent_update
@@ -101,6 +105,11 @@ class Figure(QtCore.QObject):
         else:
             self.parent_update.emit()
 
+        # Select step for coordinate grid
+        step_x = min(self.shape, key=lambda prim: prim.step_x).step_x
+        step_y = min(self.shape, key=lambda prim: prim.step_y).step_y
+        self.grid_step = min(step_x, step_y)
+
     def redraw(self, canvas, canvas_width, canvas_height, mesh_canvas):
         if self.world_size == 0:
             return
@@ -109,6 +118,25 @@ class Figure(QtCore.QObject):
         ky = int(canvas_height/self.world_size)
         shift_x = -self.start_x
         shift_y = -self.start_y
+
+        if self.show_coordinate_grid and self.grid_step > 0.000001:
+            N = int(self.world_size / self.grid_step)
+            dx = kx * self.grid_step
+            dy = ky * self.grid_step
+            edge_prim = min(self.shape, key=lambda prim: (prim.start_y, prim.start_x))
+            x0 = int(round((shift_x + edge_prim.start_x)*kx)) % dx
+            y0 = int(round((shift_y + edge_prim.start_y)*ky)) % dy
+
+            start = 1 if x0 == 0 else 0
+            for i in range(start, N):
+                x = x0 + i*dx
+                y = y0 + i*dy
+                canvas.setPen(self.COL_GRID)
+                canvas.drawLine(x, 0, x, canvas_height)
+                canvas.drawLine(0, y, canvas_width, y)
+                mesh_canvas.setPen(self.COL_GRID)
+                mesh_canvas.drawLine(x, 0, x, canvas_height)
+                mesh_canvas.drawLine(0, y, canvas_width, y)
         for primitive in self.shape:
             primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
 
@@ -257,13 +285,13 @@ class Figure(QtCore.QObject):
         for prim in self.shape:
             x0, y0, x1, y1 = prim.get_box()
             if x0 < min_x:
-                min_x = x0
+                min_x = int(x0)
             if y0 < min_y:
-                min_y = y0
+                min_y = int(y0)
             if x1 > max_x:
-                max_x = x1
+                max_x = int(x1)
             if y1 > max_y:
-                max_y = y1
+                max_y = int(y1)
 
         self.start_x = min_x - SPACING
         self.start_y = min_y - SPACING

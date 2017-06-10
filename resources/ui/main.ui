@@ -88,8 +88,15 @@
     <addaction name="create_world"/>
     <addaction name="set_air"/>
    </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Параметры</string>
+    </property>
+    <addaction name="show_coordinates"/>
+   </widget>
    <addaction name="File"/>
    <addaction name="Figure"/>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="add_primitive">
@@ -258,6 +265,14 @@
   <action name="set_air">
    <property name="text">
     <string>Задать воздух для всей фигуры</string>
+   </property>
+  </action>
+  <action name="show_coordinates">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Координатная сетка</string>
    </property>
   </action>
  </widget>
