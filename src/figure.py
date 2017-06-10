@@ -18,6 +18,7 @@ class Figure(QtCore.QObject):
     primitive_deletion = QtCore.pyqtSignal(int)
     primitive_modification = QtCore.pyqtSignal(int)
     COL_GRID = QColor(0, 0, 0, 24)
+    COL_LABEL = QColor(58, 116, 33)
 
     def __init__(self, status, parent_update, parent_clear, parent_message):
         super().__init__()
@@ -120,25 +121,73 @@ class Figure(QtCore.QObject):
         shift_y = -self.start_y
 
         if self.show_coordinate_grid and self.grid_step > 0.000001:
-            N = int(self.world_size / self.grid_step)
-            dx = kx * self.grid_step
-            dy = ky * self.grid_step
-            edge_prim = min(self.shape, key=lambda prim: (prim.start_y, prim.start_x))
-            x0 = int(round((shift_x + edge_prim.start_x)*kx)) % dx
-            y0 = int(round((shift_y + edge_prim.start_y)*ky)) % dy
-
-            start = 1 if x0 == 0 else 0
-            for i in range(start, N):
-                x = x0 + i*dx
-                y = y0 + i*dy
-                canvas.setPen(self.COL_GRID)
-                canvas.drawLine(x, 0, x, canvas_height)
-                canvas.drawLine(0, y, canvas_width, y)
-                mesh_canvas.setPen(self.COL_GRID)
-                mesh_canvas.drawLine(x, 0, x, canvas_height)
-                mesh_canvas.drawLine(0, y, canvas_width, y)
+            self.draw_grid(canvas, mesh_canvas, kx, ky, shift_x, shift_y, canvas_width, canvas_height)
         for primitive in self.shape:
             primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
+
+    def draw_grid(self, canvas, mesh_canvas, kx, ky, shift_x, shift_y, W, H):
+        canvas.setPen(self.COL_GRID)
+        mesh_canvas.setPen(self.COL_GRID)
+        metrics = canvas.fontMetrics()
+
+        N = int(self.world_size / self.grid_step)
+        dx = kx * self.grid_step
+        dy = ky * self.grid_step
+        most_left = min(self.shape, key=lambda P: P.x)
+        most_upper = min(self.shape, key=lambda P: P.y)
+        x0 = int(round((shift_x + most_left.start_x)*kx)) % dx
+        y0 = int(round((shift_y + most_upper.start_y)*ky)) % dy
+        most_right = max(self.shape, key=lambda P: P.end_x)
+        most_bottom = max(self.shape, key=lambda P: P.end_y)
+
+        # Grid
+        start = 1 if x0 == 0 else 0
+        for i in range(start, N):
+            x = x0 + i*dx
+            y = y0 + i*dy
+            canvas.drawLine(x, 0, x, H)
+            canvas.drawLine(0, y, W, y)
+            mesh_canvas.drawLine(x, 0, x, H)
+            mesh_canvas.drawLine(0, y, W, y)
+
+        canvas.setPen(self.COL_LABEL)
+        # "Axes"
+        min_x = int((most_left.x - self.grid_step + shift_x) * kx)
+        min_y = int((most_upper.y - self.grid_step + shift_y) * ky)
+        max_x = int((most_right.end_x + shift_x) * kx)
+        max_y = int((most_bottom.end_y + shift_y) * ky)
+        canvas.drawLine(min_x, min_y, max_x, min_y)
+        canvas.drawLine(min_x, min_y, min_x, max_y)
+
+        MFlag = QtCore.Qt.TextSingleLine
+        label_width = metrics.size(MFlag, "-12.12").width() + 4
+        label_height = metrics.size(MFlag, "1").height() + 4
+        # Coordinates by X
+        Nx = int((most_right.end_x - most_left.x) / self.grid_step) + 1
+        label_step = 1 if label_width < dx else (int(label_width / dx))
+        if label_step == 0:
+            label_step = Nx
+        for i in range(0, Nx, label_step):
+            x = min_x + i*dx + dx  # additional 'dx' because we took step back
+            y = min_y
+            x_in_world = most_left.x + i*self.grid_step
+            txt = "{0:.3g}".format(x_in_world)
+            length = metrics.size(QtCore.Qt.TextSingleLine, txt).width()
+            canvas.drawText(x - int(length/2), y - 7, txt)
+            canvas.drawLine(x, min_y + 2, x, min_y - 2)
+
+        # Coordinates by Y
+        Ny = int((most_bottom.end_y - most_upper.y) / self.grid_step) + 1
+        label_step = 1 if label_height < dy else (int(label_height / dy))
+        if label_step == 0:
+            label_step = Ny-1
+        for j in range(0, Ny, label_step):
+            y = min_y + j*dy + dy
+            y_in_world = most_upper.y + j*self.grid_step
+            txt = "{0:.3g}".format(y_in_world)
+            length = metrics.size(QtCore.Qt.TextSingleLine, txt).width()
+            canvas.drawText(min_x - length - 7, y + int(label_height / 2) - 5, txt)
+            canvas.drawLine(min_x - 2, y, min_x + 2, y)
 
     def mod_prim(self, ind):
         dialog = NewPrimitiveDialog()
