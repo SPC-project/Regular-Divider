@@ -189,12 +189,9 @@ class Triangle(AbstractPrimitive):
         x3 = self.start_x
         x4 = self.start_x + (M.NAL + M.NFX)*dx
 
+        # Save top and left air's layers
         if M.NAT != 0:
             self.save_rectangle_mesh(h_w, M.NAT, output, h_x, y1, dx, dy, self.AIR_CODE)
-        if M.NAR != 0:
-            self.save_rectangle_mesh(M.NAR, v_h, output, x4, v_y, dx, dy, self.AIR_CODE)
-        if M.NAB != 0:
-            self.save_rectangle_mesh(h_w, M.NAB, output, h_x, y2, dx, dy, self.AIR_CODE)
         if M.NAL != 0:
             self.save_rectangle_mesh(M.NAL, v_h, output, x3, v_y, dx, dy, self.AIR_CODE)
 
@@ -207,6 +204,12 @@ class Triangle(AbstractPrimitive):
             self.save_isoscele_figure_mesh(output, mirrored, self.AIR_CODE)
         else:
             self.save_nonisoscele_figure_mesh(output, form)
+
+        # Save right and bottom air's layers
+        if M.NAR != 0:
+            self.save_rectangle_mesh(M.NAR, v_h, output, x4, v_y, dx, dy, self.AIR_CODE)
+        if M.NAB != 0:
+            self.save_rectangle_mesh(h_w, M.NAB, output, h_x, y2, dx, dy, self.AIR_CODE)
 
     def save_oneElement_figure_mesh(self, output, type_):
         M = self.mesh
