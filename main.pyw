@@ -3,29 +3,32 @@
 
 """
 Author: Mykolaj Konovalow
-    for SPC department of NTU "KhPI"
+    for CMPS department of NTU "KhPI"
+    http://web.kpi.kharkov.ua/cmps/ru/kafedra-cmps/
 """
-
-VERSION = (0, 4, 0)
 
 import sys
 import os
 import logging
 import _thread
+import subprocess
 import urllib.request
 import urllib.error
 from traceback import format_exception
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu
+
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QDialog
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor
-from figure import Figure
-from figure_managing import PrimitivesListDialog
+from src.figure import Figure
+
+VERSION = (0, 4, 1)
 
 BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
 RIGHT_BUTTON = 2
 PADDING = 10
+SIZE_TIP_EXPLENATION = "Размерность рабочей области.\nПо нажатию масштабируется чтобы вместить всё"
 
 
 class MyWindow(QMainWindow):
@@ -34,27 +37,26 @@ class MyWindow(QMainWindow):
     """
     sig_update = QtCore.pyqtSignal()
     sig_clear = QtCore.pyqtSignal()
+    sig_message = QtCore.pyqtSignal()
     sig_mayUpdate = QtCore.pyqtSignal()
 
     def __init__(self):
         super(MyWindow, self).__init__()
-        uic.loadUi('ui/main.ui', self)
+        uic.loadUi('resources/ui/main.ui', self)
 
-        # First call of resizeEvent (call when window create)
-        # will initialize a 2 QPixmap buffer
-
+        # Setup statusbar
         size_tip = QPushButton()
         size_tip.setStyleSheet("QPushButton{ font-weight: bold; }")
-        size_tip.setFocusPolicy(QtCore.Qt.NoFocus)  # instead mess with arrows
-        txt = "Размеры рабочей области.\nПо нажатию масштабирует область"
-        size_tip.setToolTip(txt)
-
-        self.msg = None
+        size_tip.setFocusPolicy(QtCore.Qt.NoFocus)
+        size_tip.setToolTip(SIZE_TIP_EXPLENATION)
         self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
-        self.prims_dialog = PrimitivesListDialog()
-        self.figure = Figure(size_tip, self.sig_update, self.sig_clear)
 
+        # Initiate Figure
+        self.msg = None
+        self.figure = Figure(size_tip, self.sig_update, self.sig_clear, self.sig_message)
+
+        # Qt
         size_tip.clicked.connect(self.figure.adjust)
         self.wipe_world.triggered.connect(self.clean)
         self.save_world.triggered.connect(self.save)
@@ -62,19 +64,86 @@ class MyWindow(QMainWindow):
         self.shut_app_down.triggered.connect(self.close)
         self.import_figure.triggered.connect(self.pre_import)
         self.export_figure.triggered.connect(self.pre_export)
-
+        self.sort_pmd.triggered.connect(self.do_sort)
+        self.set_air.triggered.connect(self.do_set_air)
         self.add_primitive.triggered.connect(self.figure.new_figure)
-        self.edit_figure.triggered.connect(self.show_prims_dialog)
         self.create_world.triggered.connect(self.figure.create_space)
+        self.show_coordinates.triggered.connect(self.switch_grid)
 
         self.sig_update.connect(self.updating)
         self.sig_clear.connect(self.clearing)
+        self.sig_message.connect(self.messaging)
         self.sig_mayUpdate.connect(self.propose_upgrade)
+
+        # First call of resizeEvent (call when window create)
+        # will initialize a 2 QPixmap buffer
         self.show()
 
     def clean(self):
         self.figure.clean()
         self.repaint()
+
+    def save(self):
+        self.figure.save_mesh()
+
+    def save_as(self):
+        fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
+                                            '', "Text files (*.pmd)")[0]
+        if fname != '':
+            self.figure.save_mesh(fname)
+
+    def pre_import(self):
+        fname = QFileDialog.getOpenFileName(self, 'Открыть...', './samples',
+                                            "Text files (*.d42do)")[0]
+        if fname != '':
+            self.figure.importing(fname)
+
+    def pre_export(self):
+        fname = QFileDialog.getSaveFileName(self, 'Сохранить в...', './samples',
+                                            "Text files (*.d42do)")[0]
+        if fname != '':
+            self.figure.exporting(fname)
+
+    def do_sort(self):
+        dialog = SplitPMDDialog()
+        dialog.exec_()
+        if dialog.result() == 1:
+            filename = dialog.pmd_filepath.text()
+            divide = dialog.do_split.isChecked()
+            sort = dialog.sort_elements.isChecked()
+
+            if filename == "":
+                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+                msg.setText("Файл для сортировки не задан")
+                msg.exec_()
+                return
+            elif not os.path.isfile(filename):
+                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
+                msg.setText("Файла с таким именем не существует")
+                msg.exec_()
+                return
+
+            res = subprocess.run([sys.executable, "./Sorter.py",
+                                  filename, str(divide), str(sort)]).returncode
+            if res == 0:
+                self.msg = QLabel('Файл отсортирован успешно')
+                self.statusbar.addWidget(self.msg)
+            else:
+                self.msg = QLabel("Не удалось отсортировать файл. Подробности в errors.log")
+                self.statusbar.addWidget(self.msg)
+
+    def do_set_air(self):
+        dialog = QDialog()
+        uic.loadUi('resources/ui/set_air.ui', dialog)
+        dialog.exec_()
+        if dialog.result() == 1:
+            thickness = dialog.thickness.value()
+            self.figure.set_air(thickness)
+
+    def switch_grid(self, state):
+        self.figure.show_coordinate_grid = state
+        self.clearing()
+        self.updating()
 
     def getCanvasSize(self):
         dx = (self.geometry().width() - 3*PADDING) / 2
@@ -96,8 +165,8 @@ class MyWindow(QMainWindow):
         self.canvas_mesh.move(PADDING + dx + PADDING, 0)
 
         if not (dx == dy and dx == 420):
-            msg = "Resizing... Canvases: " + str(dx) + "x" + str(dy)
-            self.figure.message = msg + " (square recommended)"
+            msg = "Изменение размеров... Холсты: " + str(dx) + "x" + str(dy)
+            self.figure.message = msg + " (рекомендуются квадратные)"
 
         self.draw_fig_x = self.canvas_figure.x() + OFFSET
         self.draw_mesh_x = self.canvas_mesh.x() + OFFSET
@@ -110,7 +179,7 @@ class MyWindow(QMainWindow):
         self.clearing()
         self.updating()
 
-    def updating(self):
+    def messaging(self):
         if self.msg:
             self.statusbar.removeWidget(self.msg)
             self.msg = None
@@ -118,6 +187,11 @@ class MyWindow(QMainWindow):
             self.statusbar.showMessage(self.figure.message, 4000)
             self.figure.message = ""
 
+    def clearing(self):
+        self.canvas_figure_buffer.fill(BLANK)
+        self.canvas_mesh_buffer.fill(BLANK)
+
+    def updating(self):
         canvas = QPainter(self.canvas_figure_buffer)
         mesh_canvas = QPainter(self.canvas_mesh_buffer)
         canvas.setRenderHint(QPainter.HighQualityAntialiasing)
@@ -125,10 +199,6 @@ class MyWindow(QMainWindow):
         dx, dy = self.getCanvasSize()
         self.figure.redraw(canvas, dx, dy, mesh_canvas)
         self.repaint()
-
-    def clearing(self):
-        self.canvas_figure_buffer.fill(BLANK)
-        self.canvas_mesh_buffer.fill(BLANK)
 
     def keyPressEvent(self, e):
         needRefresh = False
@@ -199,18 +269,6 @@ class MyWindow(QMainWindow):
             elif act_ind > 1 and act_ind < 6:
                 self.figure.expand(target_ind, act_ind-2)
 
-    def show_prims_dialog(self):
-        self.prims_dialog.show(self.figure)
-
-    def save(self):
-        self.figure.save_mesh()
-
-    def save_as(self):
-        fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
-                                            '', "Text files (*.pmd)")[0]
-        if fname != '':
-            self.figure.save_mesh(fname)
-
     def shit_happens(self):
         msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
         msg.setText("Непоправимое произошло...\n"
@@ -223,22 +281,23 @@ class MyWindow(QMainWindow):
         self.msg.setOpenExternalLinks(True)
         self.statusbar.addWidget(self.msg)
 
-    def pre_import(self):
-        fname = QFileDialog.getOpenFileName(self, 'Открыть...', './samples',
-                                            "Text files (*.d42do)")[0]
-        if fname != '':
-            self.figure.importing(fname)
 
-    def pre_export(self):
-        fname = QFileDialog.getSaveFileName(self, 'Открыть...', './samples',
-                                            "Text files (*.d42do)")[0]
-        if fname != '':
-            self.figure.exporting(fname)
+class SplitPMDDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('resources/ui/sort_pmd.ui', self)
+
+        self.pmd_select_file.clicked.connect(self.open_select_file_dialogue)
+
+    def open_select_file_dialogue(self):
+        fname = QFileDialog.getOpenFileName(self, 'Открыть...', '.',
+                                            "Text files (*.pmd)")[0]
+        self.pmd_filepath.setText(fname)
 
 
 def my_excepthook(type_, value, tback):
     """
-    Перехватывает исключения, логгирует их и позволяет уронить програму
+    Перехватывает исключения, логгирует их и позволяет уронить программу
     """
     logging.error(''.join(format_exception(type_, value, tback)))
     sys.__excepthook__(type_, value, tback)
@@ -273,13 +332,6 @@ def check_updates(recall):
         recall.emit()
 
 
-def testing():
-    """
-    Запускает вложенные тесты для всех .py-файлов в директории
-    """
-    if os.system("git diff-index --quiet HEAD --") == 256:
-        pass
-
 if __name__ == '__main__':
     log_format = '[%(asctime)s]  %(message)s'
     logging.basicConfig(format=log_format, level=logging.ERROR,
@@ -288,7 +340,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MyWindow()
 
-    _thread.start_new_thread(testing, ())
     _thread.start_new_thread(check_updates, (window.sig_mayUpdate,))
 
     sys.excepthook = my_excepthook

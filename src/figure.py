@@ -1,8 +1,13 @@
 from PyQt5 import uic, QtCore
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QDialog, QMessageBox
-from rectangle import Rectangle
-from triangle import Triangle
-from primitive import NewPrimitiveDialog, AbstractPrimitive
+from src.rectangle import Rectangle
+from src.triangle import Triangle
+from src.primitive import AbstractPrimitive
+from src.gui_primitive import NewPrimitiveDialog
+import subprocess
+import os
+import sys
 
 SPACING = 5
 RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
@@ -12,22 +17,26 @@ TRI = 1
 class Figure(QtCore.QObject):
     primitive_deletion = QtCore.pyqtSignal(int)
     primitive_modification = QtCore.pyqtSignal(int)
+    COL_GRID = QColor(0, 0, 0, 24)
+    COL_LABEL = QColor(58, 116, 33)
 
-    def __init__(self, status, parent_update, parent_clear):
-        super(Figure, self).__init__()
-        self.status = status
-        self.parent_update = parent_update
-        self.parent_clear = parent_clear
+    def __init__(self, status, parent_update, parent_clear, parent_message):
+        super().__init__()
         self.world_size = 0
+        self.grid_step = 0
         self.start_x = 0
         self.start_y = 0
         self.message = ""
         self.shape = list()
+        self.prim_dialog = False  # wait for NewPrimitiveDialog creation
+        self.show_coordinate_grid = False
 
+        self.status = status
+        self.parent_update = parent_update
+        self.parent_clear = parent_clear
+        self.parent_message = parent_message
         self.primitive_deletion.connect(self.del_prim)
         self.primitive_modification.connect(self.mod_prim)
-
-        self.prim_dialog = NewPrimitiveDialog()
 
         self.update_status()
 
@@ -46,12 +55,12 @@ class Figure(QtCore.QObject):
 
     def send_message(self, text):
         self.message = text
-        self.parent_update.emit()
+        self.parent_message.emit()
         self.update_status()
 
     def create_space(self):
         dialog = QDialog()
-        uic.loadUi('ui/create_space.ui', dialog)
+        uic.loadUi('resources/ui/create_space.ui', dialog)
         dialog.size.setFocus()
         dialog.start_x.setValue(self.start_x)
         dialog.start_y.setValue(self.start_y)
@@ -62,9 +71,14 @@ class Figure(QtCore.QObject):
             self.start_x = dialog.start_x.value()
             self.start_y = dialog.start_y.value()
             self.parent_clear.emit()
-            self.send_message("Рабочая область создана")
+            self.send_message("Рабочая область изменена")
+            self.parent_clear.emit()
+            self.parent_update.emit()
 
     def new_figure(self):
+        if not self.prim_dialog:
+            self.prim_dialog = NewPrimitiveDialog()
+
         self.prim_dialog.grab_focus()
         self.prim_dialog.exec_()
         if self.prim_dialog.result() == 1:
@@ -87,10 +101,15 @@ class Figure(QtCore.QObject):
         not_match_x = x+w > self.world_size or x <= self.start_x
         not_match_y = y+h > self.world_size or y <= self.start_y
         if not_match_x or not_match_y:
-            self.message = "Рабочая область была расширена"
+            self.send_message("Рабочая область была расширена")
             self.adjust()
         else:
             self.parent_update.emit()
+
+        # Select step for coordinate grid
+        step_x = min(self.shape, key=lambda prim: prim.step_x).step_x
+        step_y = min(self.shape, key=lambda prim: prim.step_y).step_y
+        self.grid_step = min(step_x, step_y)
 
     def redraw(self, canvas, canvas_width, canvas_height, mesh_canvas):
         if self.world_size == 0:
@@ -100,8 +119,75 @@ class Figure(QtCore.QObject):
         ky = int(canvas_height/self.world_size)
         shift_x = -self.start_x
         shift_y = -self.start_y
+
+        if self.show_coordinate_grid and self.grid_step > 0.000001:
+            self.draw_grid(canvas, mesh_canvas, kx, ky, shift_x, shift_y, canvas_width, canvas_height)
         for primitive in self.shape:
             primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
+
+    def draw_grid(self, canvas, mesh_canvas, kx, ky, shift_x, shift_y, W, H):
+        canvas.setPen(self.COL_GRID)
+        mesh_canvas.setPen(self.COL_GRID)
+        metrics = canvas.fontMetrics()
+
+        N = int(self.world_size / self.grid_step)
+        dx = kx * self.grid_step
+        dy = ky * self.grid_step
+        most_left = min(self.shape, key=lambda P: P.x)
+        most_upper = min(self.shape, key=lambda P: P.y)
+        x0 = int(round((shift_x + most_left.start_x)*kx)) % dx
+        y0 = int(round((shift_y + most_upper.start_y)*ky)) % dy
+        most_right = max(self.shape, key=lambda P: P.end_x)
+        most_bottom = max(self.shape, key=lambda P: P.end_y)
+
+        # Grid
+        start = 1 if x0 == 0 else 0
+        for i in range(start, N):
+            x = x0 + i*dx
+            y = y0 + i*dy
+            canvas.drawLine(x, 0, x, H)
+            canvas.drawLine(0, y, W, y)
+            mesh_canvas.drawLine(x, 0, x, H)
+            mesh_canvas.drawLine(0, y, W, y)
+
+        canvas.setPen(self.COL_LABEL)
+        # "Axes"
+        min_x = int((most_left.x - self.grid_step + shift_x) * kx)
+        min_y = int((most_upper.y - self.grid_step + shift_y) * ky)
+        max_x = int((most_right.end_x + shift_x) * kx)
+        max_y = int((most_bottom.end_y + shift_y) * ky)
+        canvas.drawLine(min_x, min_y, max_x, min_y)
+        canvas.drawLine(min_x, min_y, min_x, max_y)
+
+        MFlag = QtCore.Qt.TextSingleLine
+        label_width = metrics.size(MFlag, "-12.12").width() + 4
+        label_height = metrics.size(MFlag, "1").height() + 4
+        # Coordinates by X
+        Nx = int((most_right.end_x - most_left.x) / self.grid_step) + 1
+        label_step = 1 if label_width < dx else (int(label_width / dx))
+        if label_step == 0:
+            label_step = Nx
+        for i in range(0, Nx, label_step):
+            x = min_x + i*dx + dx  # additional 'dx' because we took step back
+            y = min_y
+            x_in_world = most_left.x + i*self.grid_step
+            txt = "{0:.3g}".format(x_in_world)
+            length = metrics.size(QtCore.Qt.TextSingleLine, txt).width()
+            canvas.drawText(x - int(length/2), y - 7, txt)
+            canvas.drawLine(x, min_y + 2, x, min_y - 2)
+
+        # Coordinates by Y
+        Ny = int((most_bottom.end_y - most_upper.y) / self.grid_step) + 1
+        label_step = 1 if label_height < dy else (int(label_height / dy))
+        if label_step == 0:
+            label_step = Ny-1
+        for j in range(0, Ny, label_step):
+            y = min_y + j*dy + dy
+            y_in_world = most_upper.y + j*self.grid_step
+            txt = "{0:.3g}".format(y_in_world)
+            length = metrics.size(QtCore.Qt.TextSingleLine, txt).width()
+            canvas.drawText(min_x - length - 7, y + int(label_height / 2) - 5, txt)
+            canvas.drawLine(min_x - 2, y, min_x + 2, y)
 
     def mod_prim(self, ind):
         dialog = NewPrimitiveDialog()
@@ -126,104 +212,23 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def save_mesh(self, filename="temp.pmd"):
-        self.shape.sort(key=lambda prim: prim.start_x)
-        self.shape.sort(key=lambda prim: prim.start_y)
+        if len(self.shape) == 0:
+            self.send_message("Фигура пуста, нечего сохранять")
+            return
 
-        isRegular = True
-        stp_x = self.shape[0].step_x
-        stp_y = self.shape[0].step_y
-        for prim in self.shape:
-            if stp_x != prim.step_x and stp_y != prim.step_y:
-                isRegular = False
-                break
+        self.shape.sort(key=lambda prim: (prim.start_x, prim.start_y))
 
-        if isRegular:
-            self.regular_mesh_saving(filename)
+        elem_num = 0
+        with Output() as output:
+            for prim in self.shape:
+                prim.save_mesh(output)
+            elem_num = output.elements_amount
+
+        res = subprocess.run([sys.executable, "./Combiner.py", filename, str(elem_num)]).returncode
+        if res == 0:
+            self.send_message("Фигура сохранена в " + filename)
         else:
-            self.irregular_mesh_saving(filename)
-
-    def regular_mesh_saving(self, filename):
-        min_x = float("inf")
-        min_y = float("inf")
-        max_x = float("-inf")
-        max_y = float("-inf")
-        for prim in self.shape:
-            x, y, X, Y = prim.get_box()
-            if x < min_x:
-                min_x = x
-            if y < min_y:
-                min_y = y
-            if X > max_x:
-                max_x = X
-            if Y > max_y:
-                max_y = Y
-
-        dk = self.shape[0].step_x
-        curr = 0
-        frame_x, frame_y, frame_X, frame_Y = self.shape[curr].get_box()
-        for j in range(int(max_y/dk)):
-            for i in range(int(max_x/dk)):
-                x = min_x + i*dk
-                y = min_y + j*dk
-
-    def irregular_mesh_saving(self, filename):
-        '''
-        Владельцем узлов на стыке двух примитивов считают правый/нижний сосед
-        '''
-        node_index = 0
-
-        f = open(filename, 'w')
-        f.write("[settings]\n")
-        f.write("n_nodes=")
-        pNumNodes = f.tell()
-        f.write("     \n")  # to secure our text from overwriting
-        f.write("n_elements=")
-        pNumElements = f.tell()
-        f.write("     \n")  # to secure our text from overwriting
-        f.write("n_forces=0\n")
-        f.write("n_contacts=0\n")
-
-        sewing_nodes = list()
-        material = list()
-
-        f.write("[inds]\n")
-        for prim in self.shape:
-            node_index = prim.save_indexes(f, node_index)
-        for prim in self.shape:
-            node_index = prim.deal_with_horizontal_contact_regions(f, node_index, sewing_nodes, material)
-            node_index = prim.deal_with_vertical_contact_regions(f, node_index, sewing_nodes, material)
-
-        f.write("[coor]\n")
-        for prim in self.shape:
-            prim.save_coor(f)
-
-        unique_sewing_nodes = set(sewing_nodes)
-        sewing_nodes = list(unique_sewing_nodes)
-        sewing_nodes.sort(key=lambda node: node[0])
-        for node in sewing_nodes:
-            f.write("{} {}\n".format(node[1], node[2]))
-
-        f.write("[contact]\n")
-        f.write("[force]\n")
-        f.write("[material]\n")
-        for prim in self.shape:
-            prim.save_material(f)
-        for node_mat in material:
-            f.write("{}\n".format(node_mat))
-        f.write("[material for elements]\n")
-        for prim in self.shape:
-            prim.save_material_of_element(f)
-
-        nElements = 0
-        for prim in self.shape:
-            nElements += prim.element_count_w*prim.element_count_h*2
-        f.seek(pNumElements)
-        f.write("{}".format(nElements))
-        f.seek(pNumNodes)
-        f.write("{}".format(node_index))
-        f.close()
-
-        self.send_message("Фигура сохранена")
+            self.send_message("Не удалось сохранить фигуру. Подробности в errors.log")
 
     def click_over(self, x, y, canvas_width, canvas_height):
         possible_dirs = [2, 3, 4, 5]
@@ -253,7 +258,7 @@ class Figure(QtCore.QObject):
         if alreadyExpand:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Critical)
-            msg.setText("Пока нельзя достраивать"
+            msg.setText("Нельзя достраивать"
                         " два примитива с одной стороны")
             msg.exec_()
             return
@@ -266,13 +271,13 @@ class Figure(QtCore.QObject):
         if dialog.result() == 1:
             self.adopt_primitive(*dialog.get_data())
             new_prim = self.shape[-1]
-            prim.shave_air(side_code, new_prim)
-            new_prim.shave_air((side_code+2) % 4, prim)  # shave opposite side
+            prim.connect(side_code, new_prim)
+            new_prim.connect((side_code+2) % 4, prim)  # shave opposite side
             self.parent_clear.emit()
             self.parent_update.emit()
 
     def exporting(self, filename):
-        if len(self.shape) == 1:
+        if len(self.shape) == 0:
             self.send_message("Экспортировать нечего: фигура пуста")
             return
 
@@ -288,6 +293,8 @@ class Figure(QtCore.QObject):
                     else:
                         f.write("-1 ")
                 f.write("\n")
+
+        self.send_message("Фигура экспортирована в " + filename)
 
     def importing(self, filename):
         self.shape.clear()
@@ -310,7 +317,7 @@ class Figure(QtCore.QObject):
                         code = int(code)
                         if code != -1:
                             neighbour = self.shape[code]
-                            self.shape[i-shift].shave_air(side, neighbour)
+                            self.shape[i-shift].connect(side, neighbour)
         self.adjust()
         self.parent_clear.emit()
         self.parent_update.emit()
@@ -327,13 +334,13 @@ class Figure(QtCore.QObject):
         for prim in self.shape:
             x0, y0, x1, y1 = prim.get_box()
             if x0 < min_x:
-                min_x = x0
+                min_x = int(x0)
             if y0 < min_y:
-                min_y = y0
+                min_y = int(y0)
             if x1 > max_x:
-                max_x = x1
+                max_x = int(x1)
             if y1 > max_y:
-                max_y = y1
+                max_y = int(y1)
 
         self.start_x = min_x - SPACING
         self.start_y = min_y - SPACING
@@ -347,3 +354,47 @@ class Figure(QtCore.QObject):
         self.update_status()
         self.parent_clear.emit()
         self.parent_update.emit()
+
+    def set_air(self, thickness):
+        for primitive in self.shape:
+            for i in range(4):
+                if not primitive.binds[i]:
+                    primitive.mesh.set_val_at(i, thickness)
+                    primitive.modify()
+
+            self.parent_clear.emit()
+        self.parent_update.emit()
+
+
+class Output:
+    """
+    Вспомогательный класс для записи данных разбиения в промежуточные файлы
+    """
+    TEMP_DIR = ".temp/"
+    FILENAMES = ["elements", "nodes", "elements_material"]
+
+    def __init__(self):
+        self.f = {}
+        self.last_index = 0
+        self.elements_amount = 0
+
+    def __enter__(self):
+        if not os.path.isdir(self.TEMP_DIR):
+            os.mkdir(self.TEMP_DIR)
+
+        for tmp_name in self.FILENAMES:
+            self.f[tmp_name] = open(self.TEMP_DIR + tmp_name + ".tmp", "w")  # TODO: should be "x"
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        for tmp_name in self.FILENAMES:
+            self.f[tmp_name].close()
+
+    def save_element(self, index_A, index_B, index_C, material):
+        self.f[self.FILENAMES[0]].write("{} {} {}\n".format(index_A, index_B, index_C))
+        self.f[self.FILENAMES[2]].write("{}\n".format(material))
+        self.elements_amount += 1
+
+    def save_node(self, x, y):
+        self.f[self.FILENAMES[1]].write("{} {} {}\n".format(x, y, self.last_index))
+        self.last_index += 1
