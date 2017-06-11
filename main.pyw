@@ -110,6 +110,7 @@ class MyWindow(QMainWindow):
         if dialog.result() == 1:
             filename = dialog.pmd_filepath.text()
             divide = dialog.do_split.isChecked()
+            sort = dialog.sort_elements.isChecked()
 
             if filename == "":
                 msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
@@ -122,7 +123,8 @@ class MyWindow(QMainWindow):
                 msg.exec_()
                 return
 
-            res = subprocess.run([sys.executable, "./Sorter.py", filename, str(divide)]).returncode
+            res = subprocess.run([sys.executable, "./Sorter.py",
+                                  filename, str(divide), str(sort)]).returncode
             if res == 0:
                 self.msg = QLabel('Файл отсортирован успешно')
                 self.statusbar.addWidget(self.msg)
