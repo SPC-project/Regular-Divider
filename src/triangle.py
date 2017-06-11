@@ -215,10 +215,10 @@ class Triangle(AbstractPrimitive):
         y0 = self.start_y + M.NAT*dy
 
         start = output.last_index
-        output.save_node(x0, y0, self.FIGURE_CODE)
-        output.save_node(x0 + dx, y0, self.FIGURE_CODE)
-        output.save_node(x0, y0 + dy, self.FIGURE_CODE)
-        output.save_node(x0 + dx, y0 + dy, self.FIGURE_CODE)
+        output.save_node(x0, y0)
+        output.save_node(x0 + dx, y0)
+        output.save_node(x0, y0 + dy)
+        output.save_node(x0 + dx, y0 + dy)
         if type_ == 0:
             output.save_element(start, start+2, start+3, self.FIGURE_CODE)
             output.save_element(start, start+1, start+3, self.AIR_CODE)
@@ -247,11 +247,11 @@ class Triangle(AbstractPrimitive):
         if type_ == 0:
             offset_x, mod_x = M.NAL, 1
             offset_y, mod_y = 1, 1
-            output.save_node(x0 + M.NAL*dx, y0 + M.NAT*dy, material)
+            output.save_node(x0 + M.NAL*dx, y0 + M.NAT*dy)
         elif type_ == 1:
             offset_x, mod_x = M.NFX-1, -1
             offset_y, mod_y = 1, 1
-            output.save_node(x0 + M.NFX*dx, y0, material)
+            output.save_node(x0 + M.NFX*dx, y0)
         elif type_ == 2:
             offset_x, mod_x = M.NAL, 1
             offset_y, mod_y = M.NAT, 0
@@ -268,20 +268,20 @@ class Triangle(AbstractPrimitive):
             self.save_rectangle_mesh(w, h-i, output, x, y, dx, dy, material)
 
         if type_ == 0:
-            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + (M.NAT + M.NFY)*dy, material)
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + (M.NAT + M.NFY)*dy)
             self.fill_gaps_on_type0_hypotenuse(output, material, start)
         elif type_ == 1:
-            output.save_node(x0, y0 + M.NFY*dy, material)
+            output.save_node(x0, y0 + M.NFY*dy)
             self.fill_gaps_on_type1_hypotenuse(output, material, start)
         if type_ == 2:
             bottom = output.last_index
-            output.save_node(x0 + M.NAL*dx, y0 + (M.NAT + M.NFY)*dy, material)
-            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NAT*dy, material)
+            output.save_node(x0 + M.NAL*dx, y0 + (M.NAT + M.NFY)*dy)
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NAT*dy)
             self.fill_gaps_on_type2_hypotenuse(output, material, start, bottom)
         if type_ == 3:
-            output.save_node(x0 + M.NAL*dx, y0 + M.NAT*dy, material)
+            output.save_node(x0 + M.NAL*dx, y0 + M.NAT*dy)
             last = output.last_index
-            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + (M.NAT + M.NFY)*dy, material)
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + (M.NAT + M.NFY)*dy)
             self.fill_gaps_on_type3_hypotenuse(output, material, start, last)
 
     def fill_gaps_on_type0_hypotenuse(self, output, material, start):

@@ -24,7 +24,7 @@ from collections import OrderedDict
 
 DIR = ".temp/"
 EXTENSION = ".tmp"
-SECTIONS_NAMES = ["[settings]\n", "[inds]\n", "[coor]\n", "[contact]\n", "[force]\n", "[material]\n", "[elements' material]\n"]
+SECTIONS_NAMES = ["[settings]\n", "[inds]\n", "[coor]\n", "[contact]\n", "[force]\n", "[elements' material]\n"]
 
 
 def init():
@@ -145,20 +145,7 @@ def write_nodes(output, nodes, excessive_indexes):
         index += 1
 
 
-def write_nodesMaterial(output, nodes_material, excessive_indexes):
-    index = 0
-    for line in nodes_material.readlines():
-        skip = False
-        for ind, _ in excessive_indexes:
-            if int(ind) == index:
-                skip = True
-                break
-        if not skip:
-            output.write(line)
-        index += 1
-
-
-def combine_output(elems, nodes, nodes_material, elems_material, output):
+def combine_output(elems, nodes, elems_material, output):
     excessive_indexes, nodes_amount = find_excessive_indexes(nodes)
     output.write(SECTIONS_NAMES[0])  # settings
     output.write("n_nodes={}\n".format(nodes_amount))
@@ -174,10 +161,7 @@ def combine_output(elems, nodes, nodes_material, elems_material, output):
 
     output.write(SECTIONS_NAMES[3])  # contacts
     output.write(SECTIONS_NAMES[4])  # force
-    output.write(SECTIONS_NAMES[5])  # nodes' material
-    write_nodesMaterial(output, nodes_material, excessive_indexes)
-
-    output.write(SECTIONS_NAMES[6])  # elements' material
+    output.write(SECTIONS_NAMES[5])  # elements' material
     for mat in materials:
         if mat > 0:
             output.write("1\n")
@@ -204,14 +188,13 @@ if __name__ == '__main__':
                         filename='errors.log')
     sys.excepthook = my_excepthook
 
-    ELEMENTS, NODES, ELEMENTS_MATERIAL, NODES_MATERIAL = init()
+    ELEMENTS, NODES, ELEMENTS_MATERIAL = init()
     elems = open(ELEMENTS, 'r')
     nodes = open(NODES, 'r')
-    nodes_material = open(NODES_MATERIAL, 'r')
     elems_material = open(ELEMENTS_MATERIAL, 'r')
     output = open(OUTPUT_FILENAME, 'w')
 
-    combine_output(elems, nodes, nodes_material, elems_material, output)
+    combine_output(elems, nodes, elems_material, output)
 
     nodes.close()
     elems.close()

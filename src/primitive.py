@@ -56,7 +56,7 @@ class AbstractPrimitive:
         width = self.mesh.NFX + self.mesh.NAR
         height = self.mesh.NFY + self.mesh.NAB
         self.end_x = self.x + self.step_x*width
-        self.end_y = self.y + self.step_y*(height)
+        self.end_y = self.y + self.step_y*height
 
     @abc.abstractmethod
     def update_me(self):
@@ -255,7 +255,7 @@ class AbstractPrimitive:
         # Координаты узлов
         for j in range(nheight+1):  # Узлов на один больше чем квадратов
             for i in range(nwidth+1):
-                output.save_node(x0 + dx*i, y0 + dy*j, m)
+                output.save_node(x0 + dx*i, y0 + dy*j)
 
     def __str__(self):
         return "{}, {} | {}".format(self.start_x, self.start_y, self.mesh)

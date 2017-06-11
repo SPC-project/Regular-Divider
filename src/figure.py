@@ -371,7 +371,7 @@ class Output:
     Вспомогательный класс для записи данных разбиения в промежуточные файлы
     """
     TEMP_DIR = ".temp/"
-    FILENAMES = ["elements", "nodes", "elements_material", "nodes_material"]
+    FILENAMES = ["elements", "nodes", "elements_material"]
 
     def __init__(self):
         self.f = {}
@@ -395,7 +395,6 @@ class Output:
         self.f[self.FILENAMES[2]].write("{}\n".format(material))
         self.elements_amount += 1
 
-    def save_node(self, x, y, material):
+    def save_node(self, x, y):
         self.f[self.FILENAMES[1]].write("{} {} {}\n".format(x, y, self.last_index))
-        self.f[self.FILENAMES[3]].write("{}\n".format(material))
         self.last_index += 1

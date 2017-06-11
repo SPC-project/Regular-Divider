@@ -26,7 +26,6 @@ Out = open(RESULT, 'w')
 if WANT_SPLIT:
     Out_nodes = open(RESULT + "_nodes", 'w')
     Out_elements = open(RESULT + "_elements", 'w')
-    Out_nodes_material = open(RESULT + "_nodes-material", 'w')
     Out_elements_material = open(RESULT + "_elements-material", 'w')
 
 # Read .pmd
@@ -34,12 +33,10 @@ is_header = True
 is_elements = False
 is_nodes = False
 is_stuff = False
-is_material = False
 
 elements = list()
 nodes = list()
 elements_material = list()
-nodes_material = list()
 index = 0
 
 for line in In.readlines():
@@ -66,11 +63,6 @@ for line in In.readlines():
         if line == SECTIONS_NAMES[5]:  # skip force and contacts
             is_stuff = False
             is_material = True
-    elif is_material:
-        if line != SECTIONS_NAMES[6]:
-            nodes_material.append(int(line.strip()))
-        else:
-            is_material = False
     else:
         elements_material.append(int(line.strip()))
 
@@ -97,12 +89,6 @@ for x, y, _ in nodes:
 Out.write(SECTIONS_NAMES[3])
 Out.write(SECTIONS_NAMES[4])
 Out.write(SECTIONS_NAMES[5])
-for i in range(len(nodes_material)):
-    line = "{}\n".format(nodes_material[nodes_renames.index(i)])
-    Out.write(line)
-    if WANT_SPLIT:
-        Out_nodes_material.write(line)
-Out.write(SECTIONS_NAMES[6])
 for index in elements_material:
     line = "{}\n".format(index)
     Out.write(line)  # cause we do not change order in elements
@@ -115,5 +101,4 @@ Out.close()
 if WANT_SPLIT:
     Out_nodes.close()
     Out_elements.close()
-    Out_nodes_material.close()
     Out_elements_material.close()
