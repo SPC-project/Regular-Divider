@@ -125,9 +125,9 @@ class Rectangle(AbstractPrimitive):
         width_height = [
             [M.NAL + M.NFX + M.NAR, M.NAT],
             [M.NAL, M.NFY],
-            [M.NAL + M.NFX + M.NAR, M.NAB],
+            [M.NFX, M.NFY],
             [M.NAR, M.NFY],
-            [M.NFX, M.NFY]
+            [M.NAL + M.NFX + M.NAR, M.NAB],
         ]
 
         x0, y0 = self.start_x, self.start_y
@@ -135,14 +135,14 @@ class Rectangle(AbstractPrimitive):
         x_y = [
             [x0, y0],
             [x0, y0 + M.NAT*dy],
-            [x0, y0 + (M.NAT+M.NFY)*dy],
+            [x0 + M.NAL*dx, y0 + M.NAT*dy],
             [x0 + (M.NAL+M.NFX)*dx, y0 + M.NAT*dy],
-            [x0 + M.NAL*dx, y0 + M.NAT*dy]
+            [x0, y0 + (M.NAT+M.NFY)*dy],
         ]
 
         air = self.AIR_CODE
         fig = self.FIGURE_CODE
-        material = [air, air, air, air, fig]
+        material = [air, air, fig, air, air]
 
         for i in range(5):
             w, h = width_height[i]
