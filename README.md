@@ -36,8 +36,6 @@ AutoCheckAccelerators=false
 	<всего L строк>
 	[force]
 	<всего K строк>
-	[material]
-	<0 (для воздуха) или 1 (для фигуры) — всего M строк>
 	[element's material]
 	<0 (для воздуха) или 1 (для фигуры) — всего N строк>
 

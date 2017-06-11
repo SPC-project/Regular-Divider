@@ -183,7 +183,7 @@ if __name__ == '__main__':
     OUTPUT_FILENAME = sys.argv[1]
     ELEMENTS_AMOUNT = int(sys.argv[2])
 
-    log_format = 'Sorter.py — [%(asctime)s]  %(message)s'
+    log_format = 'Combiner.py — [%(asctime)s]  %(message)s'
     logging.basicConfig(format=log_format, level=logging.ERROR,
                         filename='errors.log')
     sys.excepthook = my_excepthook
