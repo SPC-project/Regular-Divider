@@ -39,7 +39,7 @@ AutoCheckAccelerators=false
 	[element's material]
 	<0 (для воздуха) или 1 (для фигуры) — всего N строк>
 
-[.pmd](https://github.com/SPC-project/Transformer/blob/master/README.md#Структура-входного-файла) используются для сообщения с программой Transformer
+В отличии от [Transformer'a](https://github.com/SPC-project/Transformer/), в данном варианте отсутствует секция с "Материал узлов" — она избыточна. Используйте "Материал элементов" взамен.
 
 
 Экспорт фигур

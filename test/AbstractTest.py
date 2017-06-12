@@ -95,12 +95,10 @@ class AbstractTest(unittest.TestCase):
     def check_output(self, elems_test, coords_test, material_test):
         with open(OUTPUT_FILENAME + "_sorted_elements", "r") as f:
             triangles = f.readlines()
-            print(triangles)
             self.assertEqual(triangles, elems_test, "Wrong triangles formed for")
 
         with open(OUTPUT_FILENAME + "_sorted_nodes", "r") as f:
             coords = [[float(elem) for elem in line.split(' ')] for line in f.readlines()]  # convert lines to Python's list[list]
-            print(coords)
             self.assertEqual(coords, coords_test, "Wrong coordinates")
 
         with open(OUTPUT_FILENAME + "_sorted_elements-material", "r") as f:
@@ -113,11 +111,11 @@ class AbstractTest(unittest.TestCase):
         with open(EXPORT_OUTPUT_FILENAME, "r") as exported:
             self.assertEqual(exported.readlines(), compare, "Figure build unexpected")
 
-    def generate_grid(self, nx, ny, offset=0):
+    def generate_grid(self, nx, ny, offset_index=0, offset_x=0, offset_y=0):
         elems = list()
         for j in range(ny-1):
             for i in range(nx-1):
-                curr = offset + i + (nx*j)
+                curr = offset_index + i + (nx*j)
                 next_ = curr + 1
                 next_line_curr = curr + nx
                 next_line_next = next_line_curr + 1
@@ -127,6 +125,28 @@ class AbstractTest(unittest.TestCase):
         coord = list()
         for j in range(ny):
             for i in range(nx):
-                coord.append([i, j])
+                coord.append([i + offset_x, j + offset_y])
+
+        return elems, coord
+
+    def generate_distorted_diagonal_grid(self, nx, ny, offset_index=0, offset_x=0, offset_y=0):
+        elems = list()
+        for j in range(ny-1):
+            for i in range(nx-1):
+                curr = offset_index + i + (nx*j)
+                next_ = curr + 1
+                next_line_curr = curr + nx
+                next_line_next = next_line_curr + 1
+                if i == (nx-2) - j:
+                    elems.append("{} {} {}\n".format(curr, next_line_curr, next_))
+                    elems.append("{} {} {}\n".format(next_, next_line_next, next_line_curr))
+                else:
+                    elems.append("{} {} {}\n".format(curr, next_line_curr, next_line_next))
+                    elems.append("{} {} {}\n".format(curr, next_, next_line_next))
+
+        coord = list()
+        for j in range(ny):
+            for i in range(nx):
+                coord.append([i + offset_x, j + offset_y])
 
         return elems, coord

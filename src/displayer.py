@@ -51,6 +51,7 @@ class PMD_Displayer():
         self.longest_index = max([str(min_x), str(min_y), str(max_x), str(max_y)])
 
         self.coords = coords
+        In.close()
 
     def display_pmd(self, canvas, camera_x, camera_y, kx, ky):
         if not self.data:
