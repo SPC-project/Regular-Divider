@@ -96,9 +96,16 @@
     <addaction name="show_coordinates"/>
     <addaction name="show_indexes"/>
    </widget>
+   <widget class="QMenu" name="Help">
+    <property name="title">
+     <string>Помощь</string>
+    </property>
+    <addaction name="open_wiki"/>
+   </widget>
    <addaction name="File"/>
    <addaction name="Figure"/>
    <addaction name="Parameters"/>
+   <addaction name="Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="add_primitive">
@@ -299,6 +306,17 @@
    </property>
    <property name="text">
     <string>Нумерация узлов</string>
+   </property>
+  </action>
+  <action name="open_wiki">
+   <property name="text">
+    <string>Wiki</string>
+   </property>
+   <property name="toolTip">
+    <string>Открыть web-страницу руководства пользователя</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
    </property>
   </action>
  </widget>
