@@ -1,5 +1,5 @@
 from PyQt5.QtGui import QColor, QPolygon, QBrush
-from PyQt5.QtCore import QPoint
+from PyQt5.QtCore import QPoint, Qt
 from Sorter import read_pmd
 
 PADDING = 10  # Space between window border and QFrame
@@ -10,12 +10,14 @@ COL_AIR = QColor(128, 176, 241, 127)
 COL_AIR_INNER = QColor(128, 176, 241, 24)
 COL_FIG = QColor(46, 61, 73)
 COL_FIG_INNNER = QColor(46, 61, 73, 64)
+COL_TEXT = QColor(0, 0, 0)
 
 
 class PMD_Displayer():
     def __init__(self):
         self.data = False
         self.buffer = False
+        self.show_indexes = True
 
     def load_pmd(self, filename):
         self.filename = filename
@@ -45,6 +47,10 @@ class PMD_Displayer():
         self.world_size = max(dx, dy)
         self.start_x = min_x - CAMERA_OFFSET
         self.start_y = min_y - CAMERA_OFFSET
+        self.between_nodes = coords[1][0] - coords[0][0]
+        self.longest_index = max([str(min_x), str(min_y), str(max_x), str(max_y)])
+
+        self.coords = coords
 
     def display_pmd(self, canvas, camera_x, camera_y, kx, ky):
         if not self.data:
@@ -55,9 +61,30 @@ class PMD_Displayer():
             canvas_y = int(round((camera_y + vertex[1])*ky))
             return (canvas_x, canvas_y)
 
-        canvas.drawText(0, 10, self.filename + ":")
         for A, B, C, material in self.data:
             self.draw_element(canvas, A, B, C, material, scale)
+
+        canvas.setPen(COL_TEXT)
+        canvas.drawText(0, 10, self.filename + ":")
+
+        if not self.show_indexes:
+            return
+        metrics = canvas.fontMetrics()
+        MFlag = Qt.TextSingleLine
+        label_metric = metrics.size(MFlag, self.longest_index)
+        skip = 1
+        label_w = label_metric.width() + 2
+        label_h = label_metric.height() + 2
+        free_space = self.between_nodes*kx
+        if label_w > free_space and label_h > free_space and int(label_w / free_space) < 3:
+            skip = 2
+        elif int(label_w / free_space) > 3:
+            return
+
+        for index, node in enumerate(self.coords):
+            if index % skip == 0:
+                x, y = scale(node)
+                canvas.drawText(x + 2, y - 2, str(index))
 
     def draw_element(self, canvas, A, B, C, material, scale):
         first = QPoint(*scale(A))

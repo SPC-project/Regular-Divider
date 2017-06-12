@@ -89,15 +89,16 @@
     <addaction name="create_world"/>
     <addaction name="set_air"/>
    </widget>
-   <widget class="QMenu" name="menu">
+   <widget class="QMenu" name="Parameters">
     <property name="title">
      <string>Параметры</string>
     </property>
     <addaction name="show_coordinates"/>
+    <addaction name="show_indexes"/>
    </widget>
    <addaction name="File"/>
    <addaction name="Figure"/>
-   <addaction name="menu"/>
+   <addaction name="Parameters"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="add_primitive">
@@ -267,22 +268,37 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Координатная сетка</string>
    </property>
   </action>
   <action name="open_pmd">
    <property name="icon">
-    <iconset theme="document-open"/>
+    <iconset theme="document-open">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Открыть pmd-файл</string>
+    <string>Открыть p&amp;md-файл</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Открывает файл разбиения и отображает его&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;в правой секции рабочей области&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="show_indexes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Нумерация узлов</string>
    </property>
   </action>
  </widget>

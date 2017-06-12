@@ -30,7 +30,7 @@ class Figure(QtCore.QObject):
         self.message = ""
         self.shape = list()
         self.prim_dialog = False  # wait for NewPrimitiveDialog creation
-        self.show_coordinate_grid = False
+        # show_coordinate_grid was initiate in MyWindow constructor
 
         self.displayer = PMD_Displayer()
         self.use_displayer = False
@@ -44,8 +44,13 @@ class Figure(QtCore.QObject):
 
         self.update_status()
 
-    def clean(self):
+    def forgo_displayer(self):
         self.use_displayer = False
+        self.displayer.data = None
+        self.displayer.coords = None
+
+    def clean(self):
+        self.forgo_displayer()
         self.world_size = 0
         self.start_x = 0
         self.start_y = 0
@@ -81,7 +86,7 @@ class Figure(QtCore.QObject):
             self.parent_update.emit()
 
     def new_figure(self):
-        self.use_displayer = False
+        self.forgo_displayer()
         if not self.prim_dialog:
             self.prim_dialog = NewPrimitiveDialog()
 
@@ -117,7 +122,7 @@ class Figure(QtCore.QObject):
         step_x = min(self.shape, key=lambda prim: prim.step_x).step_x
         step_y = min(self.shape, key=lambda prim: prim.step_y).step_y
         self.grid_step = min(step_x, step_y)
-        self.use_displayer = False  # Do not draw actual mesh
+        self.forgo_displayer()
 
     def redraw(self, canvas, canvas_width, canvas_height, mesh_canvas):
         if self.world_size == 0:
@@ -218,7 +223,7 @@ class Figure(QtCore.QObject):
             fig, mesh, prim_type_index = dialog.get_data()
             self.adopt_primitive(fig, mesh, prim_type_index, ind)
 
-        self.use_displayer = False
+        self.forgo_displayer()
 
     def del_prim(self, ind):
         to_del = self.shape[ind]
@@ -232,7 +237,7 @@ class Figure(QtCore.QObject):
         self.parent_clear.emit()
         self.parent_update.emit()
 
-        self.use_displayer = False
+        self.forgo_displayer()
 
     def save_mesh(self, filename="temp.pmd"):
         if len(self.shape) == 0:
