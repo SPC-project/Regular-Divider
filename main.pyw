@@ -19,7 +19,7 @@ from traceback import format_exception
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QDialog
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
 from PyQt5 import uic, QtCore
-from PyQt5.QtGui import QPainter, QPixmap, QColor
+from PyQt5.QtGui import QPainter, QPixmap, QColor, QDesktopServices
 from src.figure import Figure
 
 VERSION = (0, 4, 1)
@@ -73,6 +73,7 @@ class MyWindow(QMainWindow):
         self.create_world.triggered.connect(self.figure.create_space)
         self.show_coordinates.triggered.connect(self.switch_grid)
         self.show_indexes.triggered.connect(self.switch_indexes)
+        self.open_wiki.triggered.connect(self.go_wiki)
 
         self.sig_update.connect(self.updating)
         self.sig_clear.connect(self.clearing)
@@ -163,6 +164,11 @@ class MyWindow(QMainWindow):
         self.clearing()
         self.updating()
 
+    def go_wiki(self):
+        QDesktopServices.openUrl(QtCore.QUrl("https://github.com/SPC-project/Regular-Divider/wiki"))
+        self.figure.message = "Перенаправляем на Wiki программы"
+        self.messaging()
+
     def getCanvasSize(self):
         dx = (self.geometry().width() - 3*PADDING) / 2
         dy = self.geometry().height() - self.menubar.height() \
@@ -185,6 +191,7 @@ class MyWindow(QMainWindow):
         if not (dx == dy and dx == 420):
             msg = "Изменение размеров... Холсты: " + str(dx) + "x" + str(dy)
             self.figure.message = msg + " (рекомендуются квадратные)"
+            self.messaging()
 
         self.draw_fig_x = self.canvas_figure.x() + OFFSET
         self.draw_mesh_x = self.canvas_mesh.x() + OFFSET
