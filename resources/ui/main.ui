@@ -73,6 +73,7 @@
     <addaction name="save_world"/>
     <addaction name="save_world_as"/>
     <addaction name="sort_pmd"/>
+    <addaction name="open_pmd"/>
     <addaction name="separator"/>
     <addaction name="shut_app_down"/>
    </widget>
@@ -257,11 +258,6 @@
     <string>Сортировать &amp;pmd-файл</string>
    </property>
   </action>
-  <action name="action">
-   <property name="text">
-    <string>Задать воздушный слой фигуре</string>
-   </property>
-  </action>
   <action name="set_air">
    <property name="text">
     <string>Задать воздух для всей фигуры</string>
@@ -273,6 +269,20 @@
    </property>
    <property name="text">
     <string>Координатная сетка</string>
+   </property>
+  </action>
+  <action name="open_pmd">
+   <property name="icon">
+    <iconset theme="document-open"/>
+   </property>
+   <property name="text">
+    <string>Открыть pmd-файл</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Открывает файл разбиения и отображает его&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;в правой секции рабочей области&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

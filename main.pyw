@@ -41,7 +41,7 @@ class MyWindow(QMainWindow):
     sig_mayUpdate = QtCore.pyqtSignal()
 
     def __init__(self):
-        super(MyWindow, self).__init__()
+        super().__init__()
         uic.loadUi('resources/ui/main.ui', self)
 
         # Setup statusbar
@@ -52,7 +52,7 @@ class MyWindow(QMainWindow):
         self.statusbar.addPermanentWidget(QLabel("Рабочая область:"))
         self.statusbar.addPermanentWidget(size_tip)
 
-        # Initiate Figure
+        # Other setup
         self.msg = None
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear, self.sig_message)
 
@@ -61,10 +61,11 @@ class MyWindow(QMainWindow):
         self.wipe_world.triggered.connect(self.clean)
         self.save_world.triggered.connect(self.save)
         self.save_world_as.triggered.connect(self.save_as)
+        self.sort_pmd.triggered.connect(self.do_sort)
+        self.open_pmd.triggered.connect(self.do_open)
         self.shut_app_down.triggered.connect(self.close)
         self.import_figure.triggered.connect(self.pre_import)
         self.export_figure.triggered.connect(self.pre_export)
-        self.sort_pmd.triggered.connect(self.do_sort)
         self.set_air.triggered.connect(self.do_set_air)
         self.add_primitive.triggered.connect(self.figure.new_figure)
         self.create_world.triggered.connect(self.figure.create_space)
@@ -91,6 +92,15 @@ class MyWindow(QMainWindow):
                                             '', "Text files (*.pmd)")[0]
         if fname != '':
             self.figure.save_mesh(fname)
+
+    def do_open(self):
+        fname = QFileDialog.getOpenFileName(self, 'Открыть...',
+                                            'temp.pmd', "Text files (*.pmd*)")[0]
+        if fname != '':
+            self.figure.displayer.load_pmd(fname)
+            self.figure.use_displayer = True
+            self.clearing()
+            self.updating()
 
     def pre_import(self):
         fname = QFileDialog.getOpenFileName(self, 'Открыть...', './samples',

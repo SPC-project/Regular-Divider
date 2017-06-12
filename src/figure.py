@@ -5,8 +5,9 @@ from src.rectangle import Rectangle
 from src.triangle import Triangle
 from src.primitive import AbstractPrimitive
 from src.gui_primitive import NewPrimitiveDialog
+from src.displayer import PMD_Displayer
+from src.output import Output
 import subprocess
-import os
 import sys
 
 SPACING = 5
@@ -31,6 +32,9 @@ class Figure(QtCore.QObject):
         self.prim_dialog = False  # wait for NewPrimitiveDialog creation
         self.show_coordinate_grid = False
 
+        self.displayer = PMD_Displayer()
+        self.use_displayer = False
+
         self.status = status
         self.parent_update = parent_update
         self.parent_clear = parent_clear
@@ -41,6 +45,7 @@ class Figure(QtCore.QObject):
         self.update_status()
 
     def clean(self):
+        self.use_displayer = False
         self.world_size = 0
         self.start_x = 0
         self.start_y = 0
@@ -76,6 +81,7 @@ class Figure(QtCore.QObject):
             self.parent_update.emit()
 
     def new_figure(self):
+        self.use_displayer = False
         if not self.prim_dialog:
             self.prim_dialog = NewPrimitiveDialog()
 
@@ -84,6 +90,7 @@ class Figure(QtCore.QObject):
         if self.prim_dialog.result() == 1:
             self.parent_clear.emit()
             self.adopt_primitive(*self.prim_dialog.get_data())
+            self.adjust()
 
     def adopt_primitive(self, fig, mesh, prim_type_index, primitive_ind=-1):
         x, y, w, h = fig
@@ -110,10 +117,16 @@ class Figure(QtCore.QObject):
         step_x = min(self.shape, key=lambda prim: prim.step_x).step_x
         step_y = min(self.shape, key=lambda prim: prim.step_y).step_y
         self.grid_step = min(step_x, step_y)
+        self.use_displayer = False  # Do not draw actual mesh
 
     def redraw(self, canvas, canvas_width, canvas_height, mesh_canvas):
         if self.world_size == 0:
-            return
+            if not self.use_displayer:
+                return
+            else:
+                self.world_size = self.displayer.world_size
+                self.start_x = self.displayer.start_x
+                self.start_y = self.displayer.start_y
 
         kx = int(canvas_width/self.world_size)
         ky = int(canvas_height/self.world_size)
@@ -122,8 +135,14 @@ class Figure(QtCore.QObject):
 
         if self.show_coordinate_grid and self.grid_step > 0.000001:
             self.draw_grid(canvas, mesh_canvas, kx, ky, shift_x, shift_y, canvas_width, canvas_height)
-        for primitive in self.shape:
-            primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
+
+        if not self.use_displayer:
+            for primitive in self.shape:
+                primitive.draw(canvas, mesh_canvas, shift_x, shift_y, kx, ky)
+        else:
+            for primitive in self.shape:
+                primitive.draw(canvas, False, shift_x, shift_y, kx, ky)
+            self.displayer.display_pmd(mesh_canvas, shift_x, shift_y, kx, ky)
 
     def draw_grid(self, canvas, mesh_canvas, kx, ky, shift_x, shift_y, W, H):
         canvas.setPen(self.COL_GRID)
@@ -199,6 +218,8 @@ class Figure(QtCore.QObject):
             fig, mesh, prim_type_index = dialog.get_data()
             self.adopt_primitive(fig, mesh, prim_type_index, ind)
 
+        self.use_displayer = False
+
     def del_prim(self, ind):
         to_del = self.shape[ind]
         for prim in self.shape:
@@ -210,6 +231,8 @@ class Figure(QtCore.QObject):
         del self.shape[ind]
         self.parent_clear.emit()
         self.parent_update.emit()
+
+        self.use_displayer = False
 
     def save_mesh(self, filename="temp.pmd"):
         if len(self.shape) == 0:
@@ -227,6 +250,10 @@ class Figure(QtCore.QObject):
         res = subprocess.run([sys.executable, "./Combiner.py", filename, str(elem_num)]).returncode
         if res == 0:
             self.send_message("Фигура сохранена в " + filename)
+            self.displayer.load_pmd(filename)
+            self.use_displayer = True
+            self.parent_clear.emit()
+            self.parent_update.emit()
         else:
             self.send_message("Не удалось сохранить фигуру. Подробности в errors.log")
 
@@ -364,37 +391,3 @@ class Figure(QtCore.QObject):
 
             self.parent_clear.emit()
         self.parent_update.emit()
-
-
-class Output:
-    """
-    Вспомогательный класс для записи данных разбиения в промежуточные файлы
-    """
-    TEMP_DIR = ".temp/"
-    FILENAMES = ["elements", "nodes", "elements_material"]
-
-    def __init__(self):
-        self.f = {}
-        self.last_index = 0
-        self.elements_amount = 0
-
-    def __enter__(self):
-        if not os.path.isdir(self.TEMP_DIR):
-            os.mkdir(self.TEMP_DIR)
-
-        for tmp_name in self.FILENAMES:
-            self.f[tmp_name] = open(self.TEMP_DIR + tmp_name + ".tmp", "w")  # TODO: should be "x"
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        for tmp_name in self.FILENAMES:
-            self.f[tmp_name].close()
-
-    def save_element(self, index_A, index_B, index_C, material):
-        self.f[self.FILENAMES[0]].write("{} {} {}\n".format(index_A, index_B, index_C))
-        self.f[self.FILENAMES[2]].write("{}\n".format(material))
-        self.elements_amount += 1
-
-    def save_node(self, x, y):
-        self.f[self.FILENAMES[1]].write("{} {} {}\n".format(x, y, self.last_index))
-        self.last_index += 1
