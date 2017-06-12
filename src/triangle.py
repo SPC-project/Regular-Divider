@@ -249,12 +249,12 @@ class Triangle(AbstractPrimitive):
 
         if type_ == 0:
             offset_x, mod_x = M.NAL, 1
-            offset_y, mod_y = 1, 1
+            offset_y, mod_y = 1 + M.NAT, 1
             output.save_node(x0 + M.NAL*dx, y0 + M.NAT*dy)
         elif type_ == 1:
-            offset_x, mod_x = M.NFX-1, -1
-            offset_y, mod_y = 1, 1
-            output.save_node(x0 + M.NFX*dx, y0)
+            offset_x, mod_x = M.NAL + M.NFX-1, -1
+            offset_y, mod_y = 1 + M.NAT, 1
+            output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + M.NAT*dy)
         elif type_ == 2:
             offset_x, mod_x = M.NAL, 1
             offset_y, mod_y = M.NAT, 0
@@ -274,7 +274,7 @@ class Triangle(AbstractPrimitive):
             output.save_node(x0 + (M.NAL + M.NFX)*dx, y0 + (M.NAT + M.NFY)*dy)
             self.fill_gaps_on_type0_hypotenuse(output, material, start)
         elif type_ == 1:
-            output.save_node(x0, y0 + M.NFY*dy)
+            output.save_node(x0 + M.NAL*dx, y0 + (M.NAT + M.NFY)*dy)
             self.fill_gaps_on_type1_hypotenuse(output, material, start)
         if type_ == 2:
             bottom = output.last_index
