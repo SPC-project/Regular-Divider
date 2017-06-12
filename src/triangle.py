@@ -328,7 +328,7 @@ class Triangle(AbstractPrimitive):
             output.save_element(left, next_up, next_down, material)
             left = next_down
             next_up = next_down + 1
-            next_down = next_down - 4
+            next_down = next_down - 4 - 2*(self.mesh.NFX - k)
         left = start + self.mesh.NFY*2 - 2
         next_up = left + 1
         next_down = last
