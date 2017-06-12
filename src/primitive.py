@@ -159,7 +159,8 @@ class AbstractPrimitive:
         self.drawing_coefs = {'shift_x': shift_x, 'shift_y': shift_x,
                               'kx': kx, 'ky': ky}
         self.draw_figure(canvas)
-        self.draw_mesh(mesh_canvas)
+        if mesh_canvas:
+            self.draw_mesh(mesh_canvas)
 
     @abc.abstractmethod
     def draw_figure(self, canvas):

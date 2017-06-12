@@ -97,6 +97,18 @@ class NoAir(AbstractTest):
         m = [0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1]
         self.check_mesh(tri, e, c, m)
 
+    def test_5x5Type0(self):
+        tri = self.get_triangle(0, 5, 5)
+        e, c = self.generate_grid(5, 5)
+        m = [0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1]
+        self.check_mesh(tri, e, c, m)
+
+    def test_5x5Type1(self):
+        tri = self.get_triangle(1, 5, 5)
+        e, c = self.generate_distorted_diagonal_grid(5, 5)
+        m = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
+        self.check_mesh(tri, e, c, m)
+
 
 class SingleAirLayer(AbstractTest):
     def test_2x2Type0(self):

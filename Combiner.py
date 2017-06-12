@@ -11,15 +11,15 @@ Unite results of dividing (.tmp files) into singular .pmd file
    Remove overlaying elements (material ones have priority)
 
 Input:
-    OUTPUT_FILENAME - destination for combined mesh file
-    ELEMENTS_AMOUNT - how many elements are in mesh
+    argv[1] - destination for combined mesh file
+    argv[2] - how many elements are in mesh
 """
 
 import os
 import sys
 import logging
 from traceback import format_exception
-from src.figure import Output
+from src.output import Output
 from collections import OrderedDict
 
 DIR = ".temp/"
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     OUTPUT_FILENAME = sys.argv[1]
     ELEMENTS_AMOUNT = int(sys.argv[2])
 
-    log_format = 'Sorter.py — [%(asctime)s]  %(message)s'
+    log_format = 'Combiner.py — [%(asctime)s]  %(message)s'
     logging.basicConfig(format=log_format, level=logging.ERROR,
                         filename='errors.log')
     sys.excepthook = my_excepthook

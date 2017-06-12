@@ -3,4 +3,5 @@
 *.txt
 *.pmd
 *.log
+*._sorted
 .temp/
