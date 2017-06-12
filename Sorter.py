@@ -21,7 +21,7 @@ from traceback import format_exception
 from Combiner import SECTIONS_NAMES
 
 
-def read_pmd(In, Out):
+def read_pmd(In, Out=False):
     is_header = True
     is_elements = False
     is_nodes = False
@@ -34,7 +34,8 @@ def read_pmd(In, Out):
 
     for line in In.readlines():
         if is_header:
-            Out.write(line)
+            if Out:
+                Out.write(line)
             if line == SECTIONS_NAMES[1]:
                 is_header = False
                 is_elements = True

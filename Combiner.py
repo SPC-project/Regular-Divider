@@ -11,15 +11,15 @@ Unite results of dividing (.tmp files) into singular .pmd file
    Remove overlaying elements (material ones have priority)
 
 Input:
-    OUTPUT_FILENAME - destination for combined mesh file
-    ELEMENTS_AMOUNT - how many elements are in mesh
+    argv[1] - destination for combined mesh file
+    argv[2] - how many elements are in mesh
 """
 
 import os
 import sys
 import logging
 from traceback import format_exception
-from src.figure import Output
+from src.output import Output
 from collections import OrderedDict
 
 DIR = ".temp/"
