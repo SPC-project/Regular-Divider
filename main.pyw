@@ -274,9 +274,11 @@ class MyWindow(QMainWindow):
         if target_ind != -1:
             menu.addAction(actions[0])
             menu.addAction(actions[1])
-            expand = menu.addMenu("Добавить примитив")
-            for elem in possible_dirs:
-                expand.addAction(actions[elem])
+            if sum(possible_dirs) != 0:
+                expand = menu.addMenu("Добавить примитив")
+                for i in range(4):
+                    if possible_dirs[i]:
+                        expand.addAction(actions[i+2])
             menu.addAction(actions[6])
         else:
             menu.addAction(actions[7])  # new rectangle

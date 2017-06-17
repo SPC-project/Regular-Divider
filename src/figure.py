@@ -263,23 +263,26 @@ class Figure(QtCore.QObject):
             self.send_message("Не удалось сохранить фигуру. Подробности в errors.log")
 
     def click_over(self, x, y, canvas_width, canvas_height):
-        possible_dirs = [2, 3, 4, 5]
         x = self.start_x + x * self.world_size/canvas_width
         y = self.start_y + y * self.world_size/canvas_height
         for i, prim in enumerate(self.shape):
             if prim.x < x and x < prim.x + prim.width:
                 if prim.y < y and y < prim.y + prim.height:
-                    possible_dirs = (2, 3, 4, 5)  # see MyWindow.mousePressEvent()
+                    possible_dirs = [True, True, True, True]  # see MyWindow.mousePressEvent()
                     if prim.mesh.data['type'] == 'triangle':
                         form = prim.mesh.data['form']
                         if form == 0:
-                            possible_dirs = (5, 4)
+                            possible_dirs = [False, False, True, True]
                         elif form == 1:
-                            possible_dirs = (4, 3)
+                            possible_dirs = [False, True, True, False]
                         elif form == 2:
-                            possible_dirs = (2, 5)
+                            possible_dirs = [True, False, False, True]
                         else:
-                            possible_dirs = (3, 2)
+                            possible_dirs = [True, True, False, False]
+
+                    for i in range(4):
+                        if prim.binds[i]:
+                            possible_dirs[i] = False
                     return i, possible_dirs
 
         return -1, None
