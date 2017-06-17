@@ -283,6 +283,7 @@ class Figure(QtCore.QObject):
                     for i in range(4):
                         if prim.binds[i]:
                             possible_dirs[i] = False
+
                     return i, possible_dirs
 
         return -1, None
