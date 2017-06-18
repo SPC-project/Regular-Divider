@@ -146,6 +146,8 @@ class Figure(QtCore.QObject):
             self.displayer.display_pmd(mesh_canvas, shift_x, shift_y, kx, ky)
 
     def draw_grid(self, canvas, mesh_canvas, kx, ky, shift_x, shift_y, W, H):
+        if len(self.shape) == 0:
+            return
         canvas.setPen(self.COL_GRID)
         mesh_canvas.setPen(self.COL_GRID)
         metrics = canvas.fontMetrics()
