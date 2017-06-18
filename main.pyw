@@ -265,7 +265,7 @@ class MyWindow(QMainWindow):
 
         menu = QMenu(self)
         s = self
-        # self.prim_n* defined in ui/main.ui
+        # self.prim_* defined in ui/main.ui
         actions = [s.prim_del, s.prim_edit, s.prim_nt, s.prim_nr, s.prim_nb,
                    s.prim_nl, s.wipe_world, s.add_primitive]
 

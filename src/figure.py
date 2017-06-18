@@ -16,8 +16,6 @@ TRI = 1
 
 
 class Figure(QtCore.QObject):
-    primitive_deletion = QtCore.pyqtSignal(int)
-    primitive_modification = QtCore.pyqtSignal(int)
     COL_GRID = QColor(0, 0, 0, 24)
     COL_LABEL = QColor(58, 116, 33)
 
@@ -39,8 +37,6 @@ class Figure(QtCore.QObject):
         self.parent_update = parent_update
         self.parent_clear = parent_clear
         self.parent_message = parent_message
-        self.primitive_deletion.connect(self.del_prim)
-        self.primitive_modification.connect(self.mod_prim)
 
         self.update_status()
 
@@ -280,9 +276,9 @@ class Figure(QtCore.QObject):
                         else:
                             possible_dirs = [True, True, False, False]
 
-                    for i in range(4):
-                        if prim.binds[i]:
-                            possible_dirs[i] = False
+                    for j in range(4):
+                        if prim.binds[j]:
+                            possible_dirs[j] = False
 
                     return i, possible_dirs
 
