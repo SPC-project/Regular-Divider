@@ -81,7 +81,7 @@ class Figure(QtCore.QObject):
             self.parent_clear.emit()
             self.parent_update.emit()
 
-    def new_figure(self):
+    def new_primitive(self):
         self.forgo_displayer()
         if not self.prim_dialog:
             self.prim_dialog = NewPrimitiveDialog()

@@ -69,7 +69,7 @@ class MyWindow(QMainWindow):
         self.import_figure.triggered.connect(self.pre_import)
         self.export_figure.triggered.connect(self.pre_export)
         self.set_air.triggered.connect(self.do_set_air)
-        self.add_primitive.triggered.connect(self.figure.new_figure)
+        self.add_primitive.triggered.connect(self.figure.new_primitive)
         self.create_world.triggered.connect(self.figure.create_space)
         self.show_coordinates.triggered.connect(self.switch_grid)
         self.show_indexes.triggered.connect(self.switch_indexes)
