@@ -34,16 +34,31 @@ class NewPrimitiveDialog(QDialog):
         rect = self.Rectangle_widget
         tri = self.Triangle_widget
 
-        r_leader = rect.air_top if not rect.air_top.isHidden() else rect.air_left
-        t_leader = tri.air_top if not tri.air_top.isHidden() else tri.air_left
+        r_leader = rect.air_top
+        if rect.air_top.isHidden():
+            if not rect.air_left.isHidden():
+                r_leader = rect.air_left
+            else:
+                r_leader = rect.air_right
+
+        t_leader = tri.air_top
+        if tri.air_top.isHidden():
+            if not tri.air_left.isHidden():
+                t_leader = tri.air_left
+            else:
+                t_leader = tri.air_right
+
         if not isEnabled:
             rect.update_connected_airboxes(r_leader.value())
             tri.update_connected_airboxes(t_leader.value())
             r_leader.valueChanged.connect(rect.update_connected_airboxes)
             t_leader.valueChanged.connect(tri.update_connected_airboxes)
         else:
-            r_leader.valueChanged.disconnect(rect.update_connected_airboxes)
-            t_leader.valueChanged.disconnect(tri.update_connected_airboxes)
+            try:
+                r_leader.valueChanged.disconnect(rect.update_connected_airboxes)
+                t_leader.valueChanged.disconnect(tri.update_connected_airboxes)
+            except TypeError:
+                pass  # probably, already disconnected
 
         rect.air_top.setEnabled(isEnabled)
         rect.air_right.setEnabled(isEnabled)
@@ -74,11 +89,14 @@ class NewPrimitiveDialog(QDialog):
         return fig, mesh, curr_tab_index
 
     def set_data(self, primitive):
+        rect = self.Rectangle_widget
+        tri = self.Triangle_widget
+        rect.air_top.valueChanged.disconnect(rect.update_connected_airboxes)
+        tri.air_top.valueChanged.disconnect(tri.update_connected_airboxes)
+
         different = primitive.mesh.NAL != primitive.mesh.NAR
-        different = different and primitive.mesh.NAT != primitive.mesh.NAB
-        different = different and primitive.mesh.NAL != primitive.mesh.NAT
-        if different:
-            self.manual_air.setChecked(False)
+        different = different or primitive.mesh.NAT != primitive.mesh.NAB
+        different = different or primitive.mesh.NAL != primitive.mesh.NAT
 
         if primitive.mesh.data['type'] == 'rectangle':
             self.tabWidget.setCurrentIndex(0)
@@ -89,7 +107,9 @@ class NewPrimitiveDialog(QDialog):
             self.tabWidget.setTabEnabled(0, False)
             self.Triangle_widget.set_data(primitive)
 
-        self.upd_air_spinboxes(2)  # '2' mean 'checked' (use one spinbox for all air)
+        if self.manual_air.isChecked() and not different:
+            self.upd_air_spinboxes(2)
+        self.manual_air.setChecked(not different)
 
     def validate(self):
         curr = self.tabWidget.currentWidget()
