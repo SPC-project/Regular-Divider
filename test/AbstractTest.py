@@ -103,7 +103,6 @@ class AbstractTest(unittest.TestCase):
 
         with open(OUTPUT_FILENAME + "_sorted_elements-material", "r") as f:
             elements_material = [int(elem) for elem in f.readlines()]
-            print(elements_material)
             self.assertEqual(elements_material, material_test, "Wrong material")
 
     def check_exporting(self, compare):
