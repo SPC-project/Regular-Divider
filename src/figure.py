@@ -390,6 +390,10 @@ class Figure(QtCore.QObject):
         self.parent_update.emit()
 
     def set_air(self, thickness):
+        if len(self.shape) == 0:
+            self.send_message("Фигура пуста")
+            return
+
         for primitive in self.shape:
             for i in range(4):
                 if not primitive.binds[i]:
