@@ -93,6 +93,7 @@
      <string>Параметры</string>
     </property>
     <addaction name="create_world"/>
+    <addaction name="separator"/>
     <addaction name="show_coordinates"/>
     <addaction name="show_indexes"/>
    </widget>
