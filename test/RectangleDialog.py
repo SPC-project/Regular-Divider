@@ -1,16 +1,8 @@
 import unittest
 from PyQt5.QtWidgets import QApplication
 from src.rectangle import Rectangle
-from src.primitive import NewRectangleWidget
+from src.gui_primitive import NewRectangleWidget
 
 
 class Expansion(unittest.TestCase):
-    def setUp(self):
-        self.app = QApplication(list(''))
-
-    def test_expanding(self):
-        fig = (5, 6, 7, 8)
-        mesh = [1, 2, 3, 4, 5, 6]
-        rect = Rectangle(fig, mesh)
-        dialog = NewRectangleWidget()
-        dialog.for_expanding(rect, 0)
+    pass
