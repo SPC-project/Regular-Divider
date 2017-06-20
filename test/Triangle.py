@@ -100,7 +100,7 @@ class NoAir(AbstractTest):
     def test_5x5Type0(self):
         tri = self.get_triangle(0, 5, 5)
         e, c = self.generate_grid(5, 5)
-        m = [0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1]
+        m = [1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0]
         self.check_mesh(tri, e, c, m)
 
     def test_5x5Type1(self):

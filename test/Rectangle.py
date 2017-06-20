@@ -169,8 +169,8 @@ class FullAir(AbstractTest):
         air = 2
         rect = self.get_rectangle(4, 4, air, air, air, air)
         e, c = self.generate_grid(8, 8)
-        layer = [0]*4 + [1]*4 + [0]*4
-        m = [0]*18 + layer + layer + layer + layer + [0]*18
+        layer = [0]*4 + [1]*6 + [0]*4
+        m = [0]*28 + layer + layer + layer + [0]*28
         self.check_mesh(rect, e, c, m)
 
 
