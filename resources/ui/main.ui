@@ -86,13 +86,13 @@
     <addaction name="export_figure"/>
     <addaction name="separator"/>
     <addaction name="add_primitive"/>
-    <addaction name="create_world"/>
     <addaction name="set_air"/>
    </widget>
    <widget class="QMenu" name="Parameters">
     <property name="title">
      <string>Параметры</string>
     </property>
+    <addaction name="create_world"/>
     <addaction name="show_coordinates"/>
     <addaction name="show_indexes"/>
    </widget>
@@ -310,7 +310,7 @@
   </action>
   <action name="open_wiki">
    <property name="text">
-    <string>Wiki</string>
+    <string>&amp;Wiki</string>
    </property>
    <property name="toolTip">
     <string>Открыть web-страницу руководства пользователя</string>
