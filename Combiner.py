@@ -109,7 +109,7 @@ def excessive_elements(excessive_indexes, old_elems, old_elems_material, output)
         max_duplicate = excessive_indexes[-1][0]
 
     # Remove excessive nodes and adjust indexing
-    pre_output = OrderedDict()  # OrderedDict will remove duplicate elements
+    pre_output = OrderedDict()  # OrderedDict will keep order of our elements and their material
     for line in elems.readlines():
         element = line.split(' ')
         A, B, C = [int(element[0]), int(element[1]), int(element[2])]
@@ -120,7 +120,7 @@ def excessive_elements(excessive_indexes, old_elems, old_elems_material, output)
 
         material = int(old_elems_material.readline())
         key = "{} {} {}\n".format(A, B, C)
-        if key not in pre_output:
+        if key not in pre_output:  # Remove duplicate elements
             pre_output[key] = material
         else:
             pre_output[key] += material

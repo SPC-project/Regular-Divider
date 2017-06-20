@@ -4,7 +4,7 @@ from src.rectangle import Rectangle
 from src.primitive import NewRectangleWidget
 
 
-class TestDialog(unittest.TestCase):
+class Expansion(unittest.TestCase):
     def setUp(self):
         self.app = QApplication(list(''))
 
