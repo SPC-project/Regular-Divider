@@ -1,5 +1,6 @@
 import unittest
-from Combiner import write_elements
+from src.primitive import Mesh
+from test.AbstractTest import AbstractTest
 
 
 class FakeOutput:
@@ -19,70 +20,46 @@ class FakeInput:
 
 
 class ElementsOverlay(unittest.TestCase):
-    def test_wrongAtEnd(self):
-        elems_test = ['3 6 7\n', '3 4 7\n', '0 3 4\n', '0 1 4\n',
-                      '4 7 8\n', '4 5 8\n', '1 4 5\n', '1 2 5\n',
-                      '4 7 8\n', '4 5 8\n', '1 4 5\n', '1 2 5\n']
-
-        out = FakeOutput()
-        in_ = FakeInput(elems_test)
-        excessive = write_elements(out, in_, [])
-        unspoiled_elems = elems_test[:-4]
-
-        self.assertEqual(out.res, unspoiled_elems)
-        self.assertEqual(excessive, [8, 9, 10, 11])
-
-    def test_wrongAtMiddle(self):
-        elems_test = ['3 6 7\n', '3 4 7\n', '0 3 4\n', '0 1 4\n',
-                      '3 6 7\n', '3 4 7\n', '0 3 4\n', '0 1 4\n',
-                      '4 7 8\n', '4 5 8\n', '1 4 5\n', '1 2 5\n']
-
-        out = FakeOutput()
-        in_ = FakeInput(elems_test)
-        excessive = write_elements(out, in_, [])
-        unspoiled_elems = elems_test[:4] + elems_test[8:]
-
-        self.assertEqual(out.res, unspoiled_elems)
-        self.assertEqual(excessive, [4, 5, 6, 7])
-
-    def test_wrongEveryNext(self):
-        elems_correct = ['3 6 7\n', '3 4 7\n', '0 3 4\n', '0 1 4\n',
-                         '4 7 8\n', '4 5 8\n', '1 4 5\n', '1 2 5\n']
-        elems_wrong = ['3 6 7\n', '3 6 7\n', '3 4 7\n', '3 4 7\n',
-                       '0 3 4\n', '0 3 4\n', '0 1 4\n', '0 1 4\n',
-                       '4 7 8\n', '4 7 8\n', '4 5 8\n', '4 5 8\n',
-                       '1 4 5\n', '1 4 5\n', '1 2 5\n', '1 2 5\n']
-
-        out = FakeOutput()
-        in_ = FakeInput(elems_wrong)
-        excessive = write_elements(out, in_, [])
-
-        self.assertEqual(out.res, elems_correct)
-        self.assertEqual(excessive, [1, 3, 5, 7, 9, 11, 13, 15])
-
-    def test_airOnMaterial(self):
-        elems = ['3 6 7\n', '3 4 7\n', '6 9 10\n', '6 7 10\n', '0 3 4\n', '0 1 4\n', '1 4 5\n', '1 2 5\n', '4 7 8\n', '4 5 8\n', '7 10 11\n', '7 8 11\n']
-        coords = list()
-        for j in range(5):
-            for i in range(3):
-                coords.append([i, j])
-        material = [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-
-        out = FakeOutput()
-        in_ = FakeInput(elems)
-        excessive = write_elements(out, in_, [])
-        self.assertEqual(excessive, [1, 3, 5, 7, 9, 11, 13, 15])
+    pass
 
 
 class ElementsReindexing(unittest.TestCase):
-    def test_f(self):
-        pass
+    pass
 
 
-class ExcessiveNodes(unittest.TestCase):
-    def test_f(self):
-        pass
+class ExcessiveNodes(AbstractTest):
+    def test_precision_problem(self):
+        """
+        Coordinates for that rectangle will be periodical — so, can't be compared by machine.
+        In Output.save_nodes we sat only 4 digits after coma, it solve the problem
+        """
+        box = (0, 0, 4, 4)  # x, y, w, h
+        nodes = [2, 2, 2, 2, 3, 3]  # Four air layers and two parameters for figure's grid
+        other_data = {'type': 'rectangle'}
+        mesh = Mesh(nodes, other_data)
+        rect = (box, mesh, 0)  # '0' for Rectangle
 
+        nx, ny = 8, 8  # width&height off all grid
+        e = list()
+        for j in range(ny-1):
+            for i in range(nx-1):
+                curr = i + (nx*j)
+                next_ = curr + 1
+                next_line_curr = curr + nx
+                next_line_next = next_line_curr + 1
+                e.append("{} {} {}\n".format(curr, next_line_curr, next_line_next))
+                e.append("{} {} {}\n".format(curr, next_, next_line_next))
+
+        c = list()
+        for j in range(ny):
+            y = round(-2.66666666666 + j*1.33333333333, 4)
+            for i in range(nx):
+                x = round(-2.66666666666 + i*1.33333333333, 4)
+                c.append([x, y])
+
+        layer = [0]*4 + [1]*6 + [0]*4
+        m = [0]*28 + layer + layer + layer + [0]*28
+        self.check_mesh(rect, e, c, m)
 
 if __name__ == '__main__':
     unittest.main()

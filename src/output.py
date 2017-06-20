@@ -31,5 +31,6 @@ class Output:
         self.elements_amount += 1
 
     def save_node(self, x, y):
-        self.f[self.FILENAMES[1]].write("{} {} {}\n".format(x, y, self.last_index))
+        node_text = "{:.4f} {:.4f} {}\n"
+        self.f[self.FILENAMES[1]].write(node_text.format(x, y, self.last_index))
         self.last_index += 1
