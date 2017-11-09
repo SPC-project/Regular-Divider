@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Видимая рабочей области</string>
+   <string>Рабочая область</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>

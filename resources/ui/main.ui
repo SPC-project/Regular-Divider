@@ -23,38 +23,28 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QFrame" name="canvas_figure">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>0</y>
-      <width>420</width>
-      <height>420</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
-   <widget class="QFrame" name="canvas_mesh">
-    <property name="geometry">
-     <rect>
-      <x>440</x>
-      <y>0</y>
-      <width>420</width>
-      <height>420</height>
-     </rect>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-   </widget>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QFrame" name="canvas_figure">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="canvas_mesh">
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -89,13 +79,24 @@
     <addaction name="set_air"/>
    </widget>
    <widget class="QMenu" name="Parameters">
+    <property name="contextMenuPolicy">
+     <enum>Qt::DefaultContextMenu</enum>
+    </property>
+    <property name="acceptDrops">
+     <bool>true</bool>
+    </property>
     <property name="title">
      <string>Параметры</string>
+    </property>
+    <property name="separatorsCollapsible">
+     <bool>true</bool>
     </property>
     <addaction name="create_world"/>
     <addaction name="separator"/>
     <addaction name="show_coordinates"/>
     <addaction name="show_indexes"/>
+    <addaction name="show_border_indexes"/>
+    <addaction name="do_not_show_indexes"/>
    </widget>
    <widget class="QMenu" name="Help">
     <property name="title">
@@ -127,10 +128,16 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Рабочая область</string>
+    <string>Задать рабочую область</string>
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Установить размер и положение видимой рабочей области&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <italic>false</italic>
+    </font>
    </property>
   </action>
   <action name="save_world">
@@ -280,7 +287,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Координатная сетка</string>
+    <string>Показывать координатную сетку</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Отрисовывать координатную сетку&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="open_pmd">
@@ -306,7 +316,13 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Нумерация узлов</string>
+    <string>Отображать индексы узлов</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Если включено, около каждого узла будет отображен его индекс&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="font">
+    <font/>
    </property>
   </action>
   <action name="open_wiki">
@@ -318,6 +334,28 @@
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="show_border_indexes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Отображать только граничные индексы</string>
+   </property>
+   <property name="font">
+    <font/>
+   </property>
+  </action>
+  <action name="do_not_show_indexes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Не отображать индексы</string>
+   </property>
+   <property name="font">
+    <font/>
    </property>
   </action>
  </widget>

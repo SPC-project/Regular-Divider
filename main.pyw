@@ -10,14 +10,14 @@ Author: Mykolaj Konovalow
 import sys
 import os
 import logging
-import _thread
 import subprocess
 import urllib.request
 import urllib.error
 from traceback import format_exception
+import _thread
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QDialog
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton, QActionGroup
 from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor, QDesktopServices
 from src.figure import Figure
@@ -72,13 +72,21 @@ class MyWindow(QMainWindow):
         self.add_primitive.triggered.connect(self.figure.new_primitive)
         self.create_world.triggered.connect(self.figure.create_space)
         self.show_coordinates.triggered.connect(self.switch_grid)
-        self.show_indexes.triggered.connect(self.switch_indexes)
+        self.show_indexes.triggered.connect(self.indexes_displaying1)
+        self.show_border_indexes.triggered.connect(self.indexes_displaying2)
+        self.do_not_show_indexes.triggered.connect(self.indexes_displaying3)
         self.open_wiki.triggered.connect(self.go_wiki)
 
         self.sig_update.connect(self.updating)
         self.sig_clear.connect(self.clearing)
         self.sig_message.connect(self.messaging)
         self.sig_mayUpdate.connect(self.propose_upgrade)
+
+        # Create 'show_indexes' radiobuttons option
+        display_indexes = QActionGroup(self)
+        display_indexes.addAction(self.show_indexes)
+        display_indexes.addAction(self.show_border_indexes)
+        display_indexes.addAction(self.do_not_show_indexes)
 
         # First call of resizeEvent (call when window create)
         # will initialize a 2 QPixmap buffer
@@ -159,8 +167,18 @@ class MyWindow(QMainWindow):
         self.clearing()
         self.updating()
 
-    def switch_indexes(self, state):
-        self.figure.displayer.show_indexes = state
+    def indexes_displaying1(self):
+        self.figure.displayer.index_option = 1
+        self.clearing()
+        self.updating()
+
+    def indexes_displaying2(self):
+        self.figure.displayer.index_option = 2
+        self.clearing()
+        self.updating()
+
+    def indexes_displaying3(self):
+        self.figure.displayer.index_option = 3
         self.clearing()
         self.updating()
 

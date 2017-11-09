@@ -6,6 +6,8 @@ PADDING = 10  # Space between window border and QFrame
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
 CAMERA_OFFSET = 3
 BLANK = QColor(0, 0, 0, 0)
+NODE_LABEL_OFFSET_X = 2
+NODE_LABEL_OFFSET_Y = -2
 COL_AIR = QColor(128, 176, 241, 127)
 COL_AIR_INNER = QColor(128, 176, 241, 24)
 COL_FIG = QColor(46, 61, 73)
@@ -17,7 +19,7 @@ class PMD_Displayer():
     def __init__(self):
         self.data = False
         self.buffer = False
-        self.show_indexes = True
+        self.index_option = 1
 
     def load_pmd(self, filename):
         self.filename = filename
@@ -68,8 +70,9 @@ class PMD_Displayer():
         canvas.setPen(COL_TEXT)
         canvas.drawText(0, 10, self.filename + ":")
 
-        if not self.show_indexes:
+        if self.index_option == 0:
             return
+
         metrics = canvas.fontMetrics()
         MFlag = Qt.TextSingleLine
         label_metric = metrics.size(MFlag, self.longest_index)
@@ -82,10 +85,33 @@ class PMD_Displayer():
         elif int(label_w / free_space) > 3:
             return
 
+        if self.index_option == 1:  # Display all indexes
+            self.display_all_nodes(skip, scale, canvas)
+        elif self.index_option == 2:
+            self.display_border_nodes(skip, scale, canvas)
+
+    def display_all_nodes(self, skip, scale, canvas):
         for index, node in enumerate(self.coords):
             if index % skip == 0:
                 x, y = scale(node)
-                canvas.drawText(x + 2, y - 2, str(index))
+                canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index))
+
+    def display_border_nodes(self, skip, scale, canvas):
+        nodes = dict()
+
+        for A, B, C, material in self.data:
+            for dot in [A, B, C]:
+                if dot not in nodes:
+                    nodes[dot] = {'fig': material == 1, 'air': material == 0}
+                else:
+                    nodes[dot]['fig'] = nodes[dot]['fig'] or material == 1
+                    nodes[dot]['air'] = nodes[dot]['air'] or material == 0
+
+        for x, y, index in self.coords:
+            node = nodes[(x, y)]
+            if node["fig"] and node["air"]:
+                x, y = scale([x, y])
+                canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index))
 
     def draw_element(self, canvas, A, B, C, material, scale):
         first = QPoint(*scale(A))
