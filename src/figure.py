@@ -212,6 +212,7 @@ class Figure(QtCore.QObject):
             canvas.drawLine(min_x - 2, y, min_x + 2, y)
 
     def mod_prim(self, ind):
+        self.forgo_displayer()
         dialog = NewPrimitiveDialog()
         dialog.set_data(self.shape[ind])
         dialog.grab_focus()
@@ -220,8 +221,6 @@ class Figure(QtCore.QObject):
             self.parent_clear.emit()
             fig, mesh, prim_type_index = dialog.get_data()
             self.adopt_primitive(fig, mesh, prim_type_index, ind)
-
-        self.forgo_displayer()
 
     def del_prim(self, ind):
         to_del = self.shape[ind]
