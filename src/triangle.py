@@ -261,7 +261,7 @@ class Triangle(AbstractPrimitive):
             # Use 'output.save_node' after create main figure,
             #   hypotenuse is at bottom-right of it
         elif type_ == 3:
-            offset_x, mod_x = M.NAT + M.NFX - 1, -1
+            offset_x, mod_x = M.NAL + M.NFX - 1, -1
             offset_y, mod_y = M.NAT, 0
 
         w, h = 1, M.NFY-1  # '-1' or corner of last rectangle will penetrate boundaries of the figure

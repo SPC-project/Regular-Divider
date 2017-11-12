@@ -144,5 +144,13 @@ class SingleAirLayer(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
 
+class OneBareSide(AbstractTest):
+    def test_2x2Type0_left(self):
+        tri = self.get_triangle(0, 3, 3, 1, 1, 1, 0)
+        e, c = self.generate_grid(4, 5)
+        m = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        self.check_mesh(tri, e, c, m)
+
+
 if __name__ == '__main__':
     unittest.main()

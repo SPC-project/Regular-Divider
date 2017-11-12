@@ -95,14 +95,17 @@ class AbstractTest(unittest.TestCase):
     def check_output(self, elems_test, coords_test, material_test):
         with open(OUTPUT_FILENAME + "_sorted_elements", "r") as f:
             triangles = f.readlines()
+            # print(triangles)
             self.assertEqual(triangles, elems_test, "Wrong triangles formed for")
 
         with open(OUTPUT_FILENAME + "_sorted_nodes", "r") as f:
             coords = [[float(elem) for elem in line.split(' ')] for line in f.readlines()]  # convert lines to Python's list[list]
+            # print(coords)
             self.assertEqual(coords, coords_test, "Wrong coordinates")
 
         with open(OUTPUT_FILENAME + "_sorted_elements-material", "r") as f:
             elements_material = [int(elem) for elem in f.readlines()]
+            # print(elements_material)
             self.assertEqual(elements_material, material_test, "Wrong material")
 
     def check_exporting(self, compare):
