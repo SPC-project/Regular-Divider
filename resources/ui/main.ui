@@ -96,7 +96,6 @@
     <addaction name="show_coordinates"/>
     <addaction name="show_indexes"/>
     <addaction name="show_border_indexes"/>
-    <addaction name="do_not_show_indexes"/>
    </widget>
    <widget class="QMenu" name="Help">
     <property name="title">

@@ -16,10 +16,11 @@ COL_TEXT = QColor(0, 0, 0)
 
 
 class PMD_Displayer():
-    def __init__(self):
+    def __init__(self, send_message):
         self.data = False
         self.buffer = False
         self.index_option = 1
+        self.send_message = send_message
 
     def load_pmd(self, filename):
         self.filename = filename
@@ -97,6 +98,9 @@ class PMD_Displayer():
                 canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index))
 
     def display_border_nodes(self, skip, scale, canvas):
+        border_filename = self.filename + ".outer_nodes"
+        Out = open(border_filename, 'w')
+
         nodes = dict()
 
         for A, B, C, material in self.data:
@@ -112,6 +116,10 @@ class PMD_Displayer():
             if node["fig"] and node["air"]:
                 x, y = scale([x, y])
                 canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index))
+                Out.write(str(index) + "\n")
+
+        Out.close()
+        self.send_message("Граничные узлы сохранены в файл: " + border_filename)
 
     def draw_element(self, canvas, A, B, C, material, scale):
         first = QPoint(*scale(A))

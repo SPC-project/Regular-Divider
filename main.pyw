@@ -28,7 +28,7 @@ BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
 RIGHT_BUTTON = 2
 PADDING = 10
-SIZE_TIP_EXPLENATION = "Размерность рабочей области.\nПо нажатию масштабируется чтобы вместить всё"
+SIZE_TIP_EXPLENATION = "Размерность рабочей области.\nПо нажатию масштабируется чтобы вместить фигуру целиком"
 
 
 class MyWindow(QMainWindow):
@@ -74,7 +74,6 @@ class MyWindow(QMainWindow):
         self.show_coordinates.triggered.connect(self.switch_grid)
         self.show_indexes.triggered.connect(self.indexes_displaying1)
         self.show_border_indexes.triggered.connect(self.indexes_displaying2)
-        self.do_not_show_indexes.triggered.connect(self.indexes_displaying3)
         self.open_wiki.triggered.connect(self.go_wiki)
 
         self.sig_update.connect(self.updating)
@@ -86,7 +85,6 @@ class MyWindow(QMainWindow):
         display_indexes = QActionGroup(self)
         display_indexes.addAction(self.show_indexes)
         display_indexes.addAction(self.show_border_indexes)
-        display_indexes.addAction(self.do_not_show_indexes)
 
         # First call of resizeEvent (call when window create)
         # will initialize a 2 QPixmap buffer
@@ -168,17 +166,20 @@ class MyWindow(QMainWindow):
         self.updating()
 
     def indexes_displaying1(self):
+        if not self.figure.use_displayer:
+            self.figure.message = "Сохраните файл чтобы отобразить нумерацию фактического разбиения"
+            self.messaging()
+
         self.figure.displayer.index_option = 1
         self.clearing()
         self.updating()
 
     def indexes_displaying2(self):
-        self.figure.displayer.index_option = 2
-        self.clearing()
-        self.updating()
+        if not self.figure.use_displayer:
+            self.figure.message = "Сохраните файл чтобы отобразить нумерацию фактического разбиения"
+            self.messaging()
 
-    def indexes_displaying3(self):
-        self.figure.displayer.index_option = 3
+        self.figure.displayer.index_option = 2
         self.clearing()
         self.updating()
 

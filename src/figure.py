@@ -30,7 +30,7 @@ class Figure(QtCore.QObject):
         self.prim_dialog = False  # wait for NewPrimitiveDialog creation
         # show_coordinate_grid was initiate in MyWindow constructor
 
-        self.displayer = PMD_Displayer()
+        self.displayer = PMD_Displayer(self.send_message)
         self.use_displayer = False
 
         self.status = status
