@@ -50,6 +50,8 @@ class PMD_Displayer():
         self.start_x = min_x - CAMERA_OFFSET
         self.start_y = min_y - CAMERA_OFFSET
         self.between_nodes = coords[1][0] - coords[0][0]
+        if abs(self.between_nodes) < 0.00000001:
+            self.between_nodes = coords[1][1] - coords[0][1]
         self.longest_index = max([str(min_x), str(min_y), str(max_x), str(max_y)])
 
         self.coords = coords
