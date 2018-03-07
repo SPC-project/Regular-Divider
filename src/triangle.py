@@ -218,18 +218,18 @@ class Triangle(AbstractPrimitive):
         y0 = self.start_y + M.NAT*dy
 
         start = output.last_index
-        output.save_node(x0, y0)
-        output.save_node(x0 + dx, y0)
-        output.save_node(x0, y0 + dy)
-        output.save_node(x0 + dx, y0 + dy)
+        output.save_node(x0, y0)  # start
+        output.save_node(x0 + dx, y0)  # start+1
+        output.save_node(x0, y0 + dy)  # start+2
+        output.save_node(x0 + dx, y0 + dy)  # start+3
         if type_ == 0:
             output.save_element(start, start+2, start+3, self.FIGURE_CODE)
             output.save_element(start, start+1, start+3, self.AIR_CODE)
         elif type_ == 1:
             output.save_element(start+1, start+2, start+3, self.FIGURE_CODE)
-            output.save_element(start, start+2, start+1, self.AIR_CODE)
+            output.save_element(start, start+1, start+2, self.AIR_CODE)
         elif type_ == 2:
-            output.save_element(start, start+2, start+1, self.FIGURE_CODE)
+            output.save_element(start, start+1, start+2, self.FIGURE_CODE)
             output.save_element(start+1, start+2, start+3, self.AIR_CODE)
         elif type_ == 3:
             output.save_element(start, start+1, start+3, self.FIGURE_CODE)
@@ -299,10 +299,10 @@ class Triangle(AbstractPrimitive):
                 next_right -= 1
 
     def fill_gaps_on_type1_hypotenuse(self, output, material, start):
-        next_right = start + 2
         next_left = start + 1
+        next_right = start + 2
         for k in range(self.mesh.NFX, 0, -1):  # fill gaps on hypotenuse
-            output.save_element(start, next_right, next_left, material)
+            output.save_element(start, next_left, next_right,  material)
             start = next_left
             next_right = next_left + 2
             next_left = next_left + k*2
@@ -311,14 +311,14 @@ class Triangle(AbstractPrimitive):
         next_right = start + self.mesh.NFY*2 - 1
         next_left = next_right - 1
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.save_element(next_left, bottom, next_right, material)
+            output.save_element(next_left, next_right, bottom, material)
             bottom = next_right
             next_right = next_right + (k-1)*2
             next_left = next_right - 1
         next_right = output.last_index - 1
         next_left = output.last_index - 5
 
-        output.save_element(next_left, bottom, next_right, material)
+        output.save_element(next_left, next_right, bottom, material)
 
     def fill_gaps_on_type3_hypotenuse(self, output, material, start, last):
         left = last - 1  # left vertex of the triangle

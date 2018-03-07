@@ -33,14 +33,14 @@ class NoAir(AbstractTest):
 
     def test_2x2Type1(self):
         tri = self.get_triangle(1, 2, 2)
-        elements_test = ['0 2 1\n', '1 2 3\n']
+        elements_test = ['0 1 2\n', '1 2 3\n']
         coords_test = [[0, 0], [1, 0], [0, 1], [1, 1]]
         material_test = [0, 1]
         self.check_mesh(tri, elements_test, coords_test, material_test)
 
     def test_2x2Type2(self):
         tri = self.get_triangle(2, 2, 2)
-        elements_test = ['0 2 1\n', '1 2 3\n']
+        elements_test = ['0 1 2\n', '1 2 3\n']
         coords_test = [[0, 0], [1, 0], [0, 1], [1, 1]]
         material_test = [1, 0]
         self.check_mesh(tri, elements_test, coords_test, material_test)
@@ -58,22 +58,22 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, elements_test, coords_test, material_test)
 
     def test_3x3Type1(self):
-        tri = self.get_triangle(1, 3, 3)
-        elements_test = ['0 3 4\n', '0 1 4\n', '1 4 2\n', '2 5 4\n', '3 6 4\n', '4 7 6\n', '4 7 8\n', '4 5 8\n']
-        coords_test = [[0, 0], [1, 0], [2, 0],
-                       [0, 1], [1, 1], [2, 1],
-                       [0, 2], [1, 2], [2, 2]]
-        material_test = [0, 0, 0, 1, 0, 1, 1, 1]
-        self.check_mesh(tri, elements_test, coords_test, material_test)
+        tri, elems, coords = self.generate_test_triangle_case(1, 3, 0)
+        elems[2] = "1 2 4\n"
+        elems[3] = "2 4 5\n"
+        elems[4] = "3 4 6\n"
+        elems[5] = "4 6 7\n"
+        material = [0, 0, 0, 1, 0, 1, 1, 1]
+        self.check_mesh(tri, elems, coords, material)
 
     def test_3x3Type2(self):
-        tri = self.get_triangle(2, 3, 3)
-        elements_test = ['0 3 4\n', '0 1 4\n', '1 4 2\n', '2 5 4\n', '3 6 4\n', '4 7 6\n', '4 7 8\n', '4 5 8\n']
-        coords_test = [[0, 0], [1, 0], [2, 0],
-                       [0, 1], [1, 1], [2, 1],
-                       [0, 2], [1, 2], [2, 2]]
-        material_test = [1, 1, 1, 0, 1, 0, 0, 0]
-        self.check_mesh(tri, elements_test, coords_test, material_test)
+        tri, elems, coords = self.generate_test_triangle_case(2, 3, 0)
+        elems[2] = "1 2 4\n"
+        elems[3] = "2 4 5\n"
+        elems[4] = "3 4 6\n"
+        elems[5] = "4 6 7\n"
+        material = [1]*3 + [0] + [1] + [0]*3
+        self.check_mesh(tri, elems, coords, material)
 
     def test_3x3Type3(self):
         tri = self.get_triangle(3, 3, 3)
@@ -88,26 +88,26 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_4x4Type1(self):
-        tri = self.get_triangle(1, 4, 4,)
-
-        elems = ['0 4 5\n', '0 1 5\n', '1 5 6\n', '1 2 6\n', '2 6 3\n', '3 7 6\n', '4 8 9\n', '4 5 9\n', '5 9 6\n', '6 10 9\n', '6 10 11\n', '6 7 11\n', '8 12 9\n', '9 13 12\n', '9 13 14\n', '9 10 14\n', '10 14 15\n', '10 11 15\n']
-        coords_test = [[0, 0], [1, 0], [2, 0], [3, 0],
-                       [0, 1], [1, 1], [2, 1], [3, 1],
-                       [0, 2], [1, 2], [2, 2], [3, 2],
-                       [0, 3], [1, 3], [2, 3], [3, 3]]
-        material_test = [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1]
-        self.check_mesh(tri, elems, coords_test, material_test)
+        tri, elems, coords = self.generate_test_triangle_case(1, 4, 0)
+        elems[4] = "2 3 6\n"
+        elems[5] = "3 6 7\n"
+        elems[8] = "5 6 9\n"
+        elems[9] = "6 9 10\n"
+        elems[12] = "8 9 12\n"
+        elems[13] = "9 12 13\n"
+        material = [0]*5 + [1] + [0]*3 + [1]*3 + [0] + [1]*5
+        self.check_mesh(tri, elems, coords, material)
 
     def test_4x4Type2(self):
-        tri = self.get_triangle(2, 4, 4,)
-
-        elems = ['0 4 5\n', '0 1 5\n', '1 5 6\n', '1 2 6\n', '2 6 3\n', '3 7 6\n', '4 8 9\n', '4 5 9\n', '5 9 6\n', '6 10 9\n', '6 10 11\n', '6 7 11\n', '8 12 9\n', '9 13 12\n', '9 13 14\n', '9 10 14\n', '10 14 15\n', '10 11 15\n']
-        coords_test = [[0, 0], [1, 0], [2, 0], [3, 0],
-                       [0, 1], [1, 1], [2, 1], [3, 1],
-                       [0, 2], [1, 2], [2, 2], [3, 2],
-                       [0, 3], [1, 3], [2, 3], [3, 3]]
-        material_test = [1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0]
-        self.check_mesh(tri, elems, coords_test, material_test)
+        tri, elems, coords = self.generate_test_triangle_case(2, 4, 0)
+        elems[4] = "2 3 6\n"
+        elems[5] = "3 6 7\n"
+        elems[8] = "5 6 9\n"
+        elems[9] = "6 9 10\n"
+        elems[12] = "8 9 12\n"
+        elems[13] = "9 12 13\n"
+        material = [1]*5 + [0] + [1]*3 + [0]*3 + [1] + [0]*5
+        self.check_mesh(tri, elems, coords, material)
 
     def test_4x4Type3(self):
         tri = self.get_triangle(3, 4, 4)
@@ -122,9 +122,41 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_5x5Type1(self):
-        tri = self.get_triangle(1, 5, 5)
-        e, c = self.generate_distorted_diagonal_grid(5, 5)
-        m = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
+        tri, elems, coords = self.generate_test_triangle_case(1, 5, 0)
+        elems[6] = "3 4 8\n"
+        elems[7] = "4 8 9\n"
+        elems[12] = "7 8 12\n"
+        elems[13] = "8 12 13\n"
+        elems[12] = "7 8 12\n"
+        elems[18] = "11 12 16\n"
+        elems[19] = "12 16 17\n"
+        elems[24] = "15 16 20\n"
+        elems[25] = "16 20 21\n"
+        material = [0]*7 + [1] + [0]*5 + [1]*3 + [0]*3 + [1]*5 + [0] + [1]*7
+        self.check_mesh(tri, elems, coords, material)
+
+    def test_5x5Type2(self):
+        tri, elems, coords = self.generate_test_triangle_case(2, 5, 0)
+        elems[6] = "3 4 8\n"
+        elems[7] = "4 8 9\n"
+        elems[12] = "7 8 12\n"
+        elems[13] = "8 12 13\n"
+        elems[12] = "7 8 12\n"
+        elems[18] = "11 12 16\n"
+        elems[19] = "12 16 17\n"
+        elems[24] = "15 16 20\n"
+        elems[25] = "16 20 21\n"
+        material = [1]*7 + [0] + [1]*5 + [0]*3 + [1]*3 + [0]*5 + [1] + [0]*7
+        self.check_mesh(tri, elems, coords, material)
+
+    def test_5x5Type3(self):
+        tri = self.get_triangle(3, 5, 5)
+        e, c = self.generate_grid(5, 5)
+        m = []
+        for i in range(0, 4):
+            air = i*2 + 1
+            mat = 8 - air
+            m = m + [0]*air + [1]*mat
         self.check_mesh(tri, e, c, m)
 
 
@@ -147,7 +179,7 @@ class Air_OneElementFigure(AbstractTest):
         air = 1
         tri = self.get_triangle(1, 2, 2, air, air, air, air)
         e, c = self.generate_grid(4, 4)
-        e[8] = '5 9 6\n'  # Type 1 produces distorted grid
+        e[8] = '5 6 9\n'  # Type 1 produces distorted grid
         e[9] = '6 9 10\n'
         m = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
         self.check_mesh(tri, e, c, m)
@@ -156,7 +188,7 @@ class Air_OneElementFigure(AbstractTest):
         air = 2
         tri = self.get_triangle(1, 2, 2, air, air, air, air)
         e, c = self.generate_grid(6, 6)
-        e[24] = '14 20 15\n'  # Type 1 produces distorted grid
+        e[24] = '14 15 20\n'  # Type 1 produces distorted grid
         e[25] = '15 20 21\n'
         m = [0]*25 + [1] + [0]*24  # one figure element and rest are air
         self.check_mesh(tri, e, c, m)
@@ -165,7 +197,7 @@ class Air_OneElementFigure(AbstractTest):
         air = 1
         tri = self.get_triangle(2, 2, 2, air, air, air, air)
         e, c = self.generate_grid(4, 4)
-        e[8] = '5 9 6\n'  # Type 2 produces distorted grid
+        e[8] = '5 6 9\n'  # Type 2 produces distorted grid
         e[9] = '6 9 10\n'
         m = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         self.check_mesh(tri, e, c, m)
@@ -174,7 +206,7 @@ class Air_OneElementFigure(AbstractTest):
         air = 2
         tri = self.get_triangle(2, 2, 2, air, air, air, air)
         e, c = self.generate_grid(6, 6)
-        e[24] = '14 20 15\n'  # Type 1 produces distorted grid
+        e[24] = '14 15 20\n'  # Type 1 produces distorted grid
         e[25] = '15 20 21\n'
         m = [0]*24 + [1] + [0]*25  # one figure element and rest are air
         self.check_mesh(tri, e, c, m)
@@ -208,37 +240,37 @@ class AirCoat(AbstractTest):
 
     def test_3x3Type1_air1(self):
         tri, e, c = self.generate_test_triangle_case(1, 3, 1)
-        e[12] = "7 12 8\n"
-        e[13] = "8 13 12\n"
-        e[18] = "11 16 12\n"
-        e[19] = "12 17 16\n"
-        m = [0] * 10 + [1] + [0]*7 + [1]*3 + [0]*11
+        e[12] = "7 8 12\n"
+        e[13] = "8 12 13\n"
+        e[18] = "11 12 16\n"
+        e[19] = "12 16 17\n"
+        m = [0]*13 + [1] + [0]*5 + [1]*3 + [0]*10
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type1_air2(self):
         tri, e, c = self.generate_test_triangle_case(1, 3, 2)
-        e[30] = "17 24 18\n"
-        e[31] = "18 25 24\n"
-        e[40] = "23 30 24\n"
-        e[41] = "24 31 30\n"
+        e[30] = "17 18 24\n"
+        e[31] = "18 24 25\n"
+        e[40] = "23 24 30\n"
+        e[41] = "24 30 31\n"
         m = [0] * 31 + [1] + [0]*9 + [1]*3 + [0]*28
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type2_air1(self):
         tri, e, c = self.generate_test_triangle_case(2, 3, 1)
-        e[12] = "7 12 8\n"
-        e[13] = "8 13 12\n"
-        e[18] = "11 16 12\n"
-        e[19] = "12 17 16\n"
+        e[12] = "7 8 12\n"
+        e[13] = "8 12 13\n"
+        e[18] = "11 12 16\n"
+        e[19] = "12 16 17\n"
         m = [0] * 10 + [1]*3 + [0]*5 + [1] + [0]*13
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type2_air2(self):
         tri, e, c = self.generate_test_triangle_case(2, 3, 2)
-        e[30] = "17 24 18\n"
-        e[31] = "18 25 24\n"
-        e[40] = "23 30 24\n"
-        e[41] = "24 31 30\n"
+        e[30] = "17 18 24\n"
+        e[31] = "18 24 25\n"
+        e[40] = "23 24 30\n"
+        e[41] = "24 30 31\n"
         m = [0] * 28 + [1]*3 + [0]*9 + [1] + [0]*31
         self.check_mesh(tri, e, c, m)
 
@@ -254,10 +286,78 @@ class AirCoat(AbstractTest):
 
 
 class OneBareSide(AbstractTest):
-    def test_2x2Type0_left(self):
-        tri = self.get_triangle(0, 3, 3, 1, 1, 1, 0)
+    def test_2x2Type0_air1_bareLeft(self):
+        air = 1
+        dimensions = 2
+        tri = self.get_triangle(0, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(3, 4)
+        m = [0]*4 + [1] + [0]*7
+        self.check_mesh(tri, e, c, m)
+
+    def test_2x2Type1_air1_bareLeft(self):
+        air = 1
+        dimensions = 2
+        tri = self.get_triangle(1, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(3, 4)
+        e[4] = "3 4 6\n"
+        e[5] = "4 6 7\n"
+        m = [0]*5 + [1] + [0]*6
+        self.check_mesh(tri, e, c, m)
+
+    def test_2x2Type3_air1_bareLeft(self):
+        air = 1
+        dimensions = 2
+        tri = self.get_triangle(3, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(3, 4)
+        m = [0]*5 + [1] + [0]*6
+        self.check_mesh(tri, e, c, m)
+
+    def test_2x2Type0_air2_bareLeft(self):
+        air = 2
+        dimensions = 2
+        tri = self.get_triangle(0, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(4, 6)
+        m = [0]*12 + [1] + [0]*17
+        self.check_mesh(tri, e, c, m)
+
+    def test_2x2Type3_air2_bareLeft(self):
+        air = 2
+        dimensions = 2
+        tri = self.get_triangle(3, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(4, 6)
+        m = [0]*13 + [1] + [0]*16
+        self.check_mesh(tri, e, c, m)
+
+    def test_3x3Type0_air1_bareLeft(self):
+        air = 1
+        dimensions = 3
+        tri = self.get_triangle(0, dimensions, dimensions, air, air, air, 0)
         e, c = self.generate_grid(4, 5)
-        m = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        m = [0]*6 + [1] + [0]*5 + [1]*3 + [0]*9
+        self.check_mesh(tri, e, c, m)
+
+    def test_3x3Type3_air1_bareLeft(self):
+        air = 1
+        dimensions = 3
+        tri = self.get_triangle(3, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(4, 5)
+        m = [0]*7 + [1]*3 + [0]*5 + [1] + [0]*8
+        self.check_mesh(tri, e, c, m)
+
+    def test_3x3Type0_air2_bareLeft(self):
+        air = 2
+        dimensions = 3
+        tri = self.get_triangle(0, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(5, 7)
+        m = [0]*16 + [1] + [0]*7 + [1]*3 + [0]*21
+        self.check_mesh(tri, e, c, m)
+
+    def test_3x3Type3_air2_bareLeft(self):
+        air = 2
+        dimensions = 3
+        tri = self.get_triangle(3, dimensions, dimensions, air, air, air, 0)
+        e, c = self.generate_grid(5, 7)
+        m = [0]*17 + [1]*3 + [0]*7 + [1] + [0]*20
         self.check_mesh(tri, e, c, m)
 
 
