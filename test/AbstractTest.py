@@ -32,6 +32,7 @@ class AbstractTest(unittest.TestCase):
         self.fig.start_y = 0
 
     def get_rectangle(self, nx, ny, top=0, right=0, bottom=0, left=0):
+        """nx, ny – amount of nodes by OX and OY axes"""
         box = (left, top, nx-1, ny-1)  # x, y, w, h
 
         # Во внутреннем представлении используются квадраты, а не узлы
@@ -59,6 +60,17 @@ class AbstractTest(unittest.TestCase):
         mesh = Mesh(nodes, other_data)
 
         return box, mesh, 1  # '1' for Triangle
+
+    def generate_test_triangle_case(self, type_, dimensions, air):
+        """ Return:
+            - tuple for Regular-Divider to create mesh
+            - expected elements (each is three indexes of nodes forming it)
+            - expected coordinates of nodes
+        """
+        triangle = self.get_triangle(type_, dimensions, dimensions, air, air, air, air)
+        elems, coords = self.generate_grid(dimensions + air*2, dimensions + air*2)
+
+        return triangle, elems, coords
 
     def get_pos_triangle(self, x, y, form, nx=2, ny=2, top=0, right=0, bottom=0, left=0):
         box = (x, y, nx-1, ny-1)  # x, y, w, h

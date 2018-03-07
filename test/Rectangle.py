@@ -7,6 +7,13 @@ app = QApplication(sys.argv)
 
 
 class NoAir(AbstractTest):
+    """
+    Check how meshing work on pure-Figure rectangles
+
+    'self.get_rectangle(nx, ny)' generates pair (box, mesh), that is used by
+        'self.check_mesh' for creating and meshing the figure
+    Variables 'e', 'c' and 'm' store expected result for meshing
+    """
     def test_2x2(self):
         rect = self.get_rectangle(2, 2)
         e, c = self.generate_grid(2, 2)
@@ -27,6 +34,9 @@ class NoAir(AbstractTest):
 
 
 class UpperAir(AbstractTest):
+    """
+    Check how meshing work with triangles just
+    """
     def test_2x2(self):
         rect = self.get_rectangle(2, 2, top=1)
         e, c = self.generate_grid(2, 3)
