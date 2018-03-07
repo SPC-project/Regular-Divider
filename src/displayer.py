@@ -40,7 +40,6 @@ class PMD_Displayer():
         )
 
         # Figure out the camera's parameters
-        coords.sort(key=lambda node: (node[1], node[0]))
         max_x = max(coords, key=lambda node: node[0])[0]
         max_y = max(coords, key=lambda node: node[1])[1]
         min_x = min(coords, key=lambda node: node[0])[0]
