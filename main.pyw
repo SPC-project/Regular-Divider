@@ -22,7 +22,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor, QDesktopServices
 from src.figure import Figure
 
-VERSION = (0, 4, 1)
+VERSION = (0, 4, 2)
 
 BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving

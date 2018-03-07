@@ -6,10 +6,18 @@ import abc
 class Mesh:
     """ Auxiliary abstraction for finite-elemental grid """
     def __init__(self, grid, other=None):
-        # NAT, NAR, NAB, NAL: amount of air blocks at Top/Right/Bottom/Left
-        # NFX, NFY: amount of figure blocks for width and height
-        # 'Block' — two combined in square elements (::).
-        #   top-left bottom-right diagonal is connection between them
+        """
+        'grid' holds next parameters:
+         NAT, NAR, NAB, NAL: amount of air blocks at Top/Right/Bottom/Left
+         NFX, NFY: amount of figure blocks for width and height
+
+        Figure block is a two combined in square elements (::),
+           top-left – bottom-right diagonal is their hypotenuse
+
+        'other' contains additional information as:
+            - type (triangle/rectangle)
+            - form (triangles only, represents where hypotenuse is facing)
+        """
         self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = grid
         self.data = other
         if not other:

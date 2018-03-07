@@ -12,7 +12,7 @@ Sort nodes in .pmd file by their coordinates,
 
 argv[1] — input file path ("temp.pmd" as defalut)
 argv[2] — if 'True', copy output in separated files
-argv[3] — if 'True', rearrange elements by coordinates
+argv[3] — if 'True', rearrange (sort) elements by coordinates
 """
 
 import sys
