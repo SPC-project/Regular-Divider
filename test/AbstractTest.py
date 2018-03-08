@@ -61,7 +61,28 @@ class AbstractTest(unittest.TestCase):
 
         return box, mesh, 1  # '1' for Triangle
 
-    def generate_test_triangle_case(self, type_, dimensions, air):
+    def generate_testCase_rectangle(self, N, flag_top, flag_right, flag_bottom, flag_left, air=1):
+        air_top = air*flag_top
+        air_right = air*flag_right
+        air_bottom = air*flag_bottom
+        air_left = air*flag_left
+        rect = self.get_rectangle(N, N, air_top, air_right, air_bottom, air_left)
+        e, c = self.generate_grid(air_left + N + air_right, air_top + N + air_bottom)
+
+        N -= 1  # switch to length in elements (2x2 grid produces two elements)
+        material = []
+        row_len = (air_left + N + air_right)*2
+        for j in range(0, air_top):
+            material += [0]*row_len
+        for j in range(0, N):
+            material += [0]*air_left*2 + [1]*N*2 + [0]*air_right*2
+        for j in range(0, air_bottom):
+            material += [0]*row_len
+
+        # print(material)
+        self.check_mesh(rect, e, c, material)
+
+    def generate_testCase_triangle(self, type_, dimensions, air):
         """ Return:
             - tuple for Regular-Divider to create mesh
             - expected elements (each is three indexes of nodes forming it)

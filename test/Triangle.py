@@ -58,7 +58,7 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, elements_test, coords_test, material_test)
 
     def test_3x3Type1(self):
-        tri, elems, coords = self.generate_test_triangle_case(1, 3, 0)
+        tri, elems, coords = self.generate_testCase_triangle(1, 3, 0)
         elems[2] = "1 2 4\n"
         elems[3] = "2 4 5\n"
         elems[4] = "3 4 6\n"
@@ -67,7 +67,7 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, elems, coords, material)
 
     def test_3x3Type2(self):
-        tri, elems, coords = self.generate_test_triangle_case(2, 3, 0)
+        tri, elems, coords = self.generate_testCase_triangle(2, 3, 0)
         elems[2] = "1 2 4\n"
         elems[3] = "2 4 5\n"
         elems[4] = "3 4 6\n"
@@ -88,7 +88,7 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_4x4Type1(self):
-        tri, elems, coords = self.generate_test_triangle_case(1, 4, 0)
+        tri, elems, coords = self.generate_testCase_triangle(1, 4, 0)
         elems[4] = "2 3 6\n"
         elems[5] = "3 6 7\n"
         elems[8] = "5 6 9\n"
@@ -99,7 +99,7 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, elems, coords, material)
 
     def test_4x4Type2(self):
-        tri, elems, coords = self.generate_test_triangle_case(2, 4, 0)
+        tri, elems, coords = self.generate_testCase_triangle(2, 4, 0)
         elems[4] = "2 3 6\n"
         elems[5] = "3 6 7\n"
         elems[8] = "5 6 9\n"
@@ -122,7 +122,7 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_5x5Type1(self):
-        tri, elems, coords = self.generate_test_triangle_case(1, 5, 0)
+        tri, elems, coords = self.generate_testCase_triangle(1, 5, 0)
         elems[6] = "3 4 8\n"
         elems[7] = "4 8 9\n"
         elems[12] = "7 8 12\n"
@@ -136,7 +136,7 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, elems, coords, material)
 
     def test_5x5Type2(self):
-        tri, elems, coords = self.generate_test_triangle_case(2, 5, 0)
+        tri, elems, coords = self.generate_testCase_triangle(2, 5, 0)
         elems[6] = "3 4 8\n"
         elems[7] = "4 8 9\n"
         elems[12] = "7 8 12\n"
@@ -229,17 +229,17 @@ class Air_OneElementFigure(AbstractTest):
 class AirCoat(AbstractTest):
     """ Test case for primitive with a full air surrounding """
     def test_3x3Type0_air1(self):
-        tri, e, c = self.generate_test_triangle_case(0, 3, 1)
+        tri, e, c = self.generate_testCase_triangle(0, 3, 1)
         m = [0] * 10 + [1] + [0]*7 + [1]*3 + [0]*11
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type0_air2(self):
-        tri, e, c = self.generate_test_triangle_case(0, 3, 2)
+        tri, e, c = self.generate_testCase_triangle(0, 3, 2)
         m = [0] * 28 + [1] + [0]*11 + [1]*3 + [0]*29
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type1_air1(self):
-        tri, e, c = self.generate_test_triangle_case(1, 3, 1)
+        tri, e, c = self.generate_testCase_triangle(1, 3, 1)
         e[12] = "7 8 12\n"
         e[13] = "8 12 13\n"
         e[18] = "11 12 16\n"
@@ -248,7 +248,7 @@ class AirCoat(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type1_air2(self):
-        tri, e, c = self.generate_test_triangle_case(1, 3, 2)
+        tri, e, c = self.generate_testCase_triangle(1, 3, 2)
         e[30] = "17 18 24\n"
         e[31] = "18 24 25\n"
         e[40] = "23 24 30\n"
@@ -257,7 +257,7 @@ class AirCoat(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type2_air1(self):
-        tri, e, c = self.generate_test_triangle_case(2, 3, 1)
+        tri, e, c = self.generate_testCase_triangle(2, 3, 1)
         e[12] = "7 8 12\n"
         e[13] = "8 12 13\n"
         e[18] = "11 12 16\n"
@@ -266,7 +266,7 @@ class AirCoat(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type2_air2(self):
-        tri, e, c = self.generate_test_triangle_case(2, 3, 2)
+        tri, e, c = self.generate_testCase_triangle(2, 3, 2)
         e[30] = "17 18 24\n"
         e[31] = "18 24 25\n"
         e[40] = "23 24 30\n"
@@ -275,12 +275,12 @@ class AirCoat(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type3_air1(self):
-        tri, e, c = self.generate_test_triangle_case(3, 3, 1)
+        tri, e, c = self.generate_testCase_triangle(3, 3, 1)
         m = [0] * 11 + [1]*3 + [0]*7 + [1] + [0]*10
         self.check_mesh(tri, e, c, m)
 
     def test_3x3Type3_air2(self):
-        tri, e, c = self.generate_test_triangle_case(3, 3, 2)
+        tri, e, c = self.generate_testCase_triangle(3, 3, 2)
         m = [0] * 29 + [1]*3 + [0]*11 + [1] + [0]*28
         self.check_mesh(tri, e, c, m)
 
