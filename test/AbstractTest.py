@@ -62,6 +62,12 @@ class AbstractTest(unittest.TestCase):
         return box, mesh, 1  # '1' for Triangle
 
     def generate_testCase_rectangle(self, N, flag_top, flag_right, flag_bottom, flag_left, air=1):
+        """
+        Parameters:
+            - N – size of rectangle (in nodes)
+            - flag_* – '1' if there are air on this side, '0' if not
+            - air – how thick is air layer
+        """
         air_top = air*flag_top
         air_right = air*flag_right
         air_bottom = air*flag_bottom
@@ -82,16 +88,61 @@ class AbstractTest(unittest.TestCase):
         # print(material)
         self.check_mesh(rect, e, c, material)
 
-    def generate_testCase_triangle(self, type_, dimensions, air):
-        """ Return:
-            - tuple for Regular-Divider to create mesh
-            - expected elements (each is three indexes of nodes forming it)
-            - expected coordinates of nodes
+    def generate_testCase_triangle(self, N, type_, flag_top, flag_right, flag_bottom, flag_left, air=1):
         """
-        triangle = self.get_triangle(type_, dimensions, dimensions, air, air, air, air)
-        elems, coords = self.generate_grid(dimensions + air*2, dimensions + air*2)
+        Parameters:
+            - N – length (in nodes) of the triangle's catheti
+            - flag_* – '1' if there are air on this side, '0' if not
+            - air – how thick is air layer
+        """
+        air_top = air*flag_top
+        air_right = air*flag_right
+        air_bottom = air*flag_bottom
+        air_left = air*flag_left
 
-        return triangle, elems, coords
+        triangle = self.get_triangle(type_, N, N, air_top, air_right, air_bottom, air_left)
+        e, c = self.generate_grid(air_left + N + air_right, air_top + N + air_bottom)
+        if type_ == 1 or type_ == 2:
+            self.distort_grid(e, N, air_top, air_right, air_bottom, air_left)
+
+        material = self.generate_material(N, type_, air_top, air_right, air_bottom, air_left)
+
+        self.check_mesh(triangle, e, c, material)
+
+    def generate_material(self, N, type_, air_top, air_right, air_bottom, air_left):
+        N -= 1  # switch to length in elements (2x2 grid produces two elements)
+        material = []
+        row_len = (air_left + N + air_right)*2
+        for j in range(0, air_top):
+            material += [0]*row_len
+
+        for j in range(0, N):
+            if type_ == 0:
+                figure = j*2 + 1  # How much figure's elements is in this row
+                material += [0]*air_left*2
+                material += [1]*figure
+                material += [0]*(air_right*2 + (N*2 - figure))
+            elif type_ == 1:
+                figure = j*2 + 1  # How much figure's elements is in this row
+                material += [0]*(air_left*2 + (N*2 - figure))
+                material += [1]*figure
+                material += [0]*air_right*2
+            elif type_ == 2:
+                figure = (N-j)*2 - 1  # How much figure's elements is in this row
+                material += [0]*air_left*2
+                material += [1]*figure
+                material += [0]*(air_right*2 + (N*2 - figure))
+            elif type_ == 3:
+                figure = (N-j)*2 - 1  # How much figure's elements is in this row
+                material += [0]*(air_left*2 + (N*2 - figure))
+                material += [1]*figure
+                material += [0]*air_right*2
+            else:
+                raise Exception("Got wrong triangle (type:{})".format(type_))
+        for j in range(0, air_bottom):
+            material += [0]*row_len
+
+        return material
 
     def get_pos_triangle(self, x, y, form, nx=2, ny=2, top=0, right=0, bottom=0, left=0):
         box = (x, y, nx-1, ny-1)  # x, y, w, h
@@ -164,24 +215,69 @@ class AbstractTest(unittest.TestCase):
 
         return elems, coord
 
-    def generate_distorted_diagonal_grid(self, nx, ny, offset_index=0, offset_x=0, offset_y=0):
-        elems = list()
-        for j in range(ny-1):
-            for i in range(nx-1):
-                curr = offset_index + i + (nx*j)
-                next_ = curr + 1
-                next_line_curr = curr + nx
-                next_line_next = next_line_curr + 1
-                if i == (nx-2) - j:
-                    elems.append("{} {} {}\n".format(curr, next_line_curr, next_))
-                    elems.append("{} {} {}\n".format(next_, next_line_next, next_line_curr))
-                else:
-                    elems.append("{} {} {}\n".format(curr, next_line_curr, next_line_next))
-                    elems.append("{} {} {}\n".format(curr, next_, next_line_next))
+    def distort_grid(self, elements, N, air_top, air_right, air_bottom, air_left):
+        """
+        Triangles of type 1 and 2 have weird, "distorted" hypotenuses:
+            if "normal" ones positioned up-down, theirs position down-up.
 
-        coord = list()
-        for j in range(ny):
-            for i in range(nx):
-                coord.append([i + offset_x, j + offset_y])
+        In conjunction with 'generate_grid' method you can generate grid
+            for those triangles
+        """
+        nodes_in_row = air_left + N + air_right
+        nodes_offset_top = nodes_in_row * air_top
+        nodes_air_offset = air_left
 
-        return elems, coord
+        N -= 1
+        elems_in_row = (air_left + N + air_right)*2
+        offset_airTop = elems_in_row * air_top
+        offset_airLeft = air_left*2
+
+        for j in range(0, N):
+            offset = offset_airTop + elems_in_row*j + offset_airLeft
+            index = offset + (N-1-j)*2
+
+            node = nodes_offset_top + nodes_in_row*j + nodes_air_offset + N-j-1
+            node1 = node + 1
+            node2 = nodes_offset_top + nodes_in_row*(j+1) + nodes_air_offset + N-j-1
+            node3 = node2 + 1
+
+            elements[index] = "{} {} {}\n".format(node, node1, node2)
+            elements[index+1] = "{} {} {}\n".format(node1, node2, node3)
+
+
+class Test_AbstractTest(AbstractTest):
+    def test_gridDistorting_2x2_allAir1(self):
+        air = 1
+        N = 2
+        elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
+        self.distort_grid(elems, N, air, air, air, air)
+        self.assertEqual(elems[8], "5 6 9\n", "Distortion went wrong")
+        self.assertEqual(elems[9], "6 9 10\n", "Distortion went wrong")
+
+    def test_gridDistorting_3x3_allAir1(self):
+        air = 1
+        N = 3
+        elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
+        self.distort_grid(elems, N, air, air, air, air)
+        self.assertEqual(elems[12], "7 8 12\n", "Distortion went wrong")
+        self.assertEqual(elems[13], "8 12 13\n", "Distortion went wrong")
+        self.assertEqual(elems[18], "11 12 16\n", "Distortion went wrong")
+        self.assertEqual(elems[19], "12 16 17\n", "Distortion went wrong")
+
+    def test_gridDistorting_3x3_allAir2(self):
+        air = 2
+        N = 3
+        elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
+        self.distort_grid(elems, N, air, air, air, air)
+        self.assertEqual(elems[30], "17 18 24\n", "Distortion went wrong")
+        self.assertEqual(elems[31], "18 24 25\n", "Distortion went wrong")
+        self.assertEqual(elems[40], "23 24 30\n", "Distortion went wrong")
+        self.assertEqual(elems[41], "24 30 31\n", "Distortion went wrong")
+
+    def test_triangleMaterialGeneration_2x2_type0_bareLeft_air2(self):
+        material = self.generate_material(2, 0, 2, 2, 2, 0)
+        ideal_result = [0]*12 + [1] + [0]*17
+        self.assertEqual(material, ideal_result, "Material was generated with error")
+
+    def test_TestGeneration(self):
+        self.generate_testCase_triangle(2, 0, 1, 1, 1, 0, air=2)
