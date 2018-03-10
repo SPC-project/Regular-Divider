@@ -8,9 +8,7 @@ Author: Mykolaj Konovalow
 """
 
 import sys
-import os
 import logging
-import subprocess
 import urllib.request
 import urllib.error
 from traceback import format_exception
@@ -25,7 +23,7 @@ from src.figure import Figure
 VERSION = (0, 4, 2)
 
 BLANK = QColor(0, 0, 0, 0)
-OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
+OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving (might be specific for Kubuntu theme I'm using)
 RIGHT_BUTTON = 2
 PADDING = 10
 SIZE_TIP_EXPLENATION = "Размерность рабочей области.\nПо нажатию масштабируется чтобы вместить фигуру целиком"
@@ -55,15 +53,13 @@ class MyWindow(QMainWindow):
         # Other setup
         self.msg = None
         self.figure = Figure(size_tip, self.sig_update, self.sig_clear, self.sig_message)
-        self.figure.show_coordinate_grid = self.show_coordinates.isChecked()
-        self.figure.displayer.show_indexes = self.show_indexes.isChecked()
+        self.figure.show_coordinates = self.showCoordinates_flag.isChecked()
 
         # Qt
         size_tip.clicked.connect(self.figure.adjust)
         self.wipe_world.triggered.connect(self.clean)
         self.save_world.triggered.connect(self.save)
         self.save_world_as.triggered.connect(self.save_as)
-        self.sort_pmd.triggered.connect(self.do_sort)
         self.open_pmd.triggered.connect(self.do_open)
         self.shut_app_down.triggered.connect(self.close)
         self.import_figure.triggered.connect(self.pre_import)
@@ -71,9 +67,9 @@ class MyWindow(QMainWindow):
         self.set_air.triggered.connect(self.do_set_air)
         self.add_primitive.triggered.connect(self.figure.new_primitive)
         self.create_world.triggered.connect(self.figure.create_space)
-        self.show_coordinates.triggered.connect(self.switch_grid)
-        self.show_indexes.triggered.connect(self.indexes_displaying1)
-        self.show_border_indexes.triggered.connect(self.indexes_displaying2)
+        self.showCoordinates_flag.triggered.connect(self.switch_grid)
+        self.showIndexes_flag.triggered.connect(self.indexes_displaying1)
+        self.showBorderIndexes_flag.triggered.connect(self.indexes_displaying2)
         self.open_wiki.triggered.connect(self.go_wiki)
 
         self.sig_update.connect(self.updating)
@@ -81,10 +77,10 @@ class MyWindow(QMainWindow):
         self.sig_message.connect(self.messaging)
         self.sig_mayUpdate.connect(self.propose_upgrade)
 
-        # Create 'show_indexes' radiobuttons option
+        # Create 'showIndexes_flag' radiobuttons option
         display_indexes = QActionGroup(self)
-        display_indexes.addAction(self.show_indexes)
-        display_indexes.addAction(self.show_border_indexes)
+        display_indexes.addAction(self.showIndexes_flag)
+        display_indexes.addAction(self.showBorderIndexes_flag)
 
         # First call of resizeEvent (call when window create)
         # will initialize a 2 QPixmap buffer
@@ -95,7 +91,7 @@ class MyWindow(QMainWindow):
         self.repaint()
 
     def save(self):
-        self.figure.save_mesh()
+        self.figure.save_mesh(sortElements=self.sortElements_flag.isChecked(), splitPMD=self.splitPMD_flag.isChecked())
 
     def save_as(self):
         fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
@@ -124,34 +120,6 @@ class MyWindow(QMainWindow):
         if fname != '':
             self.figure.exporting(fname)
 
-    def do_sort(self):
-        dialog = SplitPMDDialog()
-        dialog.exec_()
-        if dialog.result() == 1:
-            filename = dialog.pmd_filepath.text()
-            divide = dialog.do_split.isChecked()
-            sort = dialog.sort_elements.isChecked()
-
-            if filename == "":
-                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
-                msg.setText("Файл для сортировки не задан")
-                msg.exec_()
-                return
-            elif not os.path.isfile(filename):
-                msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')
-                msg.setText("Файла с таким именем не существует")
-                msg.exec_()
-                return
-
-            res = subprocess.run([sys.executable, "./Sorter.py",
-                                  filename, str(divide), str(sort)]).returncode
-            if res == 0:
-                self.msg = QLabel('Файл отсортирован успешно')
-                self.statusbar.addWidget(self.msg)
-            else:
-                self.msg = QLabel("Не удалось отсортировать файл. Подробности в errors.log")
-                self.statusbar.addWidget(self.msg)
-
     def do_set_air(self):
         dialog = QDialog()
         uic.loadUi('resources/ui/set_air.ui', dialog)
@@ -161,7 +129,7 @@ class MyWindow(QMainWindow):
             self.figure.set_air(thickness)
 
     def switch_grid(self, state):
-        self.figure.show_coordinate_grid = state
+        self.figure.show_coordinates = state
         self.clearing()
         self.updating()
 
@@ -326,19 +294,6 @@ class MyWindow(QMainWindow):
                           'Regular-Divider">обновление!</a>')
         self.msg.setOpenExternalLinks(True)
         self.statusbar.addWidget(self.msg)
-
-
-class SplitPMDDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        uic.loadUi('resources/ui/sort_pmd.ui', self)
-
-        self.pmd_select_file.clicked.connect(self.open_select_file_dialogue)
-
-    def open_select_file_dialogue(self):
-        fname = QFileDialog.getOpenFileName(self, 'Открыть...', '.',
-                                            "Text files (*.pmd)")[0]
-        self.pmd_filepath.setText(fname)
 
 
 def my_excepthook(type_, value, tback):

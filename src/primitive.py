@@ -229,15 +229,9 @@ class AbstractPrimitive:
     @abc.abstractmethod
     def save_mesh(self, output):
         """
-        output.element(A, B, C) — записать индексы вершин, образующих элемент
-        output.coordinates — абсцисса и ордината вершин (номер строки = индекс вершины).
-            Два действительных числа в ряд
-        output.elements_material — код для материала элемента (0 — воздух, 1 — фигура)
-            Номер строки в этом файле соответствует номеру строки элемента в ind_f
-        output.nodes_material — код для материала узла
-            Номер строки в этом файле соответствует номеру строки узла в coor_f
-
-        output.last_index — индекс последнего существующего узла сетки разбиения
+        Abstract method for creating raw mesh.
+        Every primitive have section and on conjunction of that primitives
+            would be created duplicate nodes. Class 'Output' deal with that
         """
         pass
 

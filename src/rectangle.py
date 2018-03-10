@@ -115,19 +115,18 @@ class Rectangle(AbstractPrimitive):
 
     def save_mesh(self, output):
         """
-        See primitive.py/AbstractPrimitive/save_mesh for description
-        See doc/rectangular_mesh_creating.png for visualization
-        index — индекс, с которого начнём нумерацию узлов
+        Сначала сохраняем верхний и левый воздушные слои, потом фигуру, потом правый и нижний воздушные слои.
 
-        Сначала сохраняем верхний воздушный слой, потом левый воздушный, нижний воздушный, правый воздушный и фигуру
+        See primitive.py/AbstractPrimitive/save_mesh for description
+        See doc/raw_mesh_of_rectangle.png for visualization
         """
         M = self.mesh
         width_height = [
-            [M.NAL + M.NFX + M.NAR, M.NAT],
-            [M.NAL, M.NFY],
-            [M.NFX, M.NFY],
-            [M.NAR, M.NFY],
-            [M.NAL + M.NFX + M.NAR, M.NAB],
+            [M.NAL + M.NFX + M.NAR, M.NAT],  # Top air layer
+            [M.NAL, M.NFY],                  # Left air layer
+            [M.NFX, M.NFY],                  # Figure
+            [M.NAR, M.NFY],                  # Right air layer
+            [M.NAL + M.NFX + M.NAR, M.NAB],  # Bottom air layer
         ]
 
         x0, y0 = self.start_x, self.start_y

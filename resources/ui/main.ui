@@ -62,7 +62,6 @@
     <addaction name="wipe_world"/>
     <addaction name="save_world"/>
     <addaction name="save_world_as"/>
-    <addaction name="sort_pmd"/>
     <addaction name="open_pmd"/>
     <addaction name="separator"/>
     <addaction name="shut_app_down"/>
@@ -93,9 +92,12 @@
     </property>
     <addaction name="create_world"/>
     <addaction name="separator"/>
-    <addaction name="show_coordinates"/>
-    <addaction name="show_indexes"/>
-    <addaction name="show_border_indexes"/>
+    <addaction name="showCoordinates_flag"/>
+    <addaction name="sortElements_flag"/>
+    <addaction name="splitPMD_flag"/>
+    <addaction name="separator"/>
+    <addaction name="showIndexes_flag"/>
+    <addaction name="showBorderIndexes_flag"/>
    </widget>
    <widget class="QMenu" name="Help">
     <property name="title">
@@ -130,7 +132,10 @@
     <string>Задать рабочую область</string>
    </property>
    <property name="toolTip">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Установить размер и положение видимой рабочей области&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>Задать рабочую область</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Позволяет настроить &quot;камеру&quot; рабочей области</string>
    </property>
    <property name="font">
     <font>
@@ -278,7 +283,7 @@
     <string>Задать воздух для всей фигуры</string>
    </property>
   </action>
-  <action name="show_coordinates">
+  <action name="showCoordinates_flag">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -290,6 +295,9 @@
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Отрисовывать координатную сетку&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Включает отображение координатной сетки и осей</string>
    </property>
   </action>
   <action name="open_pmd">
@@ -307,7 +315,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="show_indexes">
+  <action name="showIndexes_flag">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -319,6 +327,9 @@
    </property>
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Если включено, около каждого узла будет отображен его индекс&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ После сохранения, узлы сетки разбиения будут подписаны</string>
    </property>
    <property name="font">
     <font/>
@@ -335,12 +346,15 @@
     <string>F1</string>
    </property>
   </action>
-  <action name="show_border_indexes">
+  <action name="showBorderIndexes_flag">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>Отображать только граничные индексы</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ После сохраниния, граничные узлы сетки разбиения будут подписаны</string>
    </property>
    <property name="font">
     <font/>
@@ -355,6 +369,31 @@
    </property>
    <property name="font">
     <font/>
+   </property>
+  </action>
+  <action name="sortElements_flag">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Сортировать элементы</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Секция элементов в pmd-файле будет отсортирова</string>
+   </property>
+  </action>
+  <action name="splitPMD_flag">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Раскладывать pmd-файл на секции </string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Секции pmd-файла будут сохранены в отдельные файлы</string>
    </property>
   </action>
  </widget>

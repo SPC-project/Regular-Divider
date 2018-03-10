@@ -166,11 +166,6 @@ class Triangle(AbstractPrimitive):
                 curr_w = curr_h * tg_alpha
 
     def save_mesh(self, output):
-        """
-         Каждый вызов save_rectangle_mesh начинает нумерацию с нового индекса, что
-        означает появление дублирующих узлов в файлах промежуточного разбиения.
-        Это будет улажено позже, вызовом утилиты, что собирает результирующий файл
-        """
         M = self.mesh
         form = self.mesh.data["form"]
         dx = self.step_x
@@ -264,8 +259,8 @@ class Triangle(AbstractPrimitive):
             offset_x, mod_x = M.NAL + M.NFX - 1, -1
             offset_y, mod_y = M.NAT, 0
 
-        w, h = 1, M.NFY-1  # '-1' or corner of last rectangle will penetrate boundaries of the figure
-        for i in range(M.NFX-1):
+        w, h = 1, M.NFY-1  # '-1' is because 3x3 node grid is only four elements
+        for i in range(M.NFX-1):  # from largest to smallest
             x = x0 + (offset_x + mod_x*i)*dx
             y = y0 + (offset_y + mod_y*i)*dy
             self.save_rectangle_mesh(w, h-i, output, x, y, dx, dy, material)

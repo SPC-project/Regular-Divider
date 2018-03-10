@@ -32,18 +32,10 @@ class NoAir(AbstractTest):
         self.check_mesh(tri, e, c, m)
 
     def test_2x2Type1(self):
-        tri = self.get_triangle(1, 2, 2)
-        elements_test = ['0 1 2\n', '1 2 3\n']
-        coords_test = [[0, 0], [1, 0], [0, 1], [1, 1]]
-        material_test = [0, 1]
-        self.check_mesh(tri, elements_test, coords_test, material_test)
+        self.generate_testCase_triangle(2, 1, 0, 0, 0, 0)
 
     def test_2x2Type2(self):
-        tri = self.get_triangle(2, 2, 2)
-        elements_test = ['0 1 2\n', '1 2 3\n']
-        coords_test = [[0, 0], [1, 0], [0, 1], [1, 1]]
-        material_test = [1, 0]
-        self.check_mesh(tri, elements_test, coords_test, material_test)
+        self.generate_testCase_triangle(2, 2, 0, 0, 0, 0)
 
     def test_2x2Type3(self):
         tri = self.get_triangle(3, 2, 2)
@@ -151,10 +143,10 @@ class AirCoat(AbstractTest):
         self.generate_testCase_triangle(3, 3, 1, 1, 1, 1)
 
     def test_3x3Type0_air2(self):
-        self.generate_testCase_triangle(0, 3, 1, 1, 1, 1, air=2)
+        self.generate_testCase_triangle(3, 0, 1, 1, 1, 1, air=2)
 
     def test_3x3Type1_air2(self):
-        self.generate_testCase_triangle(1, 3, 1, 1, 1, 1, air=2)
+        self.generate_testCase_triangle(3, 1, 1, 1, 1, 1, air=2)
 
     def test_3x3Type2_air2(self):
         self.generate_testCase_triangle(3, 2, 1, 1, 1, 1, air=2)

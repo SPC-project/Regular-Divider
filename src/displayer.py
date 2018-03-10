@@ -1,6 +1,6 @@
 from PyQt5.QtGui import QColor, QPolygon, QBrush
 from PyQt5.QtCore import QPoint, Qt
-from Sorter import read_pmd
+from src.output import SECTIONS_NAMES
 
 PADDING = 10  # Space between window border and QFrame
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving
@@ -13,6 +13,48 @@ COL_AIR_INNER = QColor(128, 176, 241, 24)
 COL_FIG = QColor(46, 61, 73)
 COL_FIG_INNNER = QColor(46, 61, 73, 64)
 COL_TEXT = QColor(0, 0, 0)
+
+TEMP_DIR = ".temp/"
+
+
+def read_pmd(In):
+    is_header = True
+    is_elements = False
+    is_nodes = False
+    is_stuff = False
+
+    elements = list()
+    coordinates = list()
+    material = list()
+    index = 0
+
+    for line in In.readlines():
+        if is_header:
+            if line == SECTIONS_NAMES[1]:
+                is_header = False
+                is_elements = True
+        elif is_elements:
+            if line != SECTIONS_NAMES[2]:
+                elem = line.split(' ')
+                elements.append((int(elem[0]), int(elem[1]), int(elem[2])))
+            else:
+                is_elements = False
+                is_nodes = True
+        elif is_nodes:
+            if line != SECTIONS_NAMES[3]:
+                x, y = [float(coor) for coor in line.split(' ')]
+                coordinates.append((x, y))
+                index += 1
+            else:
+                is_nodes = False
+                is_stuff = True
+        elif is_stuff:
+            if line == SECTIONS_NAMES[5]:  # skip force and contacts
+                is_stuff = False
+        else:
+            material.append(int(line.strip()))
+
+    return elements, coordinates, material
 
 
 class PMD_Displayer():
@@ -30,9 +72,9 @@ class PMD_Displayer():
         # Prepare data
         def describe_element(index, elem):
             A, B, C = elem
-            first = (coords[A][0], coords[A][1])
-            second = (coords[B][0], coords[B][1])
-            third = (coords[C][0], coords[C][1])
+            first = coords[A]
+            second = coords[B]
+            third = coords[C]
             return (first, second, third, mat[index])
 
         self.data = tuple(
@@ -112,7 +154,7 @@ class PMD_Displayer():
                     nodes[dot]['fig'] = nodes[dot]['fig'] or material == 1
                     nodes[dot]['air'] = nodes[dot]['air'] or material == 0
 
-        for x, y, index in self.coords:
+        for index, (x, y) in enumerate(self.coords):
             node = nodes[(x, y)]
             if node["fig"] and node["air"]:
                 x, y = scale([x, y])

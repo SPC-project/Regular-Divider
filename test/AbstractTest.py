@@ -1,12 +1,12 @@
 import unittest
 
-from src.figure import Figure, Output
+from src.figure import Figure
 from src.primitive import Mesh
-import subprocess
+from src.displayer import read_pmd, TEMP_DIR
 import os
 
-OUTPUT_FILENAME = Output.TEMP_DIR + "/test.pmd"
-EXPORT_OUTPUT_FILENAME = Output.TEMP_DIR + "/test.d42do"
+OUTPUT_FILENAME = TEMP_DIR + "/test.pmd"
+EXPORT_OUTPUT_FILENAME = TEMP_DIR + "/test.d42do"
 
 
 class FakeParentApp:
@@ -22,8 +22,8 @@ class FakeParentApp:
 
 class AbstractTest(unittest.TestCase):
     def setUp(self):
-        if not os.path.exists(Output.TEMP_DIR):
-            os.makedirs(Output.TEMP_DIR)
+        if not os.path.exists(TEMP_DIR):
+            os.makedirs(TEMP_DIR)
 
         holder = FakeParentApp()
         self.fig = Figure(holder, holder, holder, holder)
@@ -168,29 +168,18 @@ class AbstractTest(unittest.TestCase):
         elements_test — список элементов, что будут образованы разбиением. Элемент задается индексами трёх формирующих его вершин
         coords_test — список координат узлов. Индекс узла указан третьим числом в строке
         """
-        self.fig.save_mesh(OUTPUT_FILENAME)
-        res = subprocess.run(["./Sorter.py", OUTPUT_FILENAME, "True", "True"]).returncode
-
-        if res == 0:
-            self.check_output(elems_test, coords_test, material_test)
-        else:
-            raise Exception("Can't run Sorter")
+        self.fig.save_mesh(OUTPUT_FILENAME, sortElements=True, testing=True)
+        self.check_output(elems_test, coords_test, material_test)
 
     def check_output(self, elems_test, coords_test, material_test):
-        with open(OUTPUT_FILENAME + "_sorted_elements", "r") as f:
-            triangles = f.readlines()
-            # print(triangles)
-            self.assertEqual(triangles, elems_test, "Wrong triangles formed for")
-
-        with open(OUTPUT_FILENAME + "_sorted_nodes", "r") as f:
-            coords = [[float(elem) for elem in line.split(' ')] for line in f.readlines()]  # convert lines to Python's list[list]
-            # print(coords)
-            self.assertEqual(coords, coords_test, "Wrong coordinates")
-
-        with open(OUTPUT_FILENAME + "_sorted_elements-material", "r") as f:
-            elements_material = [int(elem) for elem in f.readlines()]
-            # print(elements_material)
-            self.assertEqual(elements_material, material_test, "Wrong material")
+        with open(OUTPUT_FILENAME, 'r') as Input:
+            elements, coordinates, material = read_pmd(Input)
+            # print(elements)
+            self.assertEqual(elements, elems_test, "Wrong triangles formed for")
+            # print(coordinates)
+            self.assertEqual(coordinates, coords_test, "Wrong coordinates")
+            # print(material)
+            self.assertEqual(material, material_test, "Wrong material")
 
     def check_exporting(self, compare):
         self.fig.exporting(EXPORT_OUTPUT_FILENAME)
@@ -205,13 +194,13 @@ class AbstractTest(unittest.TestCase):
                 next_ = curr + 1
                 next_line_curr = curr + nx
                 next_line_next = next_line_curr + 1
-                elems.append("{} {} {}\n".format(curr, next_line_curr, next_line_next))
-                elems.append("{} {} {}\n".format(curr, next_, next_line_next))
+                elems.append((curr, next_line_curr, next_line_next))
+                elems.append((curr, next_, next_line_next))
 
         coord = list()
         for j in range(ny):
             for i in range(nx):
-                coord.append([i + offset_x, j + offset_y])
+                coord.append((i + offset_x, j + offset_y))
 
         return elems, coord
 
@@ -241,8 +230,8 @@ class AbstractTest(unittest.TestCase):
             node2 = nodes_offset_top + nodes_in_row*(j+1) + nodes_air_offset + N-j-1
             node3 = node2 + 1
 
-            elements[index] = "{} {} {}\n".format(node, node1, node2)
-            elements[index+1] = "{} {} {}\n".format(node1, node2, node3)
+            elements[index] = (node, node1, node2)
+            elements[index+1] = (node1, node2, node3)
 
 
 class Test_AbstractTest(AbstractTest):
