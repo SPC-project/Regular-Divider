@@ -119,6 +119,9 @@
    <property name="text">
     <string>Добавить примитив</string>
    </property>
+   <property name="statusTip">
+    <string>⇒ Вызвать диалог создания примитива</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
@@ -155,6 +158,9 @@
    <property name="iconText">
     <string>Ctrl+S</string>
    </property>
+   <property name="statusTip">
+    <string>⇒ Сохранить разбиение текущей фигуры</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
@@ -176,6 +182,9 @@
    <property name="text">
     <string>Очистить</string>
    </property>
+   <property name="statusTip">
+    <string>⇒ Удалить текущую фигуру</string>
+   </property>
   </action>
   <action name="save_world_as">
    <property name="icon">
@@ -184,6 +193,9 @@
    </property>
    <property name="text">
     <string>Сохранить как</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Сохранить разбиение текущей фигуры</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
@@ -196,6 +208,9 @@
    </property>
    <property name="text">
     <string>Выйти</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Завершить работу приложения</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -263,6 +278,12 @@
    <property name="text">
     <string>Импортировать фигуру</string>
    </property>
+   <property name="toolTip">
+    <string>Импортировать фигуру</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Загрузить фигуру из d42do-файла</string>
+   </property>
   </action>
   <action name="export_figure">
    <property name="icon">
@@ -271,6 +292,9 @@
    </property>
    <property name="text">
     <string>Экспортировать фигуру</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Сохранить текущую фигуру в d42do-файл</string>
    </property>
   </action>
   <action name="sort_pmd">
@@ -281,6 +305,9 @@
   <action name="set_air">
    <property name="text">
     <string>Задать воздух для всей фигуры</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Создать вокруг всей фигуры однородный воздушный слой</string>
    </property>
   </action>
   <action name="showCoordinates_flag">
@@ -311,6 +338,9 @@
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Открывает файл разбиения и отображает его&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;в правой секции рабочей области&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="statusTip">
+    <string>⇒ Визуализировать pmd-файл</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
    </property>
@@ -340,7 +370,10 @@
     <string>&amp;Wiki</string>
    </property>
    <property name="toolTip">
-    <string>Открыть web-страницу руководства пользователя</string>
+    <string>Wiki</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Открыть web-страницу руководства пользователя</string>
    </property>
    <property name="shortcut">
     <string>F1</string>

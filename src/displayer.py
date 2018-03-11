@@ -141,7 +141,7 @@ class PMD_Displayer():
                 canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index))
 
     def display_border_nodes(self, skip, scale, canvas):
-        border_filename = self.filename + ".outer_nodes"
+        border_filename = TEMP_DIR + "outer_nodes.txt"
         Out = open(border_filename, 'w')
 
         nodes = dict()
