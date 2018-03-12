@@ -9,10 +9,11 @@ Author: Mykolaj Konovalow
 
 import sys
 import logging
-import urllib.request
-import urllib.error
 from traceback import format_exception
 import _thread
+import urllib.request
+import urllib.error
+import re
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QMenu, QDialog
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QPushButton, QActionGroup
@@ -20,7 +21,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor, QDesktopServices
 from src.figure import Figure
 
-VERSION = (0, 4, 2)
+VERSION = (0, 4, 0)
 
 BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving (might be specific for Kubuntu theme I'm using)
@@ -71,6 +72,7 @@ class MyWindow(QMainWindow):
         self.showIndexes_flag.triggered.connect(self.indexes_displaying1)
         self.showBorderIndexes_flag.triggered.connect(self.indexes_displaying2)
         self.open_wiki.triggered.connect(self.go_wiki)
+        self.check_for_updates.triggered.connect(self.initUpdateManager)
 
         self.sig_update.connect(self.updating)
         self.sig_clear.connect(self.clearing)
@@ -290,10 +292,17 @@ class MyWindow(QMainWindow):
         msg.exec_()
 
     def propose_upgrade(self):
-        self.msg = QLabel('Доступно <a href="https://github.com/SPC-project/'
-                          'Regular-Divider">обновление!</a>')
-        self.msg.setOpenExternalLinks(True)
+        self.msg = QLabel('Доступно <a href="https://github.com/SPC-project/Regular-Divider">обновление</a>!')
+        # msg.setOpenExternalLinks(True)
+        self.msg.linkActivated.connect(self.initUpdateManager)
         self.statusbar.addWidget(self.msg)
+
+    def initUpdateManager(self):
+        self.statusbar.removeWidget(self.msg)  # Remove label with the link
+        self.msg = None
+
+        manager = UpdateManager()
+        manager.exec_()
 
 
 def my_excepthook(type_, value, tback):
@@ -305,32 +314,96 @@ def my_excepthook(type_, value, tback):
     window.shit_happens()
 
 
-def check_updates(recall):
-    """
-    Get version fresh program from GitHub, compare with self and, if have
-        newest - propose to update
+class UpdateManager(QDialog):
+    RD_CHANGELOG_URL = 'https://raw.githubusercontent.com/SPC-project/Regular-Divider/master/Changelog.txt'
+    header = re.compile(r'v\d+\.\d+(\.\d+)?')  # vX.Y[.Z]
+    date = re.compile(r'\[\d\d\d\d-\d\d-\d\d\]')  # [YYYY-MM-DD]
+    section_name = re.compile(r'### .*:')
 
-    First line of Changelog.txt is: v<major>.<minor>.[<revision>]\n
-    """
-    ch_url = 'https://raw.githubusercontent.com/SPC-project/Regular-Divider'\
-        '/master/Changelog.txt'
-    try:
+    def __init__(self):
+        super(UpdateManager, self).__init__()
+        uic.loadUi('resources/ui/update_manager.ui', self)
+
+        self.text.setReadOnly(True)
+        self.button_accept.clicked.connect(self.updating)
+        self.button_decline.clicked.connect(self.close)
+
+        self.get_changelog()
+
+    def get_changelog(self):
+        try:
+            changelog = urllib.request.urlopen(self.RD_CHANGELOG_URL)
+        except urllib.error.URLError as error:
+            self.show_title("Ошибка обновления")
+            self.show_line("URL error: {}".format(error.reason))
+        except urllib.error.HTTPError as error:
+            self.show_title("Ошибка обновления")
+            self.show_line("HTTP error {}:".format(error.code, error.reason))
+
+        for line in changelog.readlines():
+            line = line.decode('utf-8')
+            if self.header.match(line):
+                major, minor, revision = self.get_version(line[1:-1])  # delete 'v' and '\n'
+                if major == VERSION[0] and minor == VERSION[1] and revision == VERSION[2]:
+                    break
+
+                self.show_title(line)
+            elif self.date.match(line):
+                self.show_date(line)
+            elif self.section_name.match(line):
+                self.show_section_name(line)
+            else:
+                self.show_line(line)
+
+        self.text.scrollToAnchor("Start")
+
+    def show_title(self, text):
+        self.text.insertHtml("<h2 align='center'>{}</h2><br>".format(text))
+
+    def show_date(self, text):
+        self.text.setAlignment(QtCore.Qt.AlignRight)
+        self.text.insertPlainText("{}".format(text))
+
+    def show_section_name(self, text):
+        self.text.insertHtml("<b>{}</b><br>".format(text[3:]))
+
+    def show_line(self, text):
+        self.text.setAlignment(QtCore.Qt.AlignLeft)
+        self.text.insertPlainText("{}".format(text))
+
+    @staticmethod
+    def get_version(line):
+        version_code = line.split('.')
+        major = int(version_code[0])
+        minor = int(version_code[1])
+        revision = 0
+        if len(version_code) == 3:
+            revision = int(version_code[2])
+
+        return major, minor, revision
+
+    @staticmethod
+    def check_updates(recall):
+        """
+        Get version of the newest program from GitHub and compare with current version
+
+        First line of Changelog.txt is: v<major>.<minor>.[<revision>]\n
+        """
+        ch_url = UpdateManager.RD_CHANGELOG_URL
+        try:
+            changelog = urllib.request.urlopen(ch_url)
+        except (urllib.error.URLError, urllib.error.HTTPError,
+                urllib.error.ContentTooShortError):
+            return
+
         changelog = urllib.request.urlopen(ch_url)
-    except (urllib.error.URLError, urllib.error.HTTPError,
-            urllib.error.ContentTooShortError):
-        return
+        first_line = changelog.readline().decode('utf-8')[1:-1]  # del 'v' and '\n'
+        major, minor, revision = UpdateManager.get_version(first_line)
+        if major > VERSION[0] or minor > VERSION[1] or revision > VERSION[2]:
+            recall.emit()
 
-    changelog = urllib.request.urlopen(ch_url)
-    first_line = changelog.readline().decode('utf-8')[1:-1]  # del 'v' and '\n'
-    version_code = first_line.split('.')
-    major = int(version_code[0])
-    minor = int(version_code[1])
-    revision = 0
-    if len(version_code) == 3:
-        revision = int(version_code[2])
-
-    if major > VERSION[0] or minor > VERSION[1] or revision > VERSION[2]:
-        recall.emit()
+    def updating(self):
+        pass
 
 
 if __name__ == '__main__':
@@ -341,7 +414,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = MyWindow()
 
-    _thread.start_new_thread(check_updates, (window.sig_mayUpdate,))
+    _thread.start_new_thread(UpdateManager.check_updates, (window.sig_mayUpdate,))
 
     sys.excepthook = my_excepthook
     sys.exit(app.exec_())

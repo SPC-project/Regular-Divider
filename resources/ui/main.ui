@@ -104,6 +104,8 @@
      <string>Помощь</string>
     </property>
     <addaction name="open_wiki"/>
+    <addaction name="separator"/>
+    <addaction name="check_for_updates"/>
    </widget>
    <addaction name="File"/>
    <addaction name="Figure"/>
@@ -423,10 +425,21 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Раскладывать pmd-файл на секции </string>
+    <string>Раскладывать &amp;pmd-файл на секции </string>
    </property>
    <property name="statusTip">
     <string>⇒ Секции pmd-файла будут сохранены в отдельные файлы</string>
+   </property>
+  </action>
+  <action name="check_for_updates">
+   <property name="icon">
+    <iconset theme="system-software-update"/>
+   </property>
+   <property name="text">
+    <string>Проверить обновления</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Проверить наличие обновлений</string>
    </property>
   </action>
  </widget>
