@@ -21,7 +21,7 @@ from PyQt5 import uic, QtCore
 from PyQt5.QtGui import QPainter, QPixmap, QColor, QDesktopServices
 from src.figure import Figure
 
-VERSION = (0, 4, 0)
+VERSION = (0, 4, 2)
 
 BLANK = QColor(0, 0, 0, 0)
 OFFSET = 4  # QFrame's area start not at (0;0), but (4;4) because curving (might be specific for Kubuntu theme I'm using)
@@ -99,7 +99,9 @@ class MyWindow(QMainWindow):
         fname = QFileDialog.getSaveFileName(self, 'Сохранить как...',
                                             '', "Text files (*.pmd)")[0]
         if fname != '':
-            self.figure.save_mesh(fname)
+            sortElements = self.sortElements_flag.isChecked()
+            splitPMD = self.splitPMD_flag.isChecked()
+            self.figure.save_mesh(fname, sortElements, splitPMD)
 
     def do_open(self):
         fname = QFileDialog.getOpenFileName(self, 'Открыть...',

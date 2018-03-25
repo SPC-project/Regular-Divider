@@ -5,13 +5,21 @@ from collections import OrderedDict
 SECTIONS_NAMES = ["[settings]\n", "[inds]\n", "[coor]\n", "[contact]\n", "[force]\n", "[elements' material]\n"]
 
 
-class FakeFile:
-    """ Use this in case no need in splitting pmd-file """
+class IndexedFile:
+    def __init__(self, filename=False):
+        self.index = 1
+        self.output = False
+        if filename:
+            self.output = open(filename, 'w')
+
     def write(self, str):
-        pass
+        if self.output:
+            self.output.write("{:4d}:\t {}".format(self.index, str))
+            self.index += 1
 
     def close(self):
-        pass
+        if self.output:
+            self.output.close()
 
 
 class Output:
@@ -25,13 +33,13 @@ class Output:
         self.needSplitPMD = splitPMD
 
         if self.needSplitPMD:
-            self.OUT_elems = open(filename + ".elements", "w")
-            self.OUT_nodes = open(filename + ".nodes", "w")
-            self.OUT_material = open(filename + ".material", "w")
+            self.OUT_elems = IndexedFile(filename + ".elements")
+            self.OUT_nodes = IndexedFile(filename + ".nodes")
+            self.OUT_material = IndexedFile(filename + ".material")
         else:
-            self.OUT_elems = FakeFile()
-            self.OUT_nodes = FakeFile()
-            self.OUT_material = FakeFile()
+            self.OUT_elems = IndexedFile()
+            self.OUT_nodes = IndexedFile()
+            self.OUT_material = IndexedFile()
 
         # Elements are stored by indexes of it vertices: (index1, index2, index3)
         self.elements = []
@@ -166,7 +174,8 @@ class Output:
                 B = self.adjust_node_index(min_dup, max_dup, excessive_indexes, B)
                 C = self.adjust_node_index(min_dup, max_dup, excessive_indexes, C)
 
-            key = "{} {} {}\n".format(A, B, C)
+            # '-1' because the boss wants indexing from '1', not '0'
+            key = "{} {} {}\n".format(A+1, B+1, C+1)
             if key not in pre_output:  # Remove duplicate elements
                 pre_output[key] = self.material[i]
             else:

@@ -14,8 +14,6 @@ COL_FIG = QColor(46, 61, 73)
 COL_FIG_INNNER = QColor(46, 61, 73, 64)
 COL_TEXT = QColor(0, 0, 0)
 
-TEMP_DIR = ".temp/"
-
 
 def read_pmd(In):
     is_header = True
@@ -36,7 +34,12 @@ def read_pmd(In):
         elif is_elements:
             if line != SECTIONS_NAMES[2]:
                 elem = line.split(' ')
-                elements.append((int(elem[0]), int(elem[1]), int(elem[2])))
+                # A, B, C – indexes of nodes (lines in 'coordinates')
+                # '-1' because Python's indexing starts from '0' not '1'
+                A = int(elem[0]) - 1
+                B = int(elem[1]) - 1
+                C = int(elem[2]) - 1
+                elements.append((A, B, C))
             else:
                 is_elements = False
                 is_nodes = True
@@ -138,12 +141,9 @@ class PMD_Displayer():
         for index, node in enumerate(self.coords):
             if index % skip == 0:
                 x, y = scale(node)
-                canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index))
+                canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index+1))
 
     def display_border_nodes(self, skip, scale, canvas):
-        border_filename = TEMP_DIR + "outer_nodes.txt"
-        Out = open(border_filename, 'w')
-
         nodes = dict()
 
         for A, B, C, material in self.data:
@@ -158,11 +158,7 @@ class PMD_Displayer():
             node = nodes[(x, y)]
             if node["fig"] and node["air"]:
                 x, y = scale([x, y])
-                canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index))
-                Out.write(str(index) + "\n")
-
-        Out.close()
-        self.send_message("Граничные узлы сохранены в файл: " + border_filename)
+                canvas.drawText(x + NODE_LABEL_OFFSET_X, y + NODE_LABEL_OFFSET_Y, str(index+1))
 
     def draw_element(self, canvas, A, B, C, material, scale):
         first = QPoint(*scale(A))
