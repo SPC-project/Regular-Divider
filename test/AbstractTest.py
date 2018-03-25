@@ -2,9 +2,11 @@ import unittest
 
 from src.figure import Figure
 from src.primitive import Mesh
-from src.displayer import read_pmd, TEMP_DIR
+from src.displayer import read_pmd
 import os
 
+
+TEMP_DIR = ".temp"
 OUTPUT_FILENAME = TEMP_DIR + "/test.pmd"
 EXPORT_OUTPUT_FILENAME = TEMP_DIR + "/test.d42do"
 
@@ -194,6 +196,7 @@ class AbstractTest(unittest.TestCase):
                 next_ = curr + 1
                 next_line_curr = curr + nx
                 next_line_next = next_line_curr + 1
+
                 elems.append((curr, next_line_curr, next_line_next))
                 elems.append((curr, next_, next_line_next))
 
@@ -240,28 +243,28 @@ class Test_AbstractTest(AbstractTest):
         N = 2
         elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
         self.distort_grid(elems, N, air, air, air, air)
-        self.assertEqual(elems[8], "5 6 9\n", "Distortion went wrong")
-        self.assertEqual(elems[9], "6 9 10\n", "Distortion went wrong")
+        self.assertEqual(elems[8], (5, 6, 9), "Distortion went wrong")
+        self.assertEqual(elems[9], (6, 9, 10), "Distortion went wrong")
 
     def test_gridDistorting_3x3_allAir1(self):
         air = 1
         N = 3
         elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
         self.distort_grid(elems, N, air, air, air, air)
-        self.assertEqual(elems[12], "7 8 12\n", "Distortion went wrong")
-        self.assertEqual(elems[13], "8 12 13\n", "Distortion went wrong")
-        self.assertEqual(elems[18], "11 12 16\n", "Distortion went wrong")
-        self.assertEqual(elems[19], "12 16 17\n", "Distortion went wrong")
+        self.assertEqual(elems[12], (7, 8, 12), "Distortion went wrong")
+        self.assertEqual(elems[13], (8, 12, 13), "Distortion went wrong")
+        self.assertEqual(elems[18], (11, 12, 16), "Distortion went wrong")
+        self.assertEqual(elems[19], (12, 16, 17), "Distortion went wrong")
 
     def test_gridDistorting_3x3_allAir2(self):
         air = 2
         N = 3
         elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
         self.distort_grid(elems, N, air, air, air, air)
-        self.assertEqual(elems[30], "17 18 24\n", "Distortion went wrong")
-        self.assertEqual(elems[31], "18 24 25\n", "Distortion went wrong")
-        self.assertEqual(elems[40], "23 24 30\n", "Distortion went wrong")
-        self.assertEqual(elems[41], "24 30 31\n", "Distortion went wrong")
+        self.assertEqual(elems[30], (17, 18, 24), "Distortion went wrong")
+        self.assertEqual(elems[31], (18, 24, 25), "Distortion went wrong")
+        self.assertEqual(elems[40], (23, 24, 30), "Distortion went wrong")
+        self.assertEqual(elems[41], (24, 30, 31), "Distortion went wrong")
 
     def test_triangleMaterialGeneration_2x2_type0_bareLeft_air2(self):
         material = self.generate_material(2, 0, 2, 2, 2, 0)
