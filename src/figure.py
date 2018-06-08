@@ -7,11 +7,9 @@ from src.primitive import AbstractPrimitive
 from src.gui_primitive import NewPrimitiveDialog
 from src.displayer import PMD_Displayer
 from src.output import Output
-import subprocess
-import sys
 
 SPACING = 5
-RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
+RECT = 0  # Index of 'generate-rectangle' tab in NewPrimitiveDialog
 TRI = 1
 
 
@@ -28,7 +26,7 @@ class Figure(QtCore.QObject):
         self.message = ""
         self.shape = list()
         self.prim_dialog = False  # wait for NewPrimitiveDialog creation
-        # show_coordinate_grid was initiate in MyWindow constructor
+        # show_coordinates was initiate in MyWindow constructor
 
         self.displayer = PMD_Displayer(self.send_message)
         self.use_displayer = False
@@ -46,6 +44,7 @@ class Figure(QtCore.QObject):
         self.displayer.coords = None
 
     def clean(self):
+        """ Destroy the figure and clean the space """
         self.forgo_displayer()
         self.world_size = 0
         self.start_x = 0
@@ -134,7 +133,7 @@ class Figure(QtCore.QObject):
         shift_x = -self.start_x
         shift_y = -self.start_y
 
-        if self.show_coordinate_grid and self.grid_step > 0.000001:
+        if self.show_coordinates and self.grid_step > 0.000001:
             self.draw_grid(canvas, mesh_canvas, kx, ky, shift_x, shift_y, canvas_width, canvas_height)
 
         if not self.use_displayer:
@@ -236,28 +235,28 @@ class Figure(QtCore.QObject):
 
         self.forgo_displayer()
 
-    def save_mesh(self, filename="temp.pmd"):
+    def save_mesh(self, filename="temp.pmd", sortElements=False, splitPMD=False, testing=False):
+        """
+        sortElements – elements of the mesh would be sorted in order
+            as eyes move when read
+        testing – only used during testing (to save time on Displayer)
+        """
         if len(self.shape) == 0:
             self.send_message("Фигура пуста, нечего сохранять")
             return
 
         self.shape.sort(key=lambda prim: (prim.start_x, prim.start_y))
 
-        elem_num = 0
-        with Output() as output:
+        with Output(filename, sortElements, splitPMD) as output:
             for prim in self.shape:
                 prim.save_mesh(output)
-            elem_num = output.elements_amount
 
-        res = subprocess.run([sys.executable, "./Combiner.py", filename, str(elem_num)]).returncode
-        if res == 0:
+        if not testing:
             self.send_message("Фигура сохранена в " + filename)
             self.displayer.load_pmd(filename)
             self.use_displayer = True
             self.parent_clear.emit()
             self.parent_update.emit()
-        else:
-            self.send_message("Не удалось сохранить фигуру. Подробности в errors.log")
 
     def click_over(self, x, y, canvas_width, canvas_height):
         x = self.start_x + x * self.world_size/canvas_width

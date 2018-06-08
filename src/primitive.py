@@ -6,10 +6,18 @@ import abc
 class Mesh:
     """ Auxiliary abstraction for finite-elemental grid """
     def __init__(self, grid, other=None):
-        # NAT, NAR, NAB, NAL: amount of air blocks at Top/Right/Bottom/Left
-        # NFX, NFY: amount of figure blocks for width and height
-        # 'Block' — two combined in square elements (::).
-        #   top-left bottom-right diagonal is connection between them
+        """
+        'grid' holds next parameters:
+         NAT, NAR, NAB, NAL: amount of air blocks at Top/Right/Bottom/Left
+         NFX, NFY: amount of figure blocks for width and height
+
+        Figure block is a two combined in square elements (::),
+           top-left – bottom-right diagonal is their hypotenuse
+
+        'other' contains additional information as:
+            - type (triangle/rectangle)
+            - form (triangles only, represents where hypotenuse is facing)
+        """
         self.NAT, self.NAR, self.NAB, self.NAL, self.NFX, self.NFY = grid
         self.data = other
         if not other:
@@ -221,15 +229,9 @@ class AbstractPrimitive:
     @abc.abstractmethod
     def save_mesh(self, output):
         """
-        output.element(A, B, C) — записать индексы вершин, образующих элемент
-        output.coordinates — абсцисса и ордината вершин (номер строки = индекс вершины).
-            Два действительных числа в ряд
-        output.elements_material — код для материала элемента (0 — воздух, 1 — фигура)
-            Номер строки в этом файле соответствует номеру строки элемента в ind_f
-        output.nodes_material — код для материала узла
-            Номер строки в этом файле соответствует номеру строки узла в coor_f
-
-        output.last_index — индекс последнего существующего узла сетки разбиения
+        Abstract method for creating raw mesh.
+        Every primitive have section and on conjunction of that primitives
+            would be created duplicate nodes. Class 'Output' deal with that
         """
         pass
 
@@ -251,7 +253,7 @@ class AbstractPrimitive:
             for i in range(nwidth):
                 current = index + i + shift*j
                 output.save_element(current, current + shift, current + shift + 1, m)
-                output.save_element(current, current + 1, current + shift + 1, m)
+                output.save_element(current, current + shift + 1, current + 1, m)
 
         # Координаты узлов
         for j in range(nheight+1):  # Узлов на один больше чем квадратов

@@ -166,11 +166,6 @@ class Triangle(AbstractPrimitive):
                 curr_w = curr_h * tg_alpha
 
     def save_mesh(self, output):
-        """
-         Каждый вызов save_rectangle_mesh начинает нумерацию с нового индекса, что
-        означает появление дублирующих узлов в файлах промежуточного разбиения.
-        Это будет улажено позже, вызовом утилиты, что собирает результирующий файл
-        """
         M = self.mesh
         form = self.mesh.data["form"]
         dx = self.step_x
@@ -218,13 +213,13 @@ class Triangle(AbstractPrimitive):
         y0 = self.start_y + M.NAT*dy
 
         start = output.last_index
-        output.save_node(x0, y0)
-        output.save_node(x0 + dx, y0)
-        output.save_node(x0, y0 + dy)
-        output.save_node(x0 + dx, y0 + dy)
+        output.save_node(x0, y0)  # start
+        output.save_node(x0 + dx, y0)  # start+1
+        output.save_node(x0, y0 + dy)  # start+2
+        output.save_node(x0 + dx, y0 + dy)  # start+3
         if type_ == 0:
             output.save_element(start, start+2, start+3, self.FIGURE_CODE)
-            output.save_element(start, start+1, start+3, self.AIR_CODE)
+            output.save_element(start, start+3, start+1, self.AIR_CODE)
         elif type_ == 1:
             output.save_element(start+1, start+2, start+3, self.FIGURE_CODE)
             output.save_element(start, start+2, start+1, self.AIR_CODE)
@@ -232,7 +227,7 @@ class Triangle(AbstractPrimitive):
             output.save_element(start, start+2, start+1, self.FIGURE_CODE)
             output.save_element(start+1, start+2, start+3, self.AIR_CODE)
         elif type_ == 3:
-            output.save_element(start, start+1, start+3, self.FIGURE_CODE)
+            output.save_element(start, start+3, start+1, self.FIGURE_CODE)
             output.save_element(start, start+2, start+3, self.AIR_CODE)
 
     def save_isoscele_figure_mesh(self, output, type_, material):
@@ -264,8 +259,8 @@ class Triangle(AbstractPrimitive):
             offset_x, mod_x = M.NAL + M.NFX - 1, -1
             offset_y, mod_y = M.NAT, 0
 
-        w, h = 1, M.NFY-1  # '-1' or corner of last rectangle will penetrate boundaries of the figure
-        for i in range(M.NFX-1):
+        w, h = 1, M.NFY-1  # '-1' is because 3x3 node grid is only four elements
+        for i in range(M.NFX-1):  # from largest to smallest
             x = x0 + (offset_x + mod_x*i)*dx
             y = y0 + (offset_y + mod_y*i)*dy
             self.save_rectangle_mesh(w, h-i, output, x, y, dx, dy, material)
@@ -299,10 +294,10 @@ class Triangle(AbstractPrimitive):
                 next_right -= 1
 
     def fill_gaps_on_type1_hypotenuse(self, output, material, start):
-        next_right = start + 2
         next_left = start + 1
+        next_right = start + 2
         for k in range(self.mesh.NFX, 0, -1):  # fill gaps on hypotenuse
-            output.save_element(start, next_right, next_left, material)
+            output.save_element(start, next_left, next_right,  material)
             start = next_left
             next_right = next_left + 2
             next_left = next_left + k*2
@@ -321,18 +316,21 @@ class Triangle(AbstractPrimitive):
         output.save_element(next_left, bottom, next_right, material)
 
     def fill_gaps_on_type3_hypotenuse(self, output, material, start, last):
+        '''
+        For reference see 'doc/triangle_mesh_creating.png'
+        '''
         left = last - 1  # left vertex of the triangle
         next_up = last - 5  # index of upper-left save_node of created mesh
         next_down = last - 3
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.save_element(left, next_up, next_down, material)
+            output.save_element(left, next_down, next_up, material)
             left = next_down
             next_up = next_down + 1
             next_down = next_down - 4 - 2*(self.mesh.NFX - k)
         left = start + self.mesh.NFY*2 - 2
         next_up = left + 1
         next_down = last
-        output.save_element(left, next_up, next_down, material)
+        output.save_element(left, next_down, next_up, material)
 
     def save_nonisoscele_figure_mesh(self, output, form):
         # See doc/create_triangle_mesh.png for some explanation

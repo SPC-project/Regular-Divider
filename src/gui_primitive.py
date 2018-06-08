@@ -7,6 +7,10 @@ import abc
 
 
 class NewPrimitiveDialog(QDialog):
+    """
+    Generates QDialog for primitive creation/editing.
+    Holds tabs for every primitive, present in the program.
+    """
     def __init__(self):
         super(NewPrimitiveDialog, self).__init__()
         uic.loadUi('resources/ui/new_primitive.ui', self)
