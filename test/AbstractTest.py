@@ -198,7 +198,7 @@ class AbstractTest(unittest.TestCase):
                 next_line_next = next_line_curr + 1
 
                 elems.append((curr, next_line_curr, next_line_next))
-                elems.append((curr, next_, next_line_next))
+                elems.append((curr, next_line_next, next_))
 
         coord = list()
         for j in range(ny):
@@ -233,7 +233,7 @@ class AbstractTest(unittest.TestCase):
             node2 = nodes_offset_top + nodes_in_row*(j+1) + nodes_air_offset + N-j-1
             node3 = node2 + 1
 
-            elements[index] = (node, node1, node2)
+            elements[index] = (node, node2, node1)
             elements[index+1] = (node1, node2, node3)
 
 
@@ -243,7 +243,7 @@ class Test_AbstractTest(AbstractTest):
         N = 2
         elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
         self.distort_grid(elems, N, air, air, air, air)
-        self.assertEqual(elems[8], (5, 6, 9), "Distortion went wrong")
+        self.assertEqual(elems[8], (5, 9, 6), "Distortion went wrong")
         self.assertEqual(elems[9], (6, 9, 10), "Distortion went wrong")
 
     def test_gridDistorting_3x3_allAir1(self):
@@ -251,9 +251,9 @@ class Test_AbstractTest(AbstractTest):
         N = 3
         elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
         self.distort_grid(elems, N, air, air, air, air)
-        self.assertEqual(elems[12], (7, 8, 12), "Distortion went wrong")
+        self.assertEqual(elems[12], (7, 12, 8), "Distortion went wrong")
         self.assertEqual(elems[13], (8, 12, 13), "Distortion went wrong")
-        self.assertEqual(elems[18], (11, 12, 16), "Distortion went wrong")
+        self.assertEqual(elems[18], (11, 16, 12), "Distortion went wrong")
         self.assertEqual(elems[19], (12, 16, 17), "Distortion went wrong")
 
     def test_gridDistorting_3x3_allAir2(self):
@@ -261,9 +261,9 @@ class Test_AbstractTest(AbstractTest):
         N = 3
         elems, _ignore_ = self.generate_grid(N + air*2, N + air*2)
         self.distort_grid(elems, N, air, air, air, air)
-        self.assertEqual(elems[30], (17, 18, 24), "Distortion went wrong")
+        self.assertEqual(elems[30], (17, 24, 18), "Distortion went wrong")
         self.assertEqual(elems[31], (18, 24, 25), "Distortion went wrong")
-        self.assertEqual(elems[40], (23, 24, 30), "Distortion went wrong")
+        self.assertEqual(elems[40], (23, 30, 24), "Distortion went wrong")
         self.assertEqual(elems[41], (24, 30, 31), "Distortion went wrong")
 
     def test_triangleMaterialGeneration_2x2_type0_bareLeft_air2(self):

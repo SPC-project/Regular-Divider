@@ -253,7 +253,7 @@ class AbstractPrimitive:
             for i in range(nwidth):
                 current = index + i + shift*j
                 output.save_element(current, current + shift, current + shift + 1, m)
-                output.save_element(current, current + 1, current + shift + 1, m)
+                output.save_element(current, current + shift + 1, current + 1, m)
 
         # Координаты узлов
         for j in range(nheight+1):  # Узлов на один больше чем квадратов

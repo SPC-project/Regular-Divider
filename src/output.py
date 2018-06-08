@@ -97,12 +97,6 @@ class Output:
         output.write(SECTIONS_NAMES[5])  # elements' material
         self.write_material()
 
-    def sort_nodes(self):
-        self.nodes.sort(key=lambda coor: (coor[1], coor[0]))  # sort by y-coordinate
-        self.rearanged_nodes = [-1] * len(self.nodes)
-        for i, (x, y, index) in enumerate(self.nodes):
-            self.rearanged_nodes[index] = i
-
     def sort_elements(self):
         """
         Sort elements by y-coordinate of first node and element's average x-coordinate
@@ -121,6 +115,12 @@ class Output:
         for i, elem in enumerate(sorted_):
             self.elements[i] = (elem[0], elem[1], elem[2])
             self.material[i] = elem[3]
+
+    def sort_nodes(self):
+        self.nodes.sort(key=lambda coor: (coor[1], coor[0]))  # sort by y-coordinate
+        self.rearanged_nodes = [-1] * len(self.nodes)
+        for i, (x, y, index) in enumerate(self.nodes):
+            self.rearanged_nodes[index] = i
 
     def find_excessive_indexes(self):
         """
@@ -210,6 +210,11 @@ class Output:
 
         return index
 
+    def write_elements(self):
+        for element in self.elements:
+            self.OUT.write(element)  # 'element' is already prepared string
+            self.OUT_elems.write(element)
+
     def write_nodes(self, excessive_indexes):
         # 'min_dup' and 'max_dup' set borders in search for duplicates
         min_dup, max_dup = -1, -1
@@ -235,11 +240,6 @@ class Output:
                 line = "{} {}\n".format(x, y)
                 self.OUT.write(line)
                 self.OUT_nodes.write(line)
-
-    def write_elements(self):
-        for element in self.elements:
-            self.OUT.write(element)  # 'element' is already prepared string
-            self.OUT_elems.write(element)
 
     def write_material(self):
         for value in self.material:

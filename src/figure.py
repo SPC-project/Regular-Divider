@@ -9,7 +9,7 @@ from src.displayer import PMD_Displayer
 from src.output import Output
 
 SPACING = 5
-RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
+RECT = 0  # Index of 'generate-rectangle' tab in NewPrimitiveDialog
 TRI = 1
 
 

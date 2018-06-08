@@ -219,15 +219,15 @@ class Triangle(AbstractPrimitive):
         output.save_node(x0 + dx, y0 + dy)  # start+3
         if type_ == 0:
             output.save_element(start, start+2, start+3, self.FIGURE_CODE)
-            output.save_element(start, start+1, start+3, self.AIR_CODE)
+            output.save_element(start, start+3, start+1, self.AIR_CODE)
         elif type_ == 1:
             output.save_element(start+1, start+2, start+3, self.FIGURE_CODE)
-            output.save_element(start, start+1, start+2, self.AIR_CODE)
+            output.save_element(start, start+2, start+1, self.AIR_CODE)
         elif type_ == 2:
-            output.save_element(start, start+1, start+2, self.FIGURE_CODE)
+            output.save_element(start, start+2, start+1, self.FIGURE_CODE)
             output.save_element(start+1, start+2, start+3, self.AIR_CODE)
         elif type_ == 3:
-            output.save_element(start, start+1, start+3, self.FIGURE_CODE)
+            output.save_element(start, start+3, start+1, self.FIGURE_CODE)
             output.save_element(start, start+2, start+3, self.AIR_CODE)
 
     def save_isoscele_figure_mesh(self, output, type_, material):
@@ -306,28 +306,31 @@ class Triangle(AbstractPrimitive):
         next_right = start + self.mesh.NFY*2 - 1
         next_left = next_right - 1
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.save_element(next_left, next_right, bottom, material)
+            output.save_element(next_left, bottom, next_right, material)
             bottom = next_right
             next_right = next_right + (k-1)*2
             next_left = next_right - 1
         next_right = output.last_index - 1
         next_left = output.last_index - 5
 
-        output.save_element(next_left, next_right, bottom, material)
+        output.save_element(next_left, bottom, next_right, material)
 
     def fill_gaps_on_type3_hypotenuse(self, output, material, start, last):
+        '''
+        For reference see 'doc/triangle_mesh_creating.png'
+        '''
         left = last - 1  # left vertex of the triangle
         next_up = last - 5  # index of upper-left save_node of created mesh
         next_down = last - 3
         for k in range(self.mesh.NFX, 1, -1):  # fill gaps on hypotenuse
-            output.save_element(left, next_up, next_down, material)
+            output.save_element(left, next_down, next_up, material)
             left = next_down
             next_up = next_down + 1
             next_down = next_down - 4 - 2*(self.mesh.NFX - k)
         left = start + self.mesh.NFY*2 - 2
         next_up = left + 1
         next_down = last
-        output.save_element(left, next_up, next_down, material)
+        output.save_element(left, next_down, next_up, material)
 
     def save_nonisoscele_figure_mesh(self, output, form):
         # See doc/create_triangle_mesh.png for some explanation

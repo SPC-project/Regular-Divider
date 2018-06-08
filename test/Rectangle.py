@@ -244,22 +244,16 @@ class ThreeAir(AbstractTest):
 
     def test_2x2_air2_topRightLeft(self):
         self.generate_testCase_rectangle(2, 1, 1, 0, 1, air=2)
-
     def test_2x2_air2_TopBottomLeft(self):
         self.generate_testCase_rectangle(2, 1, 0, 1, 1, air=2)
-
     def test_2x2_air2_RightBottomLeft(self):
         self.generate_testCase_rectangle(2, 0, 1, 1, 1, air=2)
-
     def test_3x3_air2_topRightBottom(self):
         self.generate_testCase_rectangle(2, 1, 1, 1, 0, air=2)
-
     def test_3x3_air2_topRightLeft(self):
         self.generate_testCase_rectangle(2, 1, 1, 0, 1, air=2)
-
     def test_3x3_air2_TopBottomLeft(self):
         self.generate_testCase_rectangle(2, 1, 0, 1, 1, air=2)
-
     def test_3x3_air2_RightBottomLeft(self):
         self.generate_testCase_rectangle(2, 0, 1, 1, 1)
 
