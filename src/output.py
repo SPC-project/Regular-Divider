@@ -2,7 +2,7 @@ import math
 from collections import OrderedDict
 
 
-SECTIONS_NAMES = ["[settings]\n", "[inds]\n", "[coor]\n", "[contact]\n", "[force]\n", "[elements' material]\n"]
+SECTIONS_NAMES = ["[settings]\n", "[inds]\n", "[koor]\n", "[contact]\n", "[force]\n", "[elements' material]\n"]
 
 
 class IndexedFile:
