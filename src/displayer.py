@@ -100,6 +100,15 @@ class PMD_Displayer():
         self.longest_index = max([str(min_x), str(min_y), str(max_x), str(max_y)])
 
         self.coords = coords
+        self.elems = elems
+
+        def calc_center(A, B, C, index):
+            x = (A[0] + B[0] + C[0]) / 3
+            y = (A[1] + B[1] + C[1]) / 3
+            return (x, y, index)
+
+        self.elems_centers = [calc_center(A, B, C, index) for index, (A, B, C, material) in enumerate(self.data)]
+
         In.close()
 
     def display_pmd(self, canvas, camera_x, camera_y, kx, ky):

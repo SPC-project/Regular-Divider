@@ -8,8 +8,7 @@ from src.gui_primitive import NewPrimitiveDialog
 from src.displayer import PMD_Displayer
 from src.output import Output
 
-SPACING = 5
-RECT = 0  # Index of 'generate-rectangle' tab in NewPrimitiveDialog
+RECT = 0  # Index of generate-rectangle tab in NewPrimitiveDialog
 TRI = 1
 
 
@@ -374,10 +373,13 @@ class Figure(QtCore.QObject):
             if y1 > max_y:
                 max_y = int(y1)
 
-        self.start_x = min_x - SPACING
-        self.start_y = min_y - SPACING
-        max_width = max_x - min_x + 2*SPACING
-        max_height = max_y - min_y + 2*SPACING
+        spacing = (max_x - min_x) / 5
+        if spacing < 1:
+            spacing = 1
+        self.start_x = min_x - spacing
+        self.start_y = min_y - spacing
+        max_width = max_x - min_x + 2*spacing
+        max_height = max_y - min_y + 2*spacing
         if max_width > max_height:
             self.world_size = int(max_width)
         else:

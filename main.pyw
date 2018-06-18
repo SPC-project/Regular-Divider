@@ -8,6 +8,7 @@ Author: Mykolaj Konovalow
 """
 
 import sys
+import math
 import logging
 from traceback import format_exception
 import _thread
@@ -57,6 +58,7 @@ class MyWindow(QMainWindow):
         self.figure.show_coordinates = self.showCoordinates_flag.isChecked()
 
         # Qt
+        self.setMouseTracking(True)
         size_tip.clicked.connect(self.figure.adjust)
         self.wipe_world.triggered.connect(self.clean)
         self.save_world.triggered.connect(self.save)
@@ -78,7 +80,6 @@ class MyWindow(QMainWindow):
         self.sig_clear.connect(self.clearing)
         self.sig_message.connect(self.messaging)
         self.sig_mayUpdate.connect(self.propose_upgrade)
-        self.setMouseTracking(True)
 
         # Create 'showIndexes_flag' radiobuttons option
         display_indexes = QActionGroup(self)
@@ -219,23 +220,27 @@ class MyWindow(QMainWindow):
 
     def keyPressEvent(self, e):
         needRefresh = False
+        movement = self.figure.world_size/5
+        if movement < 1:
+            movement = 1
+
         if e.key() == QtCore.Qt.Key_Minus:
-            self.figure.world_size += int(self.figure.world_size/5)
+            self.figure.world_size += int(movement)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Plus:
-            self.figure.world_size -= int(self.figure.world_size/5)
+            self.figure.world_size -= int(movement)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Left:
-            self.figure.start_x -= int(self.figure.world_size/5)
+            self.figure.start_x -= int(movement)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Right:
-            self.figure.start_x += int(self.figure.world_size/5)
+            self.figure.start_x += int(movement)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Up:
-            self.figure.start_y -= int(self.figure.world_size/5)
+            self.figure.start_y -= int(movement)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Down:
-            self.figure.start_y += int(self.figure.world_size/5)
+            self.figure.start_y += int(movement)
             needRefresh = True
 
         if needRefresh:
@@ -246,7 +251,10 @@ class MyWindow(QMainWindow):
 
     def mousePressEvent(self, e):
         if e.button() != QtCore.Qt.RightButton:
-            return
+            if self.calculateElementNumberOnClick.isChecked():
+                self.processClickOnMesh(e)
+            else:
+                return
 
         x = e.x() - self.canvas_figure.x()
         y = e.y() - self.menubar.height()
@@ -287,6 +295,49 @@ class MyWindow(QMainWindow):
                 self.figure.mod_prim(target_ind)
             elif act_ind > 1 and act_ind < 6:
                 self.figure.expand(target_ind, act_ind-2)
+
+    def mouseMoveEvent(self, event):
+        if len(self.figure.shape) == 0:
+            return
+        if self.calculateElementNumberOnClick.isChecked():
+            return
+
+        self.processClickOnMesh(event)
+
+    def processClickOnMesh(self, event):
+        if not self.figure.use_displayer:
+            self.figure.message = 'Индекс элемента рассчитывается только на .PMD файле (сохраните разбиение сначала)'
+            self.messaging()
+            return
+
+        x = event.x() - self.canvas_mesh.x()
+        y = event.y() - self.canvas_mesh.y() - self.menubar.height()
+        canvas_width = (self.geometry().width() - 3*PADDING) / 2
+        canvas_height = self.geometry().height() - self.menubar.height() - self.statusbar.height()
+        kx = self.figure.world_size/canvas_width
+        ky = self.figure.world_size/canvas_height
+
+        inWorld_x = x*kx+self.figure.start_x
+        inWorld_y = y*ky+self.figure.start_y
+
+        def calc_distance(x, y, index):
+            distance = math.sqrt((x-inWorld_x)**2 + (y-inWorld_y)**2)
+            return (distance, index)
+        elems_centers = self.figure.displayer.elems_centers
+        elems = self.figure.displayer.elems
+        distances = [calc_distance(x, y, index) for x, y, index in elems_centers]
+
+        sorted_distances = min(distances, key=lambda node: node[0])
+        if sorted_distances[0] > self.figure.displayer.between_nodes:
+            return
+        elemet_under = sorted_distances[1]
+
+        node1 = elems[elemet_under][0] + 1  # '+1' because displayed indexing starts from '1' and actual – from '0'
+        node2 = elems[elemet_under][1] + 1
+        node3 = elems[elemet_under][2] + 1
+        material = self.figure.displayer.data[elemet_under][3]
+        self.figure.message = "Индекс элемента под курсором: {} | Узлы: {} {} {} | Материал: {}".format(elemet_under, node1, node2, node3, material)
+        self.messaging()
 
     def shit_happens(self):
         msg = QMessageBox(QMessageBox.Critical, "Ошибка!", '')

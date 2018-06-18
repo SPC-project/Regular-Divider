@@ -10,6 +10,9 @@
     <height>489</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="contextMenuPolicy">
    <enum>Qt::ActionsContextMenu</enum>
   </property>
@@ -23,6 +26,9 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="mouseTracking">
+    <bool>true</bool>
+   </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <widget class="QFrame" name="canvas_figure">
@@ -36,6 +42,9 @@
     </item>
     <item>
      <widget class="QFrame" name="canvas_mesh">
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -95,6 +104,7 @@
     <addaction name="showCoordinates_flag"/>
     <addaction name="sortElements_flag"/>
     <addaction name="splitPMD_flag"/>
+    <addaction name="calculateElementNumberOnClick"/>
     <addaction name="separator"/>
     <addaction name="showIndexes_flag"/>
     <addaction name="showBorderIndexes_flag"/>
@@ -433,13 +443,25 @@
   </action>
   <action name="check_for_updates">
    <property name="icon">
-    <iconset theme="system-software-update"/>
+    <iconset theme="system-software-update">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>Проверить обновления</string>
    </property>
    <property name="statusTip">
     <string>⇒ Проверить наличие обновлений</string>
+   </property>
+  </action>
+  <action name="calculateElementNumberOnClick">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Выводить индекс элемента только по клику</string>
+   </property>
+   <property name="statusTip">
+    <string>⇒ Индекс элемента будет рассчитываться только по клику левой клавишей мыши</string>
    </property>
   </action>
  </widget>
