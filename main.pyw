@@ -78,6 +78,7 @@ class MyWindow(QMainWindow):
         self.sig_clear.connect(self.clearing)
         self.sig_message.connect(self.messaging)
         self.sig_mayUpdate.connect(self.propose_upgrade)
+        self.setMouseTracking(True)
 
         # Create 'showIndexes_flag' radiobuttons option
         display_indexes = QActionGroup(self)
@@ -219,22 +220,22 @@ class MyWindow(QMainWindow):
     def keyPressEvent(self, e):
         needRefresh = False
         if e.key() == QtCore.Qt.Key_Minus:
-            self.figure.world_size += 5
+            self.figure.world_size += int(self.figure.world_size/5)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Plus:
-            self.figure.world_size -= 5
+            self.figure.world_size -= int(self.figure.world_size/5)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Left:
-            self.figure.start_x -= 5
+            self.figure.start_x -= int(self.figure.world_size/5)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Right:
-            self.figure.start_x += 5
+            self.figure.start_x += int(self.figure.world_size/5)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Up:
-            self.figure.start_y -= 5
+            self.figure.start_y -= int(self.figure.world_size/5)
             needRefresh = True
         if e.key() == QtCore.Qt.Key_Down:
-            self.figure.start_y += 5
+            self.figure.start_y += int(self.figure.world_size/5)
             needRefresh = True
 
         if needRefresh:
