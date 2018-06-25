@@ -336,7 +336,7 @@ class MyWindow(QMainWindow):
         node2 = elems[elemet_under][1] + 1
         node3 = elems[elemet_under][2] + 1
         material = self.figure.displayer.data[elemet_under][3]
-        self.figure.message = "Индекс элемента под курсором: {} | Узлы: {} {} {} | Материал: {}".format(elemet_under, node1, node2, node3, material)
+        self.figure.message = "Индекс элемента под курсором: {} | Узлы: {} {} {} | Материал: {}".format(elemet_under+1, node1, node2, node3, material)
         self.messaging()
 
     def shit_happens(self):
